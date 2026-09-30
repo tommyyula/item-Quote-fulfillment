@@ -1,0 +1,4131 @@
+{
+ "version": "v3",
+ "categories": [
+  {
+   "id": "setup",
+   "name": "Setup & Systems",
+   "desc": "One-time onboarding and ongoing system access.",
+   "charges": [
+    {
+     "id": "SU-SETUP",
+     "kind": "simple",
+     "name": "Account setup & implementation",
+     "desc": "Kickoff, WMS & billing setup, SOPs, training, UAT and go-live.",
+     "unit": "One-time",
+     "default": 1000,
+     "lo": 500,
+     "hi": 2500,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0189",
+      "HANDLING-0190",
+      "HANDLING-0202",
+      "HANDLING-0205",
+      "HANDLING-0206",
+      "HANDLING-0218",
+      "HANDLING-0220",
+      "HANDLING-0222",
+      "HANDLING-0229",
+      "HANDLING-0230",
+      "HANDLING-0235",
+      "HANDLING-0248"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "SU-ITEM",
+     "kind": "simple",
+     "name": "Initial item-master import",
+     "desc": "Load the client's SKU list from a spreadsheet at onboarding.",
+     "unit": "One-time",
+     "default": 300,
+     "lo": 0,
+     "hi": 500,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0200"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "SU-SKU",
+     "kind": "simple",
+     "name": "Additional SKU setup",
+     "desc": "Each SKU created manually after go-live, incl. dims / weight.",
+     "unit": "SKU",
+     "default": 5.75,
+     "lo": 1,
+     "hi": 6,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0014"
+     ],
+     "invoiceLines": 11
+    },
+    {
+     "id": "SU-WMS",
+     "kind": "simple",
+     "name": "WMS / portal user",
+     "desc": "Portal login, standard reports, system maintenance.",
+     "unit": "User / month",
+     "default": 175,
+     "lo": 100,
+     "hi": 250,
+     "basis": "UNIS median (n=92)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "SYSTEM & MANAGEMENT FEE-0003",
+      "SYSTEM & MANAGEMENT FEE-0005"
+     ],
+     "invoiceLines": 393
+    },
+    {
+     "id": "SU-EDI",
+     "kind": "simple",
+     "name": "EDI setup - per trading partner",
+     "desc": "Map, test and certify the standard EDI document set for one partner.",
+     "unit": "Trading partner",
+     "default": 2500,
+     "lo": 1500,
+     "hi": 5000,
+     "basis": "Industry midpoint",
+     "channel": "B2B",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0193",
+      "HANDLING-0194"
+     ],
+     "invoiceLines": 8
+    },
+    {
+     "id": "SU-ECOM",
+     "kind": "simple",
+     "name": "E-commerce platform connection",
+     "desc": "Connect a store / marketplace (Shopify, Amazon, Walmart ...).",
+     "unit": "Connection",
+     "default": 250,
+     "lo": 0,
+     "hi": 500,
+     "basis": "Industry midpoint",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "SU-EDITX",
+     "kind": "simple",
+     "name": "EDI / FTP transaction",
+     "desc": "Each 940 / 945 / 856 / 850 document or FTP file processed.",
+     "unit": "Document",
+     "default": 0.5,
+     "lo": 0.25,
+     "hi": 1.0,
+     "basis": "UNIS median (n=1,385)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0001",
+      "HANDLING-0002",
+      "HANDLING-0045",
+      "HANDLING-0046",
+      "HANDLING-0047",
+      "HANDLING-0048",
+      "HANDLING-0049",
+      "HANDLING-0050",
+      "HANDLING-0099",
+      "HANDLING-0102",
+      "HANDLING-0103"
+     ],
+     "invoiceLines": 54
+    },
+    {
+     "id": "SU-VAN",
+     "kind": "simple",
+     "name": "EDI VAN charges",
+     "desc": "VAN provider cost re-billed plus markup.",
+     "unit": "% on cost",
+     "default": 0.2,
+     "lo": 0,
+     "hi": 0.2,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": true,
+     "new": false,
+     "codes": [
+      "HANDLING-0098",
+      "HANDLING-0100",
+      "HANDLING-0101"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "SU-RETAILER",
+     "kind": "simple",
+     "name": "Retailer label & document setup",
+     "desc": "Configure retailer-specific carton labels, packing slips and routing docs.",
+     "unit": "Retailer",
+     "default": 625,
+     "lo": 250,
+     "hi": 1000,
+     "basis": "Industry midpoint",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0244"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "SU-IT",
+     "kind": "simple",
+     "name": "IT support / development",
+     "desc": "Custom reports, workflow or integration changes; 15-min increments.",
+     "unit": "Hour",
+     "default": 150,
+     "lo": 125,
+     "hi": 200,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0217"
+     ],
+     "invoiceLines": 4
+    },
+    {
+     "id": "SU-ENT",
+     "kind": "simple",
+     "name": "Enterprise WMS subscription",
+     "desc": "Unlimited users, dedicated environment.",
+     "unit": "Entity / year",
+     "default": 18000,
+     "lo": 10000,
+     "hi": 25000,
+     "basis": "UNIS price list (n=2)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "SYSTEM & MANAGEMENT FEE-0004"
+     ],
+     "invoiceLines": 0
+    }
+   ]
+  },
+  {
+   "id": "inbound",
+   "name": "Inbound",
+   "desc": "Receiving freight into the warehouse.",
+   "charges": [
+    {
+     "id": "IN-OFFLOAD",
+     "kind": "builder",
+     "name": "Offload / Receiving",
+     "desc": "Unload the container, trailer or parcel delivery, count, label and receive into the WMS.",
+     "conds": [
+      {
+       "id": "offloadType",
+       "label": "Offload type",
+       "values": [
+        "Floor loaded",
+        "Palletized",
+        "Shotgun",
+        "Slip sheet"
+       ],
+       "common": true,
+       "free": false,
+       "help": "How the freight is loaded in the container / trailer. Drives which units make sense."
+      },
+      {
+       "id": "shipMethod",
+       "label": "Ship method",
+       "values": [
+        "Truckload / container",
+        "LTL",
+        "LCL",
+        "Small parcel",
+        "Will call"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "receiptType",
+       "label": "Receipt type",
+       "values": [
+        "Regular",
+        "Customer return",
+        "Retailer return",
+        "Transload",
+        "Cross-dock"
+       ],
+       "common": false,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      },
+      {
+       "id": "title",
+       "label": "Title / brand",
+       "values": [],
+       "common": false,
+       "free": true,
+       "help": "Client inventory title or brand (sub-account) - type values."
+      },
+      {
+       "id": "carrier",
+       "label": "Carrier",
+       "values": [
+        "UPS",
+        "FedEx",
+        "USPS",
+        "DHL",
+        "Amazon",
+        "LSO",
+        "Customer pick-up"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Inbound or outbound carrier."
+      }
+     ],
+     "units": [
+      {
+       "id": "container",
+       "label": "Container",
+       "flat": 550,
+       "lo": 350,
+       "hi": 900,
+       "basis": "UNIS case-tier medians / industry",
+       "drivers": [
+        {
+         "id": "containerSize",
+         "label": "Container size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "20'",
+           "d": 425
+          },
+          {
+           "v": "40'",
+           "d": 600
+          },
+          {
+           "v": "40' HC",
+           "d": 625
+          },
+          {
+           "v": "45'",
+           "d": 650
+          },
+          {
+           "v": "48' trailer",
+           "d": 575
+          },
+          {
+           "v": "53' trailer",
+           "d": 575
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "caseCount",
+         "label": "Case count in container",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 500 cases",
+           "d": 490
+          },
+          {
+           "v": "501 - 1,000 cases",
+           "d": 520
+          },
+          {
+           "v": "1,001 - 1,500 cases",
+           "d": 550
+          },
+          {
+           "v": "1,501 - 2,500 cases",
+           "d": 610
+          },
+          {
+           "v": "Over 2,500 cases",
+           "d": 630
+          }
+         ],
+         "when": {
+          "offloadType": [
+           "Floor loaded",
+           "Shotgun"
+          ]
+         },
+         "calc": true,
+         "help": "Range: whole container priced at its band. Incremental: base + per-case over the top band."
+        },
+        {
+         "id": "skuCount",
+         "label": "SKU count in container",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 5 SKUs",
+           "d": null
+          },
+          {
+           "v": "6 - 10 SKUs",
+           "d": null
+          },
+          {
+           "v": "11 - 25 SKUs",
+           "d": null
+          },
+          {
+           "v": "Over 25 SKUs",
+           "d": null
+          }
+         ],
+         "when": {
+          "offloadType": [
+           "Floor loaded",
+           "Shotgun"
+          ]
+         },
+         "calc": true,
+         "help": ""
+        },
+        {
+         "id": "palletCount",
+         "label": "Pallet count in container",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 20 pallets",
+           "d": 490
+          },
+          {
+           "v": "21 - 40 pallets",
+           "d": 590
+          },
+          {
+           "v": "Over 40 pallets",
+           "d": 650
+          }
+         ],
+         "when": {
+          "offloadType": [
+           "Palletized",
+           "Slip sheet"
+          ]
+         },
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [],
+       "second": true,
+       "common": true,
+       "when": {},
+       "by": {
+        "offloadType": {
+         "Palletized": 400,
+         "Slip sheet": 450,
+         "Shotgun": 650
+        }
+       },
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "pallet",
+       "label": "Pallet",
+       "flat": 10.5,
+       "lo": 8,
+       "hi": 15,
+       "basis": "UNIS median (n=779)",
+       "drivers": [
+        {
+         "id": "palletSize",
+         "label": "Pallet size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Standard (48x40)",
+           "d": 10.5
+          },
+          {
+           "v": "Oversize",
+           "d": 16
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "palletMix",
+         "label": "Full / partial / mixed pallet",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Full pallet, single SKU",
+           "d": 10.5
+          },
+          {
+           "v": "Partial pallet",
+           "d": 10.5
+          },
+          {
+           "v": "Mixed-SKU pallet",
+           "d": 14
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "containerSize",
+         "label": "Container size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "20'",
+           "d": null
+          },
+          {
+           "v": "40'",
+           "d": null
+          },
+          {
+           "v": "40' HC",
+           "d": null
+          },
+          {
+           "v": "45'",
+           "d": null
+          },
+          {
+           "v": "48' trailer",
+           "d": null
+          },
+          {
+           "v": "53' trailer",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "palletCount",
+         "label": "Pallet count per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 20 pallets",
+           "d": 10.5
+          },
+          {
+           "v": "21 - 40 pallets",
+           "d": 9.5
+          },
+          {
+           "v": "Over 40 pallets",
+           "d": 8.5
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "receipt",
+        "container",
+        "load"
+       ],
+       "second": true,
+       "common": true,
+       "when": {
+        "offloadType": [
+         "Palletized",
+         "Slip sheet"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "load": 325,
+        "container": 325,
+        "receipt": 150
+       },
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Case / carton",
+       "flat": 0.35,
+       "lo": 0.25,
+       "hi": 1.25,
+       "basis": "UNIS median (n=494)",
+       "drivers": [
+        {
+         "id": "caseWeight",
+         "label": "Case weight",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "0 - 50 lbs",
+           "d": 0.35
+          },
+          {
+           "v": "51 - 80 lbs",
+           "d": 0.6
+          },
+          {
+           "v": "Over 80 lbs",
+           "d": 1.25
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "containerSize",
+         "label": "Container size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "20'",
+           "d": null
+          },
+          {
+           "v": "40'",
+           "d": null
+          },
+          {
+           "v": "40' HC",
+           "d": null
+          },
+          {
+           "v": "45'",
+           "d": null
+          },
+          {
+           "v": "48' trailer",
+           "d": null
+          },
+          {
+           "v": "53' trailer",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "caseCount",
+         "label": "Case count per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 500 cases",
+           "d": 490
+          },
+          {
+           "v": "Over 500 cases",
+           "d": 0.3
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        },
+        {
+         "id": "skuCount",
+         "label": "SKU count per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 5 SKUs",
+           "d": null
+          },
+          {
+           "v": "6 - 10 SKUs",
+           "d": null
+          },
+          {
+           "v": "11 - 25 SKUs",
+           "d": null
+          },
+          {
+           "v": "Over 25 SKUs",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "receipt",
+        "container",
+        "load"
+       ],
+       "second": true,
+       "common": true,
+       "when": {
+        "offloadType": [
+         "Floor loaded",
+         "Shotgun"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "container": 325,
+        "receipt": 50,
+        "load": 325
+       },
+       "note": ""
+      },
+      {
+       "id": "each",
+       "label": "Each / unit",
+       "flat": 0.3,
+       "lo": 0.15,
+       "hi": 0.5,
+       "basis": "Industry midpoint",
+       "drivers": [
+        {
+         "id": "itemSize",
+         "label": "Item type / size (e.g. TV screen size)",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Up to 32\"",
+           "d": 1.36
+          },
+          {
+           "v": "37\" - 43\"",
+           "d": 2.4
+          },
+          {
+           "v": "46\" - 50\"",
+           "d": 4.32
+          },
+          {
+           "v": "55\" - 60\"",
+           "d": 3.85
+          },
+          {
+           "v": "65\"",
+           "d": 5.05
+          },
+          {
+           "v": "70\" - 75\"",
+           "d": 7.72
+          },
+          {
+           "v": "80\" - 86\"",
+           "d": 11.32
+          },
+          {
+           "v": "98\" and larger",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "eachCount",
+         "label": "Units per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 1,000 units",
+           "d": 0.3
+          },
+          {
+           "v": "Over 1,000 units",
+           "d": 0.25
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "receipt",
+        "container",
+        "load"
+       ],
+       "second": true,
+       "common": true,
+       "when": {
+        "offloadType": [
+         "Floor loaded",
+         "Shotgun"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "receipt": 50
+       },
+       "note": ""
+      },
+      {
+       "id": "hour",
+       "label": "Labor hour",
+       "flat": 50,
+       "lo": 40,
+       "hi": 60,
+       "basis": "UNIS median (n=412)",
+       "drivers": [
+        {
+         "id": "hours",
+         "label": "Hours per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "First hour",
+           "d": 50
+          },
+          {
+           "v": "Each additional hour",
+           "d": 45
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "receipt",
+        "container",
+        "load"
+       ],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "receipt": 45
+       },
+       "note": "D2C template: inbound & stow $45/hr."
+      },
+      {
+       "id": "receipt",
+       "label": "Receipt (flat)",
+       "flat": 50,
+       "lo": 25,
+       "hi": 150,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [],
+       "second": true,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "cubic",
+       "label": "Cubic foot",
+       "flat": 0.23,
+       "lo": 0.15,
+       "hi": 0.4,
+       "basis": "UNIS median (n=62)",
+       "drivers": [
+        {
+         "id": "cubicVol",
+         "label": "Cubic feet per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 1,000 cu ft",
+           "d": 0.23
+          },
+          {
+           "v": "Over 1,000 cu ft",
+           "d": 0.18
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "receipt",
+        "container",
+        "load"
+       ],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "weight",
+       "label": "Weight (per 100 lb)",
+       "flat": 1.0,
+       "lo": 0.5,
+       "hi": 2.0,
+       "basis": "Industry midpoint",
+       "drivers": [
+        {
+         "id": "weightVol",
+         "label": "Weight per receipt",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 10,000 lb",
+           "d": 1.0
+          },
+          {
+           "v": "Over 10,000 lb",
+           "d": 0.8
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "receipt",
+        "container",
+        "load"
+       ],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "HANDLING-0104",
+      "HANDLING-0105",
+      "HANDLING-0106",
+      "HANDLING-0107",
+      "HANDLING-0108",
+      "HANDLING-0109",
+      "HANDLING-0111",
+      "HANDLING-0112",
+      "HANDLING-0113",
+      "HANDLING-0114",
+      "HANDLING-0115",
+      "HANDLING-0116",
+      "HANDLING-0117",
+      "HANDLING-0118",
+      "HANDLING-0119",
+      "HANDLING-0120",
+      "HANDLING-0121",
+      "HANDLING-0122",
+      "HANDLING-0123",
+      "HANDLING-0124",
+      "HANDLING-0125",
+      "HANDLING-0126",
+      "HANDLING-0127",
+      "HANDLING-0128",
+      "HANDLING-0129",
+      "HANDLING-0130",
+      "HANDLING-0158",
+      "HANDLING-0159",
+      "HANDLING-0160",
+      "HANDLING-0161",
+      "HANDLING-0162",
+      "HANDLING-0163",
+      "HANDLING-0164",
+      "HANDLING-0165",
+      "HANDLING-0166",
+      "HANDLING-0167",
+      "HANDLING-0168",
+      "HANDLING-0169",
+      "HANDLING-0170",
+      "HANDLING-0171",
+      "HANDLING-0172",
+      "HANDLING-0173",
+      "HANDLING-0174",
+      "HANDLING-0175",
+      "HANDLING-0176",
+      "HANDLING-0177",
+      "HANDLING-0178",
+      "HANDLING-0179",
+      "HANDLING-0180",
+      "HANDLING-0181",
+      "HANDLING-0188",
+      "HANDLING-0195",
+      "HANDLING-0252"
+     ],
+     "invalid": [],
+     "invoiceLines": 2474
+    },
+    {
+     "id": "IN-PUTAWAY",
+     "kind": "builder",
+     "name": "Put away",
+     "desc": "Move received freight from the dock to its storage location and confirm in the WMS.",
+     "conds": [
+      {
+       "id": "offloadType",
+       "label": "Offload type",
+       "values": [
+        "Floor loaded",
+        "Palletized",
+        "Shotgun",
+        "Slip sheet"
+       ],
+       "common": true,
+       "free": false,
+       "help": "How the freight is loaded in the container / trailer. Drives which units make sense."
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      }
+     ],
+     "units": [
+      {
+       "id": "pallet",
+       "label": "Pallet",
+       "flat": 4.5,
+       "lo": 3,
+       "hi": 6,
+       "basis": "UNIS median (n=330)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Case / carton",
+       "flat": 0.15,
+       "lo": 0.1,
+       "hi": 0.3,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "each",
+       "label": "Each",
+       "flat": 0.05,
+       "lo": 0.02,
+       "hi": 0.1,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "HANDLING-0053",
+      "HANDLING-0054",
+      "HANDLING-0055"
+     ],
+     "invalid": [],
+     "invoiceLines": 29
+    },
+    {
+     "id": "IN-TRANSLOAD",
+     "kind": "builder",
+     "name": "Transload",
+     "desc": "Unload an inbound container and reload onto outbound trailers without storage.",
+     "conds": [
+      {
+       "id": "offloadType",
+       "label": "Offload type",
+       "values": [
+        "Floor loaded",
+        "Palletized",
+        "Shotgun",
+        "Slip sheet"
+       ],
+       "common": true,
+       "free": false,
+       "help": "How the freight is loaded in the container / trailer. Drives which units make sense."
+      },
+      {
+       "id": "shipMethod",
+       "label": "Ship method",
+       "values": [
+        "Truckload / container",
+        "LTL",
+        "LCL",
+        "Small parcel",
+        "Will call"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      }
+     ],
+     "units": [
+      {
+       "id": "container",
+       "label": "Container",
+       "flat": 575,
+       "lo": 350,
+       "hi": 650,
+       "basis": "UNIS median (n=151)",
+       "drivers": [
+        {
+         "id": "containerSize",
+         "label": "Container size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "20'",
+           "d": 350
+          },
+          {
+           "v": "40'",
+           "d": 575
+          },
+          {
+           "v": "40' HC",
+           "d": 600
+          },
+          {
+           "v": "53' trailer",
+           "d": 575
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "caseCount",
+         "label": "Case count in container",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 1,000 cases",
+           "d": 580
+          },
+          {
+           "v": "1,001 - 3,000 cases",
+           "d": 745
+          },
+          {
+           "v": "Over 3,000 cases",
+           "d": 750
+          }
+         ],
+         "when": {
+          "offloadType": [
+           "Floor loaded",
+           "Shotgun"
+          ]
+         },
+         "calc": true,
+         "help": ""
+        },
+        {
+         "id": "palletCount",
+         "label": "Pallet count in container",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 20 pallets",
+           "d": 470
+          },
+          {
+           "v": "Over 20 pallets",
+           "d": 590
+          }
+         ],
+         "when": {
+          "offloadType": [
+           "Palletized",
+           "Slip sheet"
+          ]
+         },
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "pallet",
+       "label": "Pallet",
+       "flat": 10.5,
+       "lo": 6,
+       "hi": 12,
+       "basis": "UNIS median (n=5)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {
+        "offloadType": [
+         "Palletized",
+         "Slip sheet"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Case / carton",
+       "flat": 0.45,
+       "lo": 0.25,
+       "hi": 0.6,
+       "basis": "UNIS median (n=48)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {
+        "offloadType": [
+         "Floor loaded",
+         "Shotgun"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "hour",
+       "label": "Labor hour",
+       "flat": 50,
+       "lo": 40,
+       "hi": 60,
+       "basis": "UNIS labor rate",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "advanced",
+     "channel": "B2B",
+     "codes": [
+      "HANDLING-0003",
+      "HANDLING-0004",
+      "HANDLING-0005",
+      "HANDLING-0006",
+      "HANDLING-0007",
+      "HANDLING-0008",
+      "HANDLING-0009",
+      "HANDLING-0010",
+      "HANDLING-0011",
+      "HANDLING-0012",
+      "HANDLING-0013",
+      "HANDLING-0014",
+      "HANDLING-0015",
+      "HANDLING-0016",
+      "HANDLING-0017",
+      "HANDLING-0018",
+      "HANDLING-0019",
+      "HANDLING-0020",
+      "HANDLING-0021",
+      "HANDLING-0022",
+      "HANDLING-0023",
+      "HANDLING-0024",
+      "HANDLING-0025",
+      "HANDLING-0026",
+      "HANDLING-0027"
+     ],
+     "invalid": [],
+     "invoiceLines": 7
+    },
+    {
+     "id": "IN-XDOCK",
+     "kind": "simple",
+     "name": "Cross-dock (per pallet)",
+     "desc": "Receive and ship pallets through the dock without storage.",
+     "unit": "Pallet",
+     "default": 8.5,
+     "lo": 5,
+     "hi": 12,
+     "basis": "Industry midpoint",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0157"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "IN-SORT",
+     "kind": "simple",
+     "name": "Sort & segregation",
+     "desc": "Sort commingled cartons by SKU / lot when a receipt has more than 5 SKUs.",
+     "unit": "Carton",
+     "default": 0.25,
+     "lo": 0.15,
+     "hi": 0.5,
+     "basis": "UNIS median (n=425)",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0028",
+      "HANDLING-0029",
+      "HANDLING-0030",
+      "HANDLING-0031",
+      "HANDLING-0032"
+     ],
+     "invoiceLines": 28
+    },
+    {
+     "id": "IN-SHOTGUN",
+     "kind": "simple",
+     "name": "Shotgun-loaded surcharge",
+     "desc": "Extra labor for cartons thrown loose into the container.",
+     "unit": "Carton",
+     "default": 0.35,
+     "lo": 0.25,
+     "hi": 0.6,
+     "basis": "UNIS median (n=97)",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0033",
+      "HANDLING-0034",
+      "HANDLING-0035"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "IN-PALLETIZE",
+     "kind": "simple",
+     "name": "Re-palletize / pallet rebuild",
+     "desc": "Rebuild damaged or non-standard pallets to warehouse standard.",
+     "unit": "Pallet",
+     "default": 9.25,
+     "lo": 6,
+     "hi": 15,
+     "basis": "UNIS median (n=14)",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0081",
+      "HANDLING-0082",
+      "HANDLING-0083"
+     ],
+     "invoiceLines": 8
+    },
+    {
+     "id": "IN-LOT",
+     "kind": "simple",
+     "name": "Lot / expiry capture",
+     "desc": "Record lot number / expiry at receipt for FIFO / FEFO.",
+     "unit": "Carton",
+     "default": 0.2,
+     "lo": 0.1,
+     "hi": 0.3,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    }
+   ]
+  },
+  {
+   "id": "outbound",
+   "name": "Outbound",
+   "desc": "Order processing, picking, packing and shipping - B2B and D2C.",
+   "charges": [
+    {
+     "id": "OB-ORDER",
+     "kind": "builder",
+     "name": "Order processing",
+     "desc": "Release the order, print BOL / packing list (B2B) or shipping label (D2C), confirm shipment.",
+     "conds": [
+      {
+       "id": "businessType",
+       "label": "Channel (B2B / D2C)",
+       "values": [
+        "B2B",
+        "D2C"
+       ],
+       "common": true,
+       "free": false,
+       "help": "Wholesale / retail vs direct-to-consumer."
+      },
+      {
+       "id": "shipMethod",
+       "label": "Ship method",
+       "values": [
+        "Truckload",
+        "LTL",
+        "Small parcel",
+        "Will call"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "orderType",
+       "label": "Order type",
+       "values": [
+        "Regular",
+        "Drop-ship",
+        "Transload",
+        "Cross-dock"
+       ],
+       "common": false,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "retailer",
+       "label": "Retailer / sales channel",
+       "values": [
+        "Amazon",
+        "Walmart",
+        "Costco",
+        "Target",
+        "Shopify",
+        "Other"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Retailer-specific pricing."
+      },
+      {
+       "id": "carrier",
+       "label": "Carrier",
+       "values": [
+        "UPS",
+        "FedEx",
+        "USPS",
+        "DHL",
+        "Amazon",
+        "LSO",
+        "Customer pick-up"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Inbound or outbound carrier."
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      },
+      {
+       "id": "title",
+       "label": "Title / brand",
+       "values": [],
+       "common": false,
+       "free": true,
+       "help": "Client inventory title or brand (sub-account) - type values."
+      }
+     ],
+     "units": [
+      {
+       "id": "order",
+       "label": "Order",
+       "flat": 20,
+       "lo": 1.5,
+       "hi": 25,
+       "basis": "UNIS median B2B (n=1,069) / D2C (n=782)",
+       "drivers": [
+        {
+         "id": "orderWeight",
+         "label": "Package weight",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "0 - 5 lbs",
+           "d": 2.5
+          },
+          {
+           "v": "5 - 10 lbs",
+           "d": 3.5
+          },
+          {
+           "v": "10 - 30 lbs",
+           "d": 5.25
+          },
+          {
+           "v": "Over 30 lbs",
+           "d": null
+          }
+         ],
+         "when": {
+          "businessType": [
+           "D2C"
+          ]
+         },
+         "calc": false,
+         "help": "D2C template: under 1 lb $2, 5-10 lb $3."
+        },
+        {
+         "id": "orderVolume",
+         "label": "Monthly order volume",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 3,500 orders",
+           "d": null
+          },
+          {
+           "v": "3,501 - 10,000 orders",
+           "d": null
+          },
+          {
+           "v": "Over 10,000 orders",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {
+        "businessType": {
+         "B2B": 20,
+         "D2C": 2.5
+        }
+       },
+       "byCombo": [
+        {
+         "when": {
+          "businessType": "B2B",
+          "shipMethod": "Small parcel"
+         },
+         "d": 3.0
+        }
+       ],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "load",
+       "label": "Load / shipment",
+       "flat": 25,
+       "lo": 15,
+       "hi": 50,
+       "basis": "UNIS median (n=5)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "line",
+       "label": "Order line",
+       "flat": 1.75,
+       "lo": 0.5,
+       "hi": 3.0,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Carton shipped",
+       "flat": 3.0,
+       "lo": 1.0,
+       "hi": 4.0,
+       "basis": "UNIS median (n=11)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "HANDLING-0089",
+      "HANDLING-0090",
+      "HANDLING-0091",
+      "HANDLING-0092",
+      "HANDLING-0093",
+      "HANDLING-0094"
+     ],
+     "invalid": [
+      {
+       "businessType": [
+        "D2C"
+       ],
+       "shipMethod": [
+        "Truckload",
+        "LTL",
+        "Will call"
+       ]
+      }
+     ],
+     "invoiceLines": 9864
+    },
+    {
+     "id": "OB-PICK",
+     "kind": "builder",
+     "name": "Picking",
+     "desc": "Pick the ordered pallets, cartons or units and stage them for packing / shipping.",
+     "conds": [
+      {
+       "id": "businessType",
+       "label": "Channel (B2B / D2C)",
+       "values": [
+        "B2B",
+        "D2C"
+       ],
+       "common": true,
+       "free": false,
+       "help": "Wholesale / retail vs direct-to-consumer."
+      },
+      {
+       "id": "shipMethod",
+       "label": "Ship method",
+       "values": [
+        "Truckload",
+        "LTL",
+        "Small parcel",
+        "Will call"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "retailer",
+       "label": "Retailer / sales channel",
+       "values": [
+        "Amazon",
+        "Walmart",
+        "Costco",
+        "Target",
+        "Shopify",
+        "Other"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Retailer-specific pricing."
+      },
+      {
+       "id": "orderType",
+       "label": "Order type",
+       "values": [
+        "Regular",
+        "Drop-ship",
+        "Transload",
+        "Cross-dock"
+       ],
+       "common": false,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      },
+      {
+       "id": "title",
+       "label": "Title / brand",
+       "values": [],
+       "common": false,
+       "free": true,
+       "help": "Client inventory title or brand (sub-account) - type values."
+      }
+     ],
+     "units": [
+      {
+       "id": "pallet",
+       "label": "Full pallet",
+       "flat": 9.0,
+       "lo": 6,
+       "hi": 15,
+       "basis": "UNIS median (n=474)",
+       "drivers": [
+        {
+         "id": "palletCount",
+         "label": "Pallets per order",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 12 pallets",
+           "d": 9.0
+          },
+          {
+           "v": "Over 12 pallets",
+           "d": 8.0
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "order"
+       ],
+       "second": false,
+       "common": true,
+       "when": {
+        "businessType": [
+         "B2B"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Case / carton",
+       "flat": 1.05,
+       "lo": 0.5,
+       "hi": 1.75,
+       "basis": "UNIS median (n=800)",
+       "drivers": [
+        {
+         "id": "caseWeight",
+         "label": "Case weight",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "0 - 30 lbs",
+           "d": 1.05
+          },
+          {
+           "v": "31 - 60 lbs",
+           "d": 1.5
+          },
+          {
+           "v": "Over 60 lbs",
+           "d": 10.5
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "caseCount",
+         "label": "Cases per order",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "1 - 50 cases",
+           "d": 1.05
+          },
+          {
+           "v": "Over 50 cases",
+           "d": 0.9
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "order"
+       ],
+       "second": true,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "order": 20
+       },
+       "note": ""
+      },
+      {
+       "id": "each",
+       "label": "Each / unit",
+       "flat": 0.5,
+       "lo": 0.25,
+       "hi": 1.25,
+       "basis": "UNIS median D2C (n=156)",
+       "drivers": [
+        {
+         "id": "unitWeight",
+         "label": "Unit weight",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "0 - 5 lbs",
+           "d": 0.5
+          },
+          {
+           "v": "5 - 30 lbs",
+           "d": 0.75
+          },
+          {
+           "v": "Over 30 lbs",
+           "d": 1.5
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "orderWeight",
+         "label": "Order weight",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "0 - 30 lbs",
+           "d": 0.5
+          },
+          {
+           "v": "30 - 90 lbs",
+           "d": 1.0
+          },
+          {
+           "v": "Over 90 lbs",
+           "d": 2.0
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "order"
+       ],
+       "second": true,
+       "common": true,
+       "when": {},
+       "by": {
+        "businessType": {
+         "B2B": 1.05,
+         "D2C": 0.5
+        }
+       },
+       "byCombo": [],
+       "minDefault": {},
+       "note": "First / additional split = industry 'pick & pack' style (first $3.00 incl. order, additional $0.75)."
+      },
+      {
+       "id": "inner",
+       "label": "Inner pack",
+       "flat": 0.6,
+       "lo": 0.4,
+       "hi": 1.0,
+       "basis": "UNIS median (n=27)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "order",
+       "label": "Order (flat)",
+       "flat": 6.5,
+       "lo": 2,
+       "hi": 25,
+       "basis": "UNIS median (n=7)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "weight",
+       "label": "Weight / volume (bulk)",
+       "flat": 0.2,
+       "lo": 0.1,
+       "hi": 0.4,
+       "basis": "UNIS median cu ft (n=40)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "HANDLING-0056",
+      "HANDLING-0057",
+      "HANDLING-0058",
+      "HANDLING-0059",
+      "HANDLING-0060",
+      "HANDLING-0061",
+      "HANDLING-0062",
+      "HANDLING-0063",
+      "HANDLING-0064",
+      "HANDLING-0065",
+      "HANDLING-0066",
+      "HANDLING-0067",
+      "HANDLING-0068",
+      "HANDLING-0069",
+      "HANDLING-0070",
+      "HANDLING-0071",
+      "HANDLING-0072",
+      "HANDLING-0073",
+      "HANDLING-0074",
+      "HANDLING-0075",
+      "HANDLING-0076",
+      "HANDLING-0077",
+      "HANDLING-0078",
+      "HANDLING-0079",
+      "HANDLING-0080"
+     ],
+     "invalid": [
+      {
+       "businessType": [
+        "D2C"
+       ],
+       "shipMethod": [
+        "Truckload",
+        "LTL",
+        "Will call"
+       ]
+      }
+     ],
+     "invoiceLines": 1032
+    },
+    {
+     "id": "OB-PACK",
+     "kind": "builder",
+     "name": "Packing",
+     "desc": "Pack picked items into a shipping carton / mailer.",
+     "conds": [
+      {
+       "id": "businessType",
+       "label": "Channel (B2B / D2C)",
+       "values": [
+        "B2B",
+        "D2C"
+       ],
+       "common": true,
+       "free": false,
+       "help": "Wholesale / retail vs direct-to-consumer."
+      },
+      {
+       "id": "shipMethod",
+       "label": "Ship method",
+       "values": [
+        "Truckload",
+        "LTL",
+        "Small parcel",
+        "Will call"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      }
+     ],
+     "units": [
+      {
+       "id": "order",
+       "label": "Order",
+       "flat": 0.5,
+       "lo": 0.35,
+       "hi": 1.0,
+       "basis": "UNIS median (n=41)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Carton packed",
+       "flat": 0.5,
+       "lo": 0.35,
+       "hi": 1.25,
+       "basis": "UNIS median (n=8)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "HANDLING-0084",
+      "HANDLING-0085",
+      "HANDLING-0086",
+      "HANDLING-0087"
+     ],
+     "invalid": [
+      {
+       "businessType": [
+        "D2C"
+       ],
+       "shipMethod": [
+        "Truckload",
+        "LTL",
+        "Will call"
+       ]
+      }
+     ],
+     "invoiceLines": 29
+    },
+    {
+     "id": "OB-LABEL",
+     "kind": "simple",
+     "name": "Shipping label - print & apply",
+     "desc": "UCC-128 / carrier label printed and applied, or client label applied.",
+     "unit": "Label",
+     "default": 0.3,
+     "lo": 0.25,
+     "hi": 0.75,
+     "basis": "UNIS median (n=79)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0155",
+      "HANDLING-0156"
+     ],
+     "invoiceLines": 1
+    },
+    {
+     "id": "OB-ROUTING",
+     "kind": "simple",
+     "name": "Routing / retailer compliance",
+     "desc": "Retailer routing request and appointment through the retailer portal.",
+     "unit": "BOL",
+     "default": 7.5,
+     "lo": 7.5,
+     "hi": 25,
+     "basis": "UNIS median (n=526)",
+     "channel": "B2B",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0239"
+     ],
+     "invoiceLines": 302
+    },
+    {
+     "id": "OB-PALLETBUILD",
+     "kind": "simple",
+     "name": "Outbound pallet build & wrap",
+     "desc": "Build a shipping pallet from picked cartons, wrap and label.",
+     "unit": "Pallet",
+     "default": 5.6,
+     "lo": 5,
+     "hi": 12,
+     "basis": "UNIS median (n=6)",
+     "channel": "B2B",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OB-LOAD",
+     "kind": "builder",
+     "name": "Outbound loading",
+     "desc": "Floor-load or pallet-load the outbound trailer / container.",
+     "conds": [
+      {
+       "id": "shipMethod",
+       "label": "Ship method",
+       "values": [
+        "Truckload",
+        "LTL",
+        "Small parcel",
+        "Will call"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      }
+     ],
+     "units": [
+      {
+       "id": "container",
+       "label": "Container / trailer",
+       "flat": 475,
+       "lo": 300,
+       "hi": 650,
+       "basis": "Industry midpoint",
+       "drivers": [
+        {
+         "id": "containerSize",
+         "label": "Container size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "20'",
+           "d": null
+          },
+          {
+           "v": "40'",
+           "d": null
+          },
+          {
+           "v": "40' HC",
+           "d": null
+          },
+          {
+           "v": "45'",
+           "d": null
+          },
+          {
+           "v": "48' trailer",
+           "d": null
+          },
+          {
+           "v": "53' trailer",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "caseCount",
+         "label": "Cases loaded",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 500 cases",
+           "d": null
+          },
+          {
+           "v": "501 - 1,500 cases",
+           "d": null
+          },
+          {
+           "v": "Over 1,500 cases",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": true,
+         "help": ""
+        }
+       ],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "pallet",
+       "label": "Pallet",
+       "flat": 5.6,
+       "lo": 4,
+       "hi": 9,
+       "basis": "UNIS median (n=6)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Case (floor-loaded)",
+       "flat": 2.62,
+       "lo": 2,
+       "hi": 3.5,
+       "basis": "UNIS median (n=4)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "advanced",
+     "channel": "B2B",
+     "codes": [
+      "HANDLING-0131",
+      "HANDLING-0132",
+      "HANDLING-0133",
+      "HANDLING-0134",
+      "HANDLING-0135",
+      "HANDLING-0136",
+      "HANDLING-0137",
+      "HANDLING-0138",
+      "HANDLING-0139",
+      "HANDLING-0140",
+      "HANDLING-0141",
+      "HANDLING-0142",
+      "HANDLING-0143",
+      "HANDLING-0144",
+      "HANDLING-0145",
+      "HANDLING-0146",
+      "HANDLING-0147",
+      "HANDLING-0148",
+      "HANDLING-0149",
+      "HANDLING-0150",
+      "HANDLING-0151",
+      "HANDLING-0152",
+      "HANDLING-0153",
+      "HANDLING-0154",
+      "HANDLING-0197"
+     ],
+     "invalid": [],
+     "invoiceLines": 1
+    }
+   ]
+  },
+  {
+   "id": "storage",
+   "name": "Storage",
+   "desc": "Where and how inventory is stored, billed per period.",
+   "charges": [
+    {
+     "id": "ST-STORAGE",
+     "kind": "builder",
+     "name": "Storage",
+     "desc": "Store inventory in pallet positions, bins, dedicated space or by volume.",
+     "conds": [
+      {
+       "id": "temperature",
+       "label": "Temperature zone",
+       "values": [
+        "Dry / ambient",
+        "Cooler"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      },
+      {
+       "id": "title",
+       "label": "Title / brand",
+       "values": [],
+       "common": false,
+       "free": true,
+       "help": "Client inventory title or brand (sub-account) - type values."
+      }
+     ],
+     "units": [
+      {
+       "id": "pallet",
+       "label": "Pallet position",
+       "flat": 14,
+       "lo": 12,
+       "hi": 30,
+       "basis": "UNIS median (n=1,037); template $22",
+       "drivers": [
+        {
+         "id": "stack",
+         "label": "Stack height / location",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Rack position",
+           "d": 15.5
+          },
+          {
+           "v": "Floor, 1-high (tall / oversize)",
+           "d": 27.8
+          },
+          {
+           "v": "Floor, 2-high",
+           "d": 16.5
+          },
+          {
+           "v": "Floor, 3-high",
+           "d": 12.0
+          },
+          {
+           "v": "Floor, 4-high +",
+           "d": 8.25
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "palletSize",
+         "label": "Pallet size",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Standard (48x40, up to 60 in high)",
+           "d": 14
+          },
+          {
+           "v": "Oversize",
+           "d": 26
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        },
+        {
+         "id": "aging",
+         "label": "Days in storage",
+         "kind": "volume",
+         "values": [
+          {
+           "v": "0 - 180 days",
+           "d": 14
+          },
+          {
+           "v": "Over 180 days (aged)",
+           "d": 21
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "month"
+       ],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "month": 7250
+       },
+       "note": ""
+      },
+      {
+       "id": "bin",
+       "label": "Bin / shelf location",
+       "flat": 4,
+       "lo": 3,
+       "hi": 12,
+       "basis": "UNIS D2C template",
+       "drivers": [
+        {
+         "id": "binSize",
+         "label": "Location type",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Small bin",
+           "d": 4
+          },
+          {
+           "v": "Large bin",
+           "d": 8
+          },
+          {
+           "v": "Shelf / rack",
+           "d": 11
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "month"
+       ],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "each",
+       "label": "Each / unit",
+       "flat": 0.68,
+       "lo": 0.3,
+       "hi": 6,
+       "basis": "UNIS median (TV)",
+       "drivers": [
+        {
+         "id": "itemSize",
+         "label": "Item type / size (e.g. TV screen size)",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "Up to 32\"",
+           "d": 0.4
+          },
+          {
+           "v": "37\" - 43\"",
+           "d": 0.68
+          },
+          {
+           "v": "46\" - 50\"",
+           "d": 1.18
+          },
+          {
+           "v": "55\" - 60\"",
+           "d": 1.66
+          },
+          {
+           "v": "65\"",
+           "d": 2.9
+          },
+          {
+           "v": "70\" - 75\"",
+           "d": 3.65
+          },
+          {
+           "v": "80\" - 86\"",
+           "d": 5.8
+          },
+          {
+           "v": "98\" and larger",
+           "d": null
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        }
+       ],
+       "mins": [
+        "month"
+       ],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "sqft",
+       "label": "Square foot (dedicated space)",
+       "flat": 1.25,
+       "lo": 0.9,
+       "hi": 1.75,
+       "basis": "UNIS median (n=192)",
+       "drivers": [],
+       "mins": [
+        "month"
+       ],
+       "second": false,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {
+        "month": 7250
+       },
+       "note": ""
+      },
+      {
+       "id": "cubic",
+       "label": "Cubic foot",
+       "flat": 0.55,
+       "lo": 0.3,
+       "hi": 0.85,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [
+        "month"
+       ],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Case / carton",
+       "flat": 0.3,
+       "lo": 0.1,
+       "hi": 0.5,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "weight",
+       "label": "Weight",
+       "flat": 8.47,
+       "lo": 5,
+       "hi": 30,
+       "basis": "UNIS median (n=8)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [
+      {
+       "id": "initial",
+       "label": "Initial storage at receipt",
+       "options": [
+        "Full month at receipt",
+        "Half month if received on / after the 15th",
+        "No initial charge - recurring only"
+       ]
+      },
+      {
+       "id": "cycle",
+       "label": "Recurring billing cycle",
+       "options": [
+        "Monthly (1st of month)",
+        "Semi-monthly",
+        "Weekly",
+        "Daily"
+       ]
+      }
+     ],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "STORAGE INCOME-0001",
+      "STORAGE INCOME-0002",
+      "STORAGE INCOME-0003",
+      "STORAGE INCOME-0004",
+      "STORAGE INCOME-0005",
+      "STORAGE INCOME-0006",
+      "STORAGE INCOME-0007",
+      "STORAGE INCOME-0008",
+      "STORAGE INCOME-0009",
+      "STORAGE INCOME-0010",
+      "STORAGE INCOME-0011",
+      "STORAGE INCOME-0012",
+      "STORAGE INCOME-0013",
+      "STORAGE INCOME-0014",
+      "STORAGE INCOME-0015",
+      "STORAGE INCOME-0016",
+      "STORAGE INCOME-0017",
+      "STORAGE INCOME-0018",
+      "STORAGE INCOME-0019",
+      "STORAGE INCOME-0020",
+      "STORAGE INCOME-0021",
+      "STORAGE INCOME-0022",
+      "STORAGE INCOME-0023",
+      "STORAGE INCOME-0024",
+      "STORAGE INCOME-0025",
+      "STORAGE INCOME-0026",
+      "STORAGE INCOME-0028",
+      "Sublease Revenue-0001"
+     ],
+     "invalid": [],
+     "invoiceLines": 12314
+    }
+   ]
+  },
+  {
+   "id": "returns",
+   "name": "Returns",
+   "desc": "Receiving and dispositioning returned goods.",
+   "charges": [
+    {
+     "id": "RT-RETURN",
+     "kind": "builder",
+     "name": "Returns processing",
+     "desc": "Receive the return, minor inspection, photo, report to client, hold for disposition.",
+     "conds": [
+      {
+       "id": "returnType",
+       "label": "Return type",
+       "values": [
+        "Consumer return (D2C)",
+        "Retailer return (B2B)"
+       ],
+       "common": true,
+       "free": false,
+       "help": ""
+      },
+      {
+       "id": "facility",
+       "label": "Facility",
+       "values": [
+        "Buena Park, CA",
+        "Riverside, CA",
+        "Hayward / Sacramento, CA",
+        "Tacoma, WA",
+        "Phoenix, AZ",
+        "Reno, NV",
+        "Dallas, TX",
+        "Houston, TX",
+        "Chicago (Joliet), IL",
+        "Indianapolis, IN",
+        "Atlanta, GA",
+        "Savannah, GA",
+        "Norfolk, VA",
+        "Northampton, PA"
+       ],
+       "common": false,
+       "free": false,
+       "help": "Different price per UNIS building."
+      },
+      {
+       "id": "title",
+       "label": "Title / brand",
+       "values": [],
+       "common": false,
+       "free": true,
+       "help": "Client inventory title or brand (sub-account) - type values."
+      }
+     ],
+     "units": [
+      {
+       "id": "package",
+       "label": "Package / tracking #",
+       "flat": 2.5,
+       "lo": 2,
+       "hi": 4,
+       "basis": "UNIS D2C template",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {
+        "returnType": [
+         "Consumer return (D2C)"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "each",
+       "label": "Item",
+       "flat": 0.85,
+       "lo": 0.5,
+       "hi": 1.5,
+       "basis": "UNIS median (n=181)",
+       "drivers": [],
+       "mins": [],
+       "second": true,
+       "common": true,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "case",
+       "label": "Carton",
+       "flat": 2.5,
+       "lo": 1.5,
+       "hi": 4,
+       "basis": "UNIS median (n=141)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": true,
+       "when": {
+        "returnType": [
+         "Retailer return (B2B)"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "pallet",
+       "label": "Pallet",
+       "flat": 14,
+       "lo": 8,
+       "hi": 20,
+       "basis": "Industry midpoint",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {
+        "returnType": [
+         "Retailer return (B2B)"
+        ]
+       },
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      },
+      {
+       "id": "hour",
+       "label": "Labor hour",
+       "flat": 42,
+       "lo": 38,
+       "hi": 55,
+       "basis": "UNIS median (n=11)",
+       "drivers": [],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {},
+       "byCombo": [],
+       "minDefault": {},
+       "note": ""
+      }
+     ],
+     "settings": [],
+     "tier": "main",
+     "channel": "Both",
+     "codes": [
+      "HANDLING-0036",
+      "HANDLING-0037",
+      "HANDLING-0038",
+      "HANDLING-0039",
+      "RMS-001"
+     ],
+     "invalid": [],
+     "invoiceLines": 113
+    },
+    {
+     "id": "RT-INSPECT",
+     "kind": "simple",
+     "name": "Detailed inspection / grading",
+     "desc": "Test and grade returned units beyond the minor check.",
+     "unit": "Item",
+     "default": 2.0,
+     "lo": 1,
+     "hi": 3,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "RMS-002",
+      "RMS-003",
+      "RMS-004"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "RT-RESTOCK",
+     "kind": "simple",
+     "name": "Restock to inventory",
+     "desc": "Return a sellable unit to available stock.",
+     "unit": "Item",
+     "default": 1.0,
+     "lo": 0.5,
+     "hi": 1.5,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0236",
+      "RMS-006"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "RT-DISPOSAL",
+     "kind": "simple",
+     "name": "Disposal / destruction",
+     "desc": "Dispose of unsellable product; hauling at cost.",
+     "unit": "Item",
+     "default": 0.6,
+     "lo": 0.25,
+     "hi": 1.0,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0011"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "RT-RESHIP",
+     "kind": "simple",
+     "name": "Drop-ship re-processing",
+     "desc": "Re-ship a returned / refused drop-ship order.",
+     "unit": "Unit",
+     "default": 4.0,
+     "lo": 2.5,
+     "hi": 5.0,
+     "basis": "UNIS median (n=105)",
+     "channel": "D2C",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0192"
+     ],
+     "invoiceLines": 2
+    }
+   ]
+  },
+  {
+   "id": "vas",
+   "name": "Value-Added Services",
+   "desc": "Kitting, labeling, packaging and marketplace prep.",
+   "charges": [
+    {
+     "id": "VA-KIT",
+     "kind": "simple",
+     "name": "Kitting / bundling",
+     "desc": "Assemble up to 3 components into a kit or multi-pack per work order.",
+     "unit": "Kit",
+     "default": 1.85,
+     "lo": 0.75,
+     "hi": 2.5,
+     "basis": "UNIS usage avg (17 customers)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0185",
+      "HANDLING-0186",
+      "HANDLING-0187",
+      "HANDLING-0207",
+      "HANDLING-0208"
+     ],
+     "invoiceLines": 86
+    },
+    {
+     "id": "VA-RELABEL",
+     "kind": "simple",
+     "name": "Item label / relabel",
+     "desc": "Apply or replace product labels.",
+     "unit": "Unit",
+     "default": 0.38,
+     "lo": 0.2,
+     "hi": 0.6,
+     "basis": "UNIS median (n=7)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACC-0002",
+      "HANDLING-0209",
+      "HANDLING-0210",
+      "HANDLING-0232",
+      "RELABELING"
+     ],
+     "invoiceLines": 32
+    },
+    {
+     "id": "VA-FNSKU",
+     "kind": "simple",
+     "name": "FNSKU / marketplace label",
+     "desc": "Marketplace barcode label per unit.",
+     "unit": "Unit",
+     "default": 0.35,
+     "lo": 0.2,
+     "hi": 0.5,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0184"
+     ],
+     "invoiceLines": 21
+    },
+    {
+     "id": "VA-SERIAL",
+     "kind": "simple",
+     "name": "Serial number capture",
+     "desc": "Scan and record serial numbers.",
+     "unit": "Scan",
+     "default": 0.75,
+     "lo": 0.25,
+     "hi": 1.25,
+     "basis": "UNIS median (n=558)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0211",
+      "HANDLING-0243"
+     ],
+     "invoiceLines": 416
+    },
+    {
+     "id": "VA-PACKSLIP",
+     "kind": "simple",
+     "name": "Packing slip",
+     "desc": "Print and insert a packing slip.",
+     "unit": "Order",
+     "default": 0.35,
+     "lo": 0.1,
+     "hi": 0.35,
+     "basis": "UNIS median (n=150)",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0023"
+     ],
+     "invoiceLines": 197
+    },
+    {
+     "id": "VA-BRANDED",
+     "kind": "simple",
+     "name": "Branded packaging",
+     "desc": "Client-branded box / mailer and tape (min. 2,000 orders / month).",
+     "unit": "Order",
+     "default": 0.35,
+     "lo": 0.25,
+     "hi": 0.75,
+     "basis": "UNIS D2C template",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "VA-INSERT",
+     "kind": "simple",
+     "name": "Insert / flier / sticker",
+     "desc": "Add marketing inserts or stickers.",
+     "unit": "Item",
+     "default": 0.15,
+     "lo": 0.1,
+     "hi": 0.25,
+     "basis": "UNIS D2C template",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "VA-FRAGILE",
+     "kind": "simple",
+     "name": "Fragile / tissue wrap",
+     "desc": "Wrap items in tissue or bubble wrap.",
+     "unit": "Item",
+     "default": 0.5,
+     "lo": 0.35,
+     "hi": 1.0,
+     "basis": "UNIS D2C template",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "VA-PHOTO",
+     "kind": "simple",
+     "name": "Photo on request",
+     "desc": "Photograph product / cartons on request.",
+     "unit": "Photo",
+     "default": 1.0,
+     "lo": 0.5,
+     "hi": 2.0,
+     "basis": "UNIS median (n=74)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0027",
+      "RMS-005"
+     ],
+     "invoiceLines": 35
+    },
+    {
+     "id": "VA-OVERBOX",
+     "kind": "simple",
+     "name": "Overbox",
+     "desc": "Place the product carton inside a plain shipping box.",
+     "unit": "Box",
+     "default": 0.5,
+     "lo": 0.5,
+     "hi": 1.5,
+     "basis": "UNIS D2C template",
+     "channel": "D2C",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACC-0003",
+      "OVERBOX"
+     ],
+     "invoiceLines": 15
+    },
+    {
+     "id": "VA-DUNNAGE",
+     "kind": "simple",
+     "name": "Void fill / dunnage",
+     "desc": "Extra void fill beyond standard crinkle paper.",
+     "unit": "Order",
+     "default": 0.5,
+     "lo": 0.15,
+     "hi": 0.5,
+     "basis": "UNIS D2C template",
+     "channel": "D2C",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "DUNNAGE"
+     ],
+     "invoiceLines": 28
+    },
+    {
+     "id": "VA-GIFT",
+     "kind": "simple",
+     "name": "Gift wrap / gift message",
+     "desc": "Gift wrap and printed gift note.",
+     "unit": "Order",
+     "default": 2.0,
+     "lo": 1,
+     "hi": 3,
+     "basis": "Industry midpoint",
+     "channel": "D2C",
+     "tier": "advanced",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "VA-POLYBAG",
+     "kind": "simple",
+     "name": "Poly bag + suffocation label",
+     "desc": "Marketplace prep poly-bagging.",
+     "unit": "Unit",
+     "default": 0.55,
+     "lo": 0.35,
+     "hi": 0.75,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "VA-SKUCONV",
+     "kind": "simple",
+     "name": "SKU conversion / relabel",
+     "desc": "Convert inventory to a new SKU / marketplace listing.",
+     "unit": "Unit",
+     "default": 0.5,
+     "lo": 0.25,
+     "hi": 0.75,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACC-0004"
+     ],
+     "invoiceLines": 0
+    }
+   ]
+  },
+  {
+   "id": "other",
+   "name": "Other Charges",
+   "desc": "Labor, compliance, documents, materials, freight and yard.",
+   "charges": [
+    {
+     "id": "OT-LABOR",
+     "kind": "simple",
+     "name": "Warehouse labor",
+     "desc": "Work outside standard handling; task recorded on the work order. 15-min increments.",
+     "unit": "Hour",
+     "default": 50,
+     "lo": 45,
+     "hi": 65,
+     "basis": "UNIS median (n=779)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0029",
+      "ACCESSORIAL-0032",
+      "HANDLING-0199",
+      "HANDLING-0201",
+      "HANDLING-0204",
+      "HANDLING-0212",
+      "HANDLING-0213",
+      "HANDLING-0221",
+      "HANDLING-0226",
+      "HANDLING-0227",
+      "HANDLING-0233",
+      "HANDLING-0238",
+      "HANDLING-0240",
+      "HANDLING-0246",
+      "HOURLY LABOR",
+      "OTHERS-0002"
+     ],
+     "invoiceLines": 1250
+    },
+    {
+     "id": "OT-OT",
+     "kind": "simple",
+     "name": "Overtime / weekend labor",
+     "desc": "Client-requested after-hours work.",
+     "unit": "Hour",
+     "default": 75,
+     "lo": 65,
+     "hi": 95,
+     "basis": "UNIS median (n=713)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0223",
+      "HANDLING-0224",
+      "HANDLING-0225"
+     ],
+     "invoiceLines": 123
+    },
+    {
+     "id": "OT-COUNT",
+     "kind": "simple",
+     "name": "Cycle count / physical inventory",
+     "desc": "Client-requested counts.",
+     "unit": "Hour",
+     "default": 50,
+     "lo": 45,
+     "hi": 65,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0010"
+     ],
+     "invoiceLines": 6
+    },
+    {
+     "id": "OT-MANUALORDER",
+     "kind": "simple",
+     "name": "Manual order entry",
+     "desc": "CSR keys an order not received electronically.",
+     "unit": "Order",
+     "default": 15,
+     "lo": 5,
+     "hi": 20,
+     "basis": "UNIS median (n=675)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0096",
+      "HANDLING-0097"
+     ],
+     "invoiceLines": 13340
+    },
+    {
+     "id": "OT-RUSH",
+     "kind": "simple",
+     "name": "Rush order (same day)",
+     "desc": "Order received after cut-off, shipped same day.",
+     "unit": "Order",
+     "default": 50,
+     "lo": 25,
+     "hi": 75,
+     "basis": "UNIS median (n=746)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0088"
+     ],
+     "invoiceLines": 252
+    },
+    {
+     "id": "OT-CANCEL",
+     "kind": "simple",
+     "name": "Cancelled order (after pick)",
+     "desc": "Plus return-to-stock labor at the hourly rate.",
+     "unit": "Order",
+     "default": 10,
+     "lo": 5,
+     "hi": 25,
+     "basis": "UNIS median (n=675)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0002",
+      "ACCESSORIAL-0007"
+     ],
+     "invoiceLines": 97
+    },
+    {
+     "id": "OT-NOASN",
+     "kind": "simple",
+     "name": "No ASN / packing list",
+     "desc": "ASN not received before arrival.",
+     "unit": "Receipt",
+     "default": 50,
+     "lo": 35,
+     "hi": 75,
+     "basis": "UNIS median (n=458)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0018"
+     ],
+     "invoiceLines": 13
+    },
+    {
+     "id": "OT-MANUALRCPT",
+     "kind": "simple",
+     "name": "Manual receipt entry",
+     "desc": "CSR keys a receipt not sent electronically.",
+     "unit": "Receipt",
+     "default": 15,
+     "lo": 10,
+     "hi": 25,
+     "basis": "UNIS median (n=114)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0041",
+      "HANDLING-0042",
+      "HANDLING-0051",
+      "HANDLING-0052"
+     ],
+     "invoiceLines": 105
+    },
+    {
+     "id": "OT-OSD",
+     "kind": "simple",
+     "name": "OSD / damage documentation",
+     "desc": "Photos and report for overage, shortage, damage.",
+     "unit": "Hour",
+     "default": 50,
+     "lo": 45,
+     "hi": 65,
+     "basis": "UNIS median (n=389)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0219"
+     ],
+     "invoiceLines": 7
+    },
+    {
+     "id": "OT-ADDRESS",
+     "kind": "simple",
+     "name": "Address correction",
+     "desc": "Ship-to changed after release; plus carrier fee.",
+     "unit": "Occurrence",
+     "default": 2.5,
+     "lo": 2,
+     "hi": 5,
+     "basis": "UNIS D2C template",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0037"
+     ],
+     "invoiceLines": 21
+    },
+    {
+     "id": "OT-DOCS",
+     "kind": "simple",
+     "name": "Custom shipping / customs document",
+     "desc": "International BOL, commercial invoice, customs-bond docs.",
+     "unit": "Document",
+     "default": 10,
+     "lo": 5,
+     "hi": 15,
+     "basis": "UNIS median (n=507)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0006",
+      "ACCESSORIAL-0008",
+      "ACCESSORIAL-0009"
+     ],
+     "invoiceLines": 219
+    },
+    {
+     "id": "OT-PALLET-A",
+     "kind": "simple",
+     "name": "Pallet - Grade A",
+     "desc": "New / premium 40x48 pallet supplied.",
+     "unit": "Pallet",
+     "default": 18.75,
+     "lo": 15,
+     "hi": 25,
+     "basis": "UNIS template",
+     "channel": "B2B",
+     "tier": "main",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-PALLET-B",
+     "kind": "simple",
+     "name": "Pallet - Grade B",
+     "desc": "Recycled 40x48 pallet supplied.",
+     "unit": "Pallet",
+     "default": 14.75,
+     "lo": 8,
+     "hi": 15,
+     "basis": "UNIS template",
+     "channel": "B2B",
+     "tier": "main",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-WRAP",
+     "kind": "simple",
+     "name": "Stretch wrap",
+     "desc": "Wrap a pallet for shipment.",
+     "unit": "Pallet",
+     "default": 5.7,
+     "lo": 3,
+     "hi": 8,
+     "basis": "UNIS template",
+     "channel": "B2B",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0033"
+     ],
+     "invoiceLines": 22
+    },
+    {
+     "id": "OT-SUPPLIES",
+     "kind": "simple",
+     "name": "Packaging & supplies",
+     "desc": "Boxes, mailers, tape etc. purchased for the client.",
+     "unit": "% on cost",
+     "default": 0.2,
+     "lo": 0.1,
+     "hi": 0.25,
+     "basis": "UNIS median (n=692)",
+     "channel": "Both",
+     "tier": "main",
+     "pct": true,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0019",
+      "ACCESSORIAL-0022",
+      "ACCESSORIAL-0035",
+      "ACCESSORIAL-0038",
+      "Freight-0001"
+     ],
+     "invoiceLines": 39
+    },
+    {
+     "id": "OT-FREIGHT",
+     "kind": "simple",
+     "name": "Postage & freight (UNIS accounts)",
+     "desc": "Carrier postage / freight re-billed plus markup.",
+     "unit": "% on cost",
+     "default": 0.2,
+     "lo": 0,
+     "hi": 0.2,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "main",
+     "pct": true,
+     "new": false,
+     "codes": [
+      "Small Parcel-0003",
+      "Small Parcel-0004",
+      "Small Parcel-0005",
+      "TRANSPORTATION-0002"
+     ],
+     "invoiceLines": 1
+    },
+    {
+     "id": "OT-3PPOSTAGE",
+     "kind": "simple",
+     "name": "Client's own carrier account",
+     "desc": "Handling when the client's carrier account is used.",
+     "unit": "Order",
+     "default": 0.75,
+     "lo": 0.25,
+     "hi": 1.0,
+     "basis": "UNIS template",
+     "channel": "D2C",
+     "tier": "main",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0182"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-RUSHRCPT",
+     "kind": "simple",
+     "name": "Rush receipt (same day)",
+     "desc": "Receipt processed same day on request.",
+     "unit": "Receipt",
+     "default": 45,
+     "lo": 35,
+     "hi": 75,
+     "basis": "UNIS median (n=141)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0040"
+     ],
+     "invoiceLines": 15
+    },
+    {
+     "id": "OT-CANCELPRE",
+     "kind": "simple",
+     "name": "Cancelled order (before pick)",
+     "desc": "Often waived.",
+     "unit": "Order",
+     "default": 10,
+     "lo": 0,
+     "hi": 10,
+     "basis": "UNIS median (n=19)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0001"
+     ],
+     "invoiceLines": 9
+    },
+    {
+     "id": "OT-MISSEDAPPT",
+     "kind": "simple",
+     "name": "Missed appointment",
+     "desc": "Carrier misses a dock appointment (inbound or outbound).",
+     "unit": "Occurrence",
+     "default": 50,
+     "lo": 50,
+     "hi": 150,
+     "basis": "UNIS median (n=990)",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0043",
+      "HANDLING-0044",
+      "HANDLING-0095"
+     ],
+     "invoiceLines": 47
+    },
+    {
+     "id": "OT-COPIES",
+     "kind": "simple",
+     "name": "Copies / document scans",
+     "desc": "On request.",
+     "unit": "Page",
+     "default": 0.45,
+     "lo": 0.25,
+     "hi": 1.0,
+     "basis": "UNIS median (n=550)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0012",
+      "ACCESSORIAL-0026"
+     ],
+     "invoiceLines": 266
+    },
+    {
+     "id": "OT-MANIFEST",
+     "kind": "simple",
+     "name": "International / customs manifest",
+     "desc": "Per international order.",
+     "unit": "Order",
+     "default": 0.5,
+     "lo": 0.5,
+     "hi": 2.0,
+     "basis": "UNIS median (n=56)",
+     "channel": "D2C",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0013"
+     ],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-STRAP",
+     "kind": "simple",
+     "name": "Plastic strapping",
+     "desc": "Per pallet.",
+     "unit": "Pallet",
+     "default": 6.5,
+     "lo": 4,
+     "hi": 8,
+     "basis": "UNIS template",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "OTHERS-0004"
+     ],
+     "invoiceLines": 4
+    },
+    {
+     "id": "OT-CORNER",
+     "kind": "simple",
+     "name": "Corner boards",
+     "desc": "Per pallet.",
+     "unit": "Pallet",
+     "default": 6.5,
+     "lo": 4,
+     "hi": 8,
+     "basis": "UNIS template",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-SLIP",
+     "kind": "simple",
+     "name": "Slip sheet / top sheet",
+     "desc": "Per pallet.",
+     "unit": "Pallet",
+     "default": 4.0,
+     "lo": 2,
+     "hi": 6,
+     "basis": "Industry midpoint",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "OTHERS-0005",
+      "SLIPSHEET"
+     ],
+     "invoiceLines": 6
+    },
+    {
+     "id": "OT-PEAK",
+     "kind": "simple",
+     "name": "Peak-season surcharge (Nov - Dec)",
+     "desc": "Per order during peak.",
+     "unit": "Order",
+     "default": 0.5,
+     "lo": 0.25,
+     "hi": 0.75,
+     "basis": "Industry midpoint",
+     "channel": "D2C",
+     "tier": "advanced",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-YARD",
+     "kind": "simple",
+     "name": "Yard / container storage",
+     "desc": "Container parked beyond free time.",
+     "unit": "Container / day",
+     "default": 35,
+     "lo": 25,
+     "hi": 50,
+     "basis": "UNIS median (n=188)",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "STORAGE INCOME-0027",
+      "YARD-0001",
+      "YARD-0002"
+     ],
+     "invoiceLines": 11
+    },
+    {
+     "id": "OT-HOSTLER",
+     "kind": "simple",
+     "name": "Yard hostler move",
+     "desc": "Yard-truck move of a trailer / container.",
+     "unit": "Move",
+     "default": 91,
+     "lo": 50,
+     "hi": 125,
+     "basis": "UNIS usage",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "HANDLING-0250",
+      "HANDLING-0251"
+     ],
+     "invoiceLines": 100
+    },
+    {
+     "id": "OT-OUTSIDECARRIER",
+     "kind": "simple",
+     "name": "Outside-carrier container handling",
+     "desc": "Gate / scheduling when inbound drayage is not UNIS.",
+     "unit": "Container",
+     "default": 175,
+     "lo": 100,
+     "hi": 250,
+     "basis": "UNIS median (n=21)",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "OTHERS-0003",
+      "TRANSPORTATION-0001"
+     ],
+     "invoiceLines": 44
+    },
+    {
+     "id": "OT-ACCOUNT",
+     "kind": "simple",
+     "name": "Account management fee",
+     "desc": "Dedicated support, reporting, reviews.",
+     "unit": "Month",
+     "default": 250,
+     "lo": 250,
+     "hi": 1500,
+     "basis": "UNIS median (n=43)",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0005",
+      "ACCESSORIAL-0017",
+      "HANDLING-0191"
+     ],
+     "invoiceLines": 122
+    },
+    {
+     "id": "OT-MINIMUM",
+     "kind": "simple",
+     "name": "Monthly minimum billing",
+     "desc": "Difference billed if total monthly charges fall below this.",
+     "unit": "Month",
+     "default": 3000,
+     "lo": 1000,
+     "hi": 5000,
+     "basis": "Industry midpoint",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": false,
+     "new": true,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
+     "id": "OT-PASSTHRU",
+     "kind": "simple",
+     "name": "Facility pass-throughs",
+     "desc": "Rental equipment, waste removal, utilities, security.",
+     "unit": "% on cost",
+     "default": 0.2,
+     "lo": 0.1,
+     "hi": 0.25,
+     "basis": "UNIS template",
+     "channel": "Both",
+     "tier": "advanced",
+     "pct": true,
+     "new": false,
+     "codes": [
+      "ACCESSORIAL-0028",
+      "ACCESSORIAL-0034",
+      "ACCESSORIAL-0036",
+      "HANDLING-0241"
+     ],
+     "invoiceLines": 18
+    }
+   ]
+  }
+ ],
+ "proposal": {
+  "sections": [
+   {
+    "id": "inbound",
+    "label": "Inbound Handling",
+    "note": "Rates include unloading, receiving and entry of inventory into the WMS unless stated otherwise."
+   },
+   {
+    "id": "outbound",
+    "label": "Outbound Handling",
+    "note": "An order is billed as order processing + picking + any accessorial actually used."
+   },
+   {
+    "id": "storage",
+    "label": "Storage",
+    "note": ""
+   },
+   {
+    "id": "returns",
+    "label": "Return Program",
+    "note": "Includes receipt, minor inspection and a report to the client with a photo of each unit."
+   },
+   {
+    "id": "vas",
+    "label": "Value-Added Services",
+    "note": ""
+   },
+   {
+    "id": "accessorial",
+    "label": "Accessorial Charges",
+    "note": "Labor billed in 15-minute increments."
+   },
+   {
+    "id": "it",
+    "label": "IT & EDI Charges",
+    "note": ""
+   },
+   {
+    "id": "materials",
+    "label": "Materials & Other Charges",
+    "note": "Supplies purchased by UNIS are billed at cost plus the markup shown."
+   }
+  ],
+  "categoryToSection": {
+   "setup": "it",
+   "inbound": "inbound",
+   "outbound": "outbound",
+   "storage": "storage",
+   "returns": "returns",
+   "vas": "vas",
+   "other": "accessorial"
+  },
+  "materials": [
+   "OT-PALLET-A",
+   "OT-PALLET-B",
+   "OT-WRAP",
+   "OT-STRAP",
+   "OT-CORNER",
+   "OT-SLIP",
+   "OT-SUPPLIES",
+   "OT-FREIGHT",
+   "OT-PASSTHRU"
+  ],
+  "mergeGroups": [
+   {
+    "id": "manual-entry",
+    "label": "Manual order / receipt entry",
+    "members": [
+     "OT-MANUALORDER",
+     "OT-MANUALRCPT"
+    ]
+   },
+   {
+    "id": "rush",
+    "label": "Rush order / receipt (same day)",
+    "members": [
+     "OT-RUSH",
+     "OT-RUSHRCPT"
+    ]
+   },
+   {
+    "id": "cancel",
+    "label": "Cancelled order",
+    "members": [
+     "OT-CANCEL",
+     "OT-CANCELPRE"
+    ]
+   },
+   {
+    "id": "labor",
+    "label": "Warehouse labor / cycle count",
+    "members": [
+     "OT-LABOR",
+     "OT-COUNT"
+    ]
+   },
+   {
+    "id": "pallet-secure",
+    "label": "Plastic strapping / corner boards",
+    "members": [
+     "OT-STRAP",
+     "OT-CORNER"
+    ]
+   },
+   {
+    "id": "wms-setup",
+    "label": "Item setup",
+    "members": [
+     "SU-ITEM",
+     "SU-SKU"
+    ]
+   }
+  ]
+ }
+}
