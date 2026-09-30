@@ -41,7 +41,9 @@ def inv_lines(cid):
 
 # ------------------------------------------------------------------ JSON
 model = {"version": "v3", "categories": [], "proposal": {"sections": M.PROPOSAL_SECTIONS, "categoryToSection": M.CATEGORY_TO_SECTION,
-         "materials": M.MATERIALS, "mergeGroups": M.MERGE_GROUPS}}
+         "materials": M.MATERIALS, "mergeGroups": M.MERGE_GROUPS},
+         "defaultPreset": M.DEFAULT_PRESET}
+assert all(k in charges for k in M.DEFAULT_PRESET), [k for k in M.DEFAULT_PRESET if k not in charges]
 for cat in M.CATEGORIES:
     out = {"id": cat["id"], "name": cat["name"], "desc": cat["desc"], "charges": []}
     for c in cat["charges"]:

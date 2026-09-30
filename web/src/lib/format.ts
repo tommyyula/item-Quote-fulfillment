@@ -20,7 +20,10 @@ export function unitText(unit: string | undefined, T: Translator, opts: { pct?: 
   if (!unit) return "";
   if (opts.minBasis) return T.t("p.per", { unit: T.t(`basis.${unit}`) });
   if (/^one-time/i.test(unit)) return T.t("e.oneTime");
-  return T.t("p.per", { unit: softLower(T.tc(unit)) });
+  // merged synonym rows carry "Order / Receipt" (no whole-phrase translation): translate and soften each part
+  const whole = T.tc(unit);
+  const text = T.lang !== "en" && whole !== unit ? whole : unit.split(" / ").map(u => softLower(T.tc(u))).join(" / ");
+  return T.t("p.per", { unit: softLower(text) });
 }
 
 export function dateText(iso: string, T: Translator): string {

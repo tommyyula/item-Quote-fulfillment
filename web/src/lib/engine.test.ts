@@ -81,6 +81,28 @@ describe("proposal lifting", () => {
   });
 });
 
+describe("row-level applicability", () => {
+  it("pallet pick only gets B2B rows, each pick gets both channels", () => {
+    const pick = charge("OB-PICK");
+    const s = emptySel();
+    s.conds.businessType = { on: true, values: ["B2B", "D2C"] };
+    s.units.pallet = { on: true };
+    s.units.each = { on: true };
+    const pallet = pick.units.find(u => u.id === "pallet")!, each = pick.units.find(u => u.id === "each")!;
+    expect(unitRows(pick, s, pallet, false).rows.map(r => r.cells.join())).toEqual(["B2B"]);
+    expect(unitRows(pick, s, each, false).rows.map(r => [r.cells.join(), r.d])).toEqual([["B2B", 1.05], ["D2C", 0.5]]);
+  });
+  it("case-count tiers only apply to floor-loaded rows when both offload types are priced", () => {
+    const off = charge("IN-OFFLOAD");
+    const s = emptySel();
+    s.conds.offloadType = { on: true, values: ["Floor loaded", "Palletized"] };
+    s.units.container = { on: true, driver: "caseCount" };
+    const rows = unitRows(off, s, off.units.find(u => u.id === "container")!, false).rows;
+    expect(rows).toHaveLength(5);
+    expect(rows.every(r => r.cells[0] === "Floor loaded")).toBe(true);
+  });
+});
+
 describe("mergeRows", () => {
   it("drops nothing when prices differ", () => {
     const rows = [{ sets: [["a"]], rate: { kind: "single" as const, p: 1 } }, { sets: [["b"]], rate: { kind: "single" as const, p: 2 } }];
@@ -102,5 +124,36 @@ describe("quote lines", () => {
   it("simple charge uses default until edited", () => {
     const ls = quoteLines(cat, { header, selections: { "OT-RUSH": { ...emptySel(), on: true } } });
     expect(ls[0].price).toBe(50);
+  });
+});
+
+describe("default template", () => {
+  const data: QuoteData = { header, selections: JSON.parse(JSON.stringify(cat.defaultPreset)) };
+  const lines = quoteLines(cat, data);
+  it("covers every proposal section except IT-only extras", () => {
+    const ids = buildProposal(cat, data).map(s => s.id);
+    expect(ids).toEqual(["inbound", "outbound", "storage", "returns", "vas", "accessorial", "it", "materials"]);
+  });
+  it("never prices impossible combinations", () => {
+    const bad = lines.filter(l =>
+      (l.chargeId === "OB-PICK" && l.unitId === "pallet" && l.dims.some(d => d.value === "D2C")) ||
+      (l.chargeId === "IN-OFFLOAD" && l.unitId === "container" && l.dims.some(d => d.value === "Palletized")) ||
+      (l.chargeId === "IN-OFFLOAD" && l.unitId === "pallet" && l.dims.some(d => d.value === "Floor loaded")) ||
+      (l.chargeId === "RT-RETURN" && l.unitId === "package" && l.dims.some(d => d.value === "Retailer return (B2B)")));
+    expect(bad).toEqual([]);
+  });
+  it("has a benchmark price on every line except intentionally blank tiers", () => {
+    expect(lines.filter(l => l.price == null).map(l => l.key)).toEqual([]);
+  });
+});
+
+describe("unit text", async () => {
+  const { unitText } = await import("./format");
+  const { translator } = await import("../i18n");
+  it("keeps whole-phrase translations and softens merged units", () => {
+    expect(unitText("Order / Receipt", translator("en"))).toBe("per order / receipt");
+    expect(unitText("User / month", translator("en"))).toBe("per user / month");
+    expect(unitText("SKU", translator("en"))).toBe("per SKU");
+    expect(unitText("User / month", translator("zh"))).not.toContain("User");
   });
 });

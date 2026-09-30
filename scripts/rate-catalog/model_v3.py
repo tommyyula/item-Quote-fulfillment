@@ -365,3 +365,33 @@ MERGE_GROUPS = [
     {"id": "pallet-secure", "label": "Plastic strapping / corner boards", "members": ["OT-STRAP", "OT-CORNER"]},
     {"id": "wms-setup", "label": "Item setup", "members": ["SU-ITEM", "SU-SKU"]},
 ]
+
+# ------------------------------------------------------------------ default template (most common charges)
+# Chosen from Sep-26 invoice usage (roughly >= 20 invoice lines or >= 10 customers) plus the items the
+# Northampton proposal template always lists (put away, stretch wrap, pallets, cycle count, SKU setup).
+def _on(**kw):
+    s = {"on": True, "conds": {}, "units": {}, "prices": {}, "settings": {}}
+    s.update(kw)
+    return s
+
+def _c(*values):
+    return {"on": True, "values": list(values)}
+
+DEFAULT_PRESET = {
+    "SU-WMS": _on(), "SU-SKU": _on(),
+    "IN-OFFLOAD": _on(conds={"offloadType": _c("Floor loaded", "Palletized")},
+                      units={"container": {"on": True, "driver": "caseCount"}, "pallet": {"on": True, "min": "load"}}),
+    "IN-PUTAWAY": _on(units={"pallet": {"on": True}}),
+    "IN-SORT": _on(),
+    "OB-ORDER": _on(conds={"businessType": _c("B2B", "D2C")}, units={"order": {"on": True}}),
+    "OB-PICK": _on(conds={"businessType": _c("B2B", "D2C")},
+                   units={"pallet": {"on": True}, "case": {"on": True}, "each": {"on": True}}),
+    "OB-ROUTING": _on(),
+    "ST-STORAGE": _on(units={"pallet": {"on": True}, "bin": {"on": True, "driver": "binSize"}}),
+    "RT-RETURN": _on(conds={"returnType": _c("Consumer return (D2C)", "Retailer return (B2B)")},
+                     units={"package": {"on": True}, "each": {"on": True}, "case": {"on": True}}),
+    "VA-SERIAL": _on(), "VA-PACKSLIP": _on(), "VA-KIT": _on(), "VA-RELABEL": _on(),
+    "OT-MANUALORDER": _on(), "OT-MANUALRCPT": _on(), "OT-RUSH": _on(), "OT-CANCEL": _on(), "OT-NOASN": _on(),
+    "OT-LABOR": _on(), "OT-OT": _on(), "OT-COUNT": _on(), "OT-DOCS": _on(), "OT-COPIES": _on(),
+    "OT-WRAP": _on(), "OT-PALLET-A": _on(), "OT-PALLET-B": _on(), "OT-SUPPLIES": _on(),
+}

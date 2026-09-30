@@ -68,7 +68,7 @@ const fields = ["company", "code", "contact", "phone", "email", "address", "city
       <div v-for="cu in list" :key="cu.id" class="cust" :class="{ current: cu.id === store.customer.value?.id }">
         <div class="row" @click="expanded = expanded === cu.id ? null : cu.id">
           <div>
-            <div class="name">{{ cu.company }} <span class="badge" :class="cu.channel">{{ cu.channel }}</span></div>
+            <div class="name">{{ cu.company }} <span class="tag">{{ cu.channel }}</span></div>
             <div class="hint">{{ [cu.code, cu.contact, cu.city && `${cu.city}, ${cu.state}`].filter(Boolean).join(" · ") }}</div>
           </div>
           <span class="hint">{{ T.t("cu.quotes", { n: quotesOf(cu.id).length }) }}</span>
@@ -92,15 +92,15 @@ const fields = ["company", "code", "contact", "phone", "email", "address", "city
 <style scoped>
 .top { display: flex; gap: 8px; margin-bottom: 12px; }
 .top .input { flex: 1; }
-.cust { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; }
-.cust.current { border-color: var(--brand-2); }
+.cust { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+.cust.current { border-color: var(--primary); }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; }
 .name { font-weight: 600; }
-.quotes { border-top: 1px solid var(--line); padding: 8px 12px 10px; background: var(--panel-2); }
+.quotes { border-top: 1px solid var(--border); padding: 8px 12px 10px; background: var(--accent); }
 .q { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; flex-wrap: wrap; }
-.q:hover { background: var(--soft); }
+.q:hover { background: var(--accent); }
 .actions { display: flex; gap: 8px; margin-top: 10px; }
 .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.form label { display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--muted); }
+.form label { display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--muted-fg); }
 .form label.wide { grid-column: span 2; }
 </style>

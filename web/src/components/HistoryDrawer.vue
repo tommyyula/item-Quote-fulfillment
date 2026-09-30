@@ -57,6 +57,6 @@ function open(id: string) {
 .recent { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
 .filt { margin-bottom: 10px; }
 .ev { list-style: none; padding: 0; margin: 0; }
-.ev li { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; flex-wrap: wrap; }
-.t { color: var(--muted); font-size: 12px; min-width: 150px; }
+.ev li { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; flex-wrap: wrap; }
+.t { color: var(--muted-fg); font-size: 12px; min-width: 150px; }
 </style>

@@ -37,8 +37,10 @@ const now = () => new Date().toISOString();
 const today = () => new Date().toISOString().slice(0, 10);
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
 
-export function newQuoteData(facility = ""): QuoteData {
-  return { header: { title: "", facility, effectiveDate: today(), validDays: 90, preparedBy: "", notes: "" }, selections: {} };
+/** New quotes start from the default template (most common charges) unless `blank` is requested. */
+export function newQuoteData(facility = "", blank = false): QuoteData {
+  return { header: { title: "", facility, effectiveDate: today(), validDays: 90, preparedBy: "", notes: "" },
+           selections: blank ? {} : clone(catalog.defaultPreset) };
 }
 
 function seed(): { customers: Customer[]; quotes: Quote[] } {
@@ -47,16 +49,7 @@ function seed(): { customers: Customer[]; quotes: Quote[] } {
   const c2: Customer = { id: uid(), code: "SAMPLE02", company: "Acme Direct (D2C)", contact: "Maria Lopez", phone: "(555) 010-3000",
     email: "maria@acme-direct.example", address: "22 Market St", city: "Dallas", state: "TX", zip: "75201", channel: "D2C", createdAt: now() };
   const data = newQuoteData("Buena Park, CA");
-  data.header.title = "Container receiving & B2B fulfillment";
-  const off: ChargeSel = { ...emptySel(), on: true };
-  off.conds.offloadType = { on: true, values: ["Floor loaded"] };
-  off.units.container = { on: true, driver: "caseCount" };
-  const ord: ChargeSel = { ...emptySel(), on: true };
-  ord.conds.businessType = { on: true, values: ["B2B", "D2C"] };
-  ord.conds.shipMethod = { on: true, values: ["Truckload", "LTL", "Small parcel"] };
-  ord.units.order = { on: true };
-  data.selections = { "IN-OFFLOAD": off, "IN-PUTAWAY": { ...emptySel(), on: true, units: { pallet: { on: true } } }, "OB-ORDER": ord,
-    "OT-RUSH": { ...emptySel(), on: true }, "OT-LABOR": { ...emptySel(), on: true }, "OT-COUNT": { ...emptySel(), on: true } };
+  data.header.title = "Standard warehousing and fulfillment";
   const q: Quote = { id: uid(), number: `Q-${new Date().getFullYear()}-0001`, customerId: c1.id, createdAt: now(), updatedAt: now(),
     status: "draft", draft: data, versions: [] };
   return { customers: [c1, c2], quotes: [q] };
@@ -75,7 +68,7 @@ export function createStore(repo: Repo = localRepo) {
     history: repo.load<HistoryEvent[]>("history", []),
     prefs: repo.load<Prefs>("prefs", {
       lang: initialLang(),
-      theme: window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+      theme: "dark", // ITEM web properties are dark by default
       showAll: false, proposalLang: "", channel: "All",
     }),
     currentQuoteId: repo.load<string | null>("current", null) as string | null,
@@ -183,6 +176,12 @@ export function createStore(repo: Repo = localRepo) {
       state.viewingVersion = null;
       touch();
       log("restore", { detail: `v${v}` });
+    },
+    /** Replace the draft's selections with the default template (header kept). */
+    applyDefaultTemplate() {
+      const q = quote.value!;
+      q.draft.selections = clone(catalog.defaultPreset);
+      touch();
     },
     setStatus(s: QuoteStatus) {
       quote.value!.status = s;

@@ -78,6 +78,12 @@ export function unitRows(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boole
     rows = next;
   }
   rows = rows.filter(r => !(c.invalid || []).some(rule => Object.entries(rule).every(([k, vs]) => vs.includes(r.cond[k]))));
+  // row-level applicability: a unit / driver limited to some factor values only prices rows with those values
+  // (e.g. "Full pallet" pick is B2B-only, so no D2C x pallet row; case-count tiers only for floor-loaded rows)
+  if (!showAll) {
+    const whens = [u.when, ...activeDrivers(c, s, u, showAll).map(d => d.when)];
+    rows = rows.filter(r => whens.every(w => Object.entries(w || {}).every(([k, allowed]) => r.cond[k] === undefined || allowed.includes(r.cond[k]))));
+  }
   for (const r of rows) {
     const hit = (u.byCombo || []).find(x => Object.entries(x.when).every(([k, v]) => r.cond[k] === v));
     if (hit) r.d = hit.d;

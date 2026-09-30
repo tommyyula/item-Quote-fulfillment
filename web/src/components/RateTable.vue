@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useApp } from "../lib/context";
 import { benchmarkFor, cellKey, minKey, unitRows } from "../lib/engine";
-import { softLower } from "../lib/format";
+import { money, softLower } from "../lib/format";
 import type { BuilderCharge, ChargeSel, Unit } from "../lib/types";
 import PriceInput from "./PriceInput.vue";
 
@@ -59,18 +59,18 @@ const minBench = computed(() => (us.value?.min ? props.unit.minDefault?.[us.valu
       </tbody>
     </table>
     <div class="foot">
-      <span class="hint">{{ T.t("e.benchHint", { basis: unit.basis, lo: unit.lo.toFixed(2), hi: unit.hi.toFixed(2) }) }}<template v-if="us?.second"> · {{ T.t("e.addHint") }}</template><template v-if="table.truncated"> · {{ T.t("e.truncated", { n: 300 }) }}</template></span>
+      <span class="hint">{{ T.t("e.benchHint", { basis: unit.basis, lo: money(unit.lo), hi: money(unit.hi) }) }}<template v-if="us?.second"> · {{ T.t("e.addHint") }}</template><template v-if="table.truncated"> · {{ T.t("e.truncated", { n: 300 }) }}</template></span>
       <button v-if="hasEdits && !readOnly" class="btn ghost sm" @click="reset">↺ {{ T.t("e.reset") }}</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.rt { margin-top: 8px; overflow-x: auto; }
+.rt { margin-top: 10px; overflow-x: auto; }
 table { border-collapse: collapse; font-size: 13px; min-width: 300px; }
-th { background: var(--soft); text-align: left; font-weight: 600; padding: 6px 10px; border: 1px solid var(--line); font-size: 12px; white-space: nowrap; }
-td { padding: 4px 10px; border: 1px solid var(--line); }
-.num { text-align: right; }
-tr.min td { background: var(--panel-2); font-style: italic; }
-.foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+th { text-align: left; font-weight: 600; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted-fg); white-space: nowrap; }
+td { padding: 5px 12px 5px 0; border-bottom: 1px solid var(--border); }
+th.num, td.num { text-align: right; padding-right: 0; padding-left: 12px; }
+tr.min td { color: var(--muted-fg); }
+.foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
 </style>

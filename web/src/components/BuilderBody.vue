@@ -157,18 +157,16 @@ const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
 </template>
 
 <style scoped>
-.bb { padding: 4px 16px 14px 46px; }
-.step { margin: 10px 0 14px; }
-.q { font-weight: 600; margin-bottom: 7px; display: flex; align-items: center; }
-.num { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--brand); color: var(--on-brand); font-size: 11px;
-  align-items: center; justify-content: center; margin-right: 8px; flex: none; }
-:root[data-theme="dark"] .num { background: var(--brand-2); color: #0f141c; }
-.vals { margin: 8px 0 8px 10px; padding-left: 12px; border-left: 2px solid var(--brand-soft); }
-.vals .lbl { font-size: 12.5px; color: var(--muted); margin-bottom: 5px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.bb { padding: 0 16px 16px 50px; }
+.step { margin: 10px 0 16px; }
+.q { font-weight: 600; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px; }
+.num { color: var(--primary-text); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 14px; }
+.vals { margin: 10px 0 8px 22px; }
+.vals .lbl { font-size: 13px; color: var(--muted-fg); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .free { width: min(360px, 100%); }
-.unit { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin: 8px 0; background: var(--panel-2); }
+.unit { border-left: 2px solid var(--border); padding: 2px 0 6px 16px; margin: 14px 0 14px 22px; }
 .unit h4 { margin: 0 0 8px; font-size: 14px; }
-.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
-.k { font-size: 12.5px; color: var(--muted); min-width: 150px; }
-@media (max-width: 700px) { .bb { padding-left: 14px; } .k { min-width: 0; width: 100%; } }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.k { font-size: 13px; color: var(--muted-fg); min-width: 160px; }
+@media (max-width: 700px) { .bb { padding-left: 16px; } .k { min-width: 0; width: 100%; } .vals, .unit { margin-left: 0; } }
 </style>

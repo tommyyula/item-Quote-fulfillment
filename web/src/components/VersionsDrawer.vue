@@ -30,7 +30,7 @@ const label = (l: QuoteLine) => {
   }
   return parts.join(" · ");
 };
-const fmt = (l: QuoteLine) => (l.price == null ? "—" : l.pct ? pct(l.price) : money(l.price));
+const fmt = (l: QuoteLine) => (l.price == null ? "" : l.pct ? pct(l.price) : money(l.price));
 const diff = computed(() => {
   const A = new Map(quoteLines(catalog, dataOf(a.value)).map(l => [l.key, l]));
   const B = new Map(quoteLines(catalog, dataOf(b.value)).map(l => [l.key, l]));
@@ -81,7 +81,7 @@ function restore(v: number) {
     <p v-if="!diff.length" class="muted">{{ T.t("v.noDiff") }}</p>
     <table v-else class="diff"><tbody>
       <tr v-for="(d, i) in diff" :key="i" :class="d.kind">
-        <td><span class="badge" :class="d.kind === 'added' ? 'ok' : d.kind === 'removed' ? 'warn' : ''">{{ T.t(`v.${d.kind}`) }}</span></td>
+        <td><span class="tag" :class="d.kind === 'added' ? 'ok' : d.kind === 'removed' ? 'warn' : ''">{{ T.t(`v.${d.kind}`) }}</span></td>
         <td>{{ d.text }}</td>
         <td class="num"><s v-if="d.from && d.kind === 'changed'">{{ d.from }}</s><span v-else-if="d.kind === 'removed'">{{ d.from }}</span></td>
         <td class="num"><b>{{ d.to }}</b></td>
@@ -92,13 +92,13 @@ function restore(v: number) {
 
 <style scoped>
 .vers, .diff { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
-.vers td, .diff td { padding: 6px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.vers tr.cur { background: var(--brand-soft); }
+.vers td, .diff td { padding: 6px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.vers tr.cur { background: var(--primary-soft); }
 .note-cell { max-width: 260px; }
 .acts { white-space: nowrap; text-align: right; }
 .acts .btn { margin-left: 4px; }
 .cmp { display: flex; gap: 12px; margin-bottom: 10px; }
-.cmp label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.cmp label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted-fg); }
 .num { text-align: right; white-space: nowrap; }
-.diff tr.removed td { color: var(--muted); }
+.diff tr.removed td { color: var(--muted-fg); }
 </style>

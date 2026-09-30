@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { useApp } from "../lib/context";
 import { activeUnits, emptySel, unitRows } from "../lib/engine";
-import { softLower } from "../lib/format";
+import { money, softLower } from "../lib/format";
 import type { Charge } from "../lib/types";
 import BuilderBody from "./BuilderBody.vue";
 import PriceInput from "./PriceInput.vue";
@@ -50,18 +50,18 @@ const unitLabel = computed(() => {
       <input type="checkbox" :checked="s.on" :disabled="ro" @change="toggle" :aria-label="T.tc(charge.name)" />
       <div class="title" @click="charge.kind === 'builder' && s.on && (open = !open)" :class="{ clickable: charge.kind === 'builder' && s.on }">
         <span class="name">{{ T.tc(charge.name) }}</span>
-        <span v-if="charge.kind === 'builder'" class="badge builder">{{ T.t("e.builder") }}</span>
-        <span v-else-if="charge.channel !== 'Both'" class="badge" :class="charge.channel">{{ charge.channel }}</span>
-        <span v-if="charge.kind === 'simple' && charge.new" class="badge new">{{ T.t("e.new") }}</span>
+        <span v-if="charge.kind === 'builder'" class="tag">{{ T.t("e.builder") }}</span>
+        <span v-else-if="charge.channel !== 'Both'" class="tag">{{ charge.channel }}</span>
+        <span v-if="charge.kind === 'simple' && charge.new" class="tag new">{{ T.t("e.new") }}</span>
         <div class="desc">{{ T.tc(charge.desc) }}</div>
       </div>
       <div v-if="charge.kind === 'simple'" class="price">
         <PriceInput :model-value="price" :benchmark="charge.default" :lo="charge.lo" :hi="charge.hi" :pct="charge.pct" :readonly="ro || !s.on"
                     @update:model-value="setPrice" />
-        <div class="unit">{{ unitLabel }}<div class="hint">{{ charge.pct ? `${Math.round(charge.lo * 100)}–${Math.round(charge.hi * 100)}%` : `$${charge.lo.toFixed(2)}–$${charge.hi.toFixed(2)}` }}</div></div>
+        <div class="unit">{{ unitLabel }}<div class="hint">{{ charge.pct ? `${Math.round(charge.lo * 100)}% – ${Math.round(charge.hi * 100)}%` : `${money(charge.lo)} – ${money(charge.hi)}` }}</div></div>
       </div>
       <div v-else class="sum">
-        <span v-if="s.on" class="badge ok">{{ T.t(rateCount === 1 ? "e.rate1" : "e.rates", { n: rateCount }) }}</span>
+        <span v-if="s.on" class="tag">{{ T.t(rateCount === 1 ? "e.rate1" : "e.rates", { n: rateCount }) }}</span>
         <button v-if="s.on" class="btn ghost sm" @click="open = !open">{{ open ? T.t("e.collapse") : T.t("e.expand") }}</button>
       </div>
     </div>
@@ -70,15 +70,17 @@ const unitLabel = computed(() => {
 </template>
 
 <style scoped>
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 8px; box-shadow: var(--shadow); }
-.card.on { border-color: var(--brand-2); }
-.head { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 10px 14px; }
-.head input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--brand-2); }
+.card { border-bottom: 1px solid var(--border); position: relative; }
+.card:last-child { border-bottom: 0; }
+.card.on::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--primary); }
+.head { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; }
+.head input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); }
+.title { min-width: 0; }
 .title.clickable { cursor: pointer; }
-.name { font-weight: 600; margin-right: 6px; }
-.desc { color: var(--muted); font-size: 12.5px; }
-.price { display: flex; align-items: center; gap: 8px; }
-.unit { font-size: 12.5px; color: var(--muted); min-width: 110px; }
-.sum { display: flex; align-items: center; gap: 6px; }
-@media (max-width: 700px) { .head { grid-template-columns: 22px 1fr; } .price, .sum { grid-column: 2; } }
+.name { font-weight: 600; }
+.desc { color: var(--muted-fg); font-size: 13px; }
+.price { display: flex; align-items: center; gap: 10px; }
+.unit { font-size: 12.5px; color: var(--muted-fg); min-width: 116px; }
+.sum { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 700px) { .head { grid-template-columns: 22px minmax(0, 1fr); } .price, .sum { grid-column: 2; } }
 </style>

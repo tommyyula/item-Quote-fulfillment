@@ -25,6 +25,7 @@ export interface Catalog {
   version: string; categories: Category[];
   proposal: { sections: ProposalSection[]; categoryToSection: Record<string, string>; materials: string[];
               mergeGroups: { id: string; label: string; members: string[] }[] };
+  defaultPreset: Record<string, ChargeSel>;   // "default template": the most common charges, pre-configured
 }
 
 // ---------------------------------------------------------------- quote selections (serializable, versioned)

@@ -8,7 +8,7 @@ import type { Catalog, Customer, Quote, QuoteData } from "./types";
 export interface ProposalMeta { quote: Quote; customer: Customer | null; data: QuoteData; versionLabel: string }
 
 export function serviceLabel(r: PRow, T: Translator): string {
-  const base = T.tc(r.service) + (r.unitSuffix ? ` — ${T.t("e.perUnit", { unit: softLower(T.tc(r.unitSuffix)) })}` : "");
+  const base = T.tc(r.service) + (r.unitSuffix ? `${T.t("p.sep")}${T.t("p.per", { unit: softLower(T.tc(r.unitSuffix)) })}` : "");
   return base;
 }
 export function descText(r: PRow, T: Translator): string {
@@ -79,7 +79,7 @@ export async function buildExcel(cat: Catalog, sections: PSection[], m: Proposal
     for (const r of s.rows) {
       const isPct = r.rate?.kind === "pct";
       const service = r.type === "sub" ? `    ${qualifierText(r, T)}` : r.type === "min" ? `    ${T.t("p.minimum")}` : serviceLabel(r, T);
-      const desc = r.type === "item" || r.type === "group" ? [qualifierText(r, T), descText(r, T)].filter(Boolean).join(" — ") : "";
+      const desc = r.type === "item" || r.type === "group" ? [qualifierText(r, T), descText(r, T)].filter(Boolean).join(". ") : "";
       const row = ws.addRow([service, desc, rateText(r.rate, T), r.rate ? unitText(r.unit, T, { pct: isPct, minBasis: r.isMinBasis }) : ""]);
       row.alignment = { wrapText: true, vertical: "top" };
       if (r.type !== "sub" && r.type !== "min") row.getCell(1).font = { bold: true };

@@ -41,12 +41,12 @@ const title = computed(() => [
 </template>
 
 <style scoped>
-.pi { position: relative; display: inline-flex; align-items: center; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--panel); padding: 0 7px; }
-.pi:focus-within { outline: 2px solid var(--brand-2); outline-offset: 1px; }
-.pi input { width: 78px; border: 0; background: transparent; text-align: right; padding: 4px 2px; outline: none; }
-.pi .pre, .pi .post { color: var(--muted); font-size: 12.5px; }
-.pi.edited { border-color: var(--brand-2); }
-.pi.low, .pi.high { border-color: var(--warn); background: var(--warn-soft); }
-.dot { position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-2); }
-.pi.low .dot, .pi.high .dot { background: var(--warn); }
+.pi { position: relative; display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--input); padding: 0 7px; }
+.pi:focus-within { outline: 2px solid var(--ring); outline-offset: 1px; }
+.pi input { width: 78px; font-variant-numeric: tabular-nums; border: 0; background: transparent; text-align: right; padding: 4px 2px; outline: none; }
+.pi .pre, .pi .post { color: var(--muted-fg); font-size: 12.5px; }
+.pi.edited { border-color: var(--primary); }
+.pi.low, .pi.high { border-color: var(--orange); background: var(--orange-soft); }
+.dot { position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+.pi.low .dot, .pi.high .dot { background: var(--orange); }
 </style>

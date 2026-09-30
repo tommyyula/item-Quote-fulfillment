@@ -51,9 +51,9 @@ const setLang = (v: string) => (store.state.prefs.proposalLang = v as Lang | "")
           <option v-for="l in LANGS" :key="l.id" :value="l.id">{{ l.label }}</option>
         </select>
       </label>
-      <button class="btn" @click="print">🖨 {{ T.t("p.print") }}</button>
-      <button class="btn" :disabled="busy" @click="xlsx">⬇ {{ T.t("p.xlsx") }}</button>
-      <button class="btn" @click="json">⬇ {{ T.t("p.json") }}</button>
+      <button class="btn primary" @click="print">{{ T.t("p.print") }}</button>
+      <button class="btn" :disabled="busy" @click="xlsx">{{ T.t("p.xlsx") }}</button>
+      <button class="btn" @click="json">{{ T.t("p.json") }}</button>
     </div>
 
     <article class="proposal-doc" :lang="PT.lang">
@@ -85,8 +85,9 @@ const setLang = (v: string) => (store.state.prefs.proposalLang = v as Lang | "")
       <section v-for="s in sections" :key="s.id" class="sec">
         <h3>{{ PT.tc(s.label) }}</h3>
         <table class="rates">
+          <caption class="sr">{{ PT.tc(s.label) }}</caption>
           <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /></colgroup>
-          <thead><tr><th>{{ PT.t("p.service") }}</th><th>{{ PT.t("p.desc") }}</th><th class="r">{{ PT.t("p.rate") }}</th><th>{{ PT.t("p.unit") }}</th></tr></thead>
+          <thead><tr><th scope="col">{{ PT.t("p.service") }}</th><th scope="col">{{ PT.t("p.desc") }}</th><th scope="col" class="r">{{ PT.t("p.rate") }}</th><th scope="col">{{ PT.t("p.unit") }}</th></tr></thead>
           <tbody>
             <tr v-for="(r, i) in s.rows" :key="i" :class="r.type">
               <td v-if="r.type === 'sub'" class="svc sub">{{ qualifierText(r, PT) }}</td>
@@ -118,42 +119,44 @@ const setLang = (v: string) => (store.state.prefs.proposalLang = v as Lang | "")
 </template>
 
 <style scoped>
-.toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-.toolbar h2 { margin: 0; font-size: 18px; }
+/* The rate sheet is a document: white paper in both themes, identical to what prints (the preview is the contract). */
+.toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 36px 0 12px; }
+.toolbar h2 { margin: 0; font-size: 20px; }
 .toolbar .sp { flex: 1; }
-.toolbar label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; }
-.proposal-doc { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); max-width: 1000px; }
-.watermark { display: inline-block; vertical-align: 3px; margin-left: 10px; font-size: 12px; font-weight: 800; letter-spacing: 3px; color: var(--bad); border: 2px solid var(--bad); padding: 0 8px; border-radius: 4px; transform: rotate(-3deg); }
-.doc-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 3px solid var(--brand); padding-bottom: 12px; margin-bottom: 14px; }
-.brand { font-size: 20px; font-weight: 800; color: var(--brand); letter-spacing: .3px; }
-:root[data-theme="dark"] .brand { color: var(--brand-2); }
-.doc-title { font-size: 15px; font-weight: 600; }
-.meta th, .cust th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 2px 10px 2px 0; white-space: nowrap; }
-.meta td, .cust td { padding: 2px 16px 2px 0; }
-.cust { width: 100%; margin-bottom: 14px; }
-.band { background: var(--brand); color: #fff; font-weight: 700; padding: 6px 10px; border-radius: 4px; font-size: 13px; letter-spacing: .3px; }
-.sec { margin-top: 16px; }
-.sec h3 { font-size: 14px; margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1px solid var(--line-2); text-transform: uppercase; letter-spacing: .4px; }
+.toolbar label { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+.proposal-doc { --ink: #181818; --soft-ink: #666666; --rule: #e0e0e0; --rule-strong: #181818;
+  background: #ffffff; color: var(--ink); border-radius: var(--radius); padding: 36px 40px; max-width: 1000px; color-scheme: light; }
+.doc-head { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; border-bottom: 2px solid var(--rule-strong); padding-bottom: 14px; margin-bottom: 16px; }
+.brand { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.doc-title { font-size: 16px; font-weight: 500; }
+.doc-head .muted, .proposal-doc .muted { color: var(--soft-ink); }
+.watermark { display: inline-block; margin-left: 10px; font-size: 13px; font-weight: 600; color: #c2410c; vertical-align: 3px; }
+.watermark::before { content: "● "; }
+.meta th, .cust th { text-align: left; color: var(--soft-ink); font-weight: 500; font-size: 12.5px; padding: 2px 12px 2px 0; white-space: nowrap; }
+.meta td, .cust td { padding: 2px 18px 2px 0; }
+.cust { width: 100%; margin-bottom: 18px; }
+.band { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 8px 0; font-weight: 600; }
+.sec { margin-top: 22px; }
+.sec h3 { font-size: 16px; margin: 0 0 6px; }
 table.rates { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.rates col.c1 { width: 34%; } table.rates col.c2 { width: 38%; } table.rates col.c3 { width: 14%; } table.rates col.c4 { width: 14%; }
-table.rates th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--line-2); padding: 4px 8px; }
-table.rates td { padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.r { text-align: right; }
+table.rates th { text-align: left; font-size: 12px; color: var(--soft-ink); font-weight: 500; border-bottom: 1px solid var(--rule-strong); padding: 5px 8px; }
+table.rates td { padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.r { text-align: right !important; }
 .svc { font-weight: 600; }
-.svc.sub { font-weight: 400; padding-left: 22px !important; }
-.svc .q { font-weight: 400; font-size: 12px; color: var(--muted); }
-tr.group td { border-bottom: 0; padding-bottom: 1px; }
-tr.sub td, tr.min td { border-bottom: 1px dashed var(--line); }
-tr.min td { font-style: italic; }
-.desc { color: var(--muted); font-size: 12.5px; }
-.rate { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; }
-.unit { color: var(--muted); font-size: 12.5px; }
-.notes { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
-.terms { font-size: 12px; color: var(--muted); margin-top: 18px; }
-.empty { padding: 20px 0; }
-.sign { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 26px; }
-.who { font-weight: 700; margin-bottom: 8px; }
-.line { border-bottom: 1px solid var(--line-2); height: 30px; display: flex; align-items: flex-end; font-size: 11px; color: var(--muted); }
-@media (max-width: 700px) { .proposal-doc { padding: 16px; } .doc-head { flex-direction: column; } .sign { grid-template-columns: 1fr; } }
-@media print { .band { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.svc.sub { font-weight: 400; padding-left: 24px !important; }
+.svc .q { font-weight: 400; font-size: 12.5px; color: var(--soft-ink); }
+tr.group td { border-bottom: 0; padding-bottom: 2px; }
+tr.min td { color: var(--soft-ink); }
+.desc { color: var(--soft-ink); font-size: 13px; }
+.rate { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; text-align: right; }
+.unit { color: var(--soft-ink); font-size: 13px; }
+.notes { margin: 8px 0 0; padding-left: 18px; color: var(--soft-ink); font-size: 12.5px; }
+.terms { font-size: 12.5px; color: var(--soft-ink); margin-top: 20px; max-width: 72ch; }
+.empty { padding: 20px 0; color: var(--soft-ink); }
+.sign { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 30px; }
+.who { font-weight: 600; margin-bottom: 8px; }
+.line { border-bottom: 1px solid var(--rule-strong); height: 32px; display: flex; align-items: flex-end; font-size: 11.5px; color: var(--soft-ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 700px) { .proposal-doc { padding: 18px; } .doc-head { flex-direction: column; } .sign { grid-template-columns: 1fr; } }
 </style>

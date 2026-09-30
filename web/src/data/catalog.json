@@ -4127,5 +4127,280 @@
     ]
    }
   ]
+ },
+ "defaultPreset": {
+  "SU-WMS": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "SU-SKU": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "IN-OFFLOAD": {
+   "on": true,
+   "conds": {
+    "offloadType": {
+     "on": true,
+     "values": [
+      "Floor loaded",
+      "Palletized"
+     ]
+    }
+   },
+   "units": {
+    "container": {
+     "on": true,
+     "driver": "caseCount"
+    },
+    "pallet": {
+     "on": true,
+     "min": "load"
+    }
+   },
+   "prices": {},
+   "settings": {}
+  },
+  "IN-PUTAWAY": {
+   "on": true,
+   "conds": {},
+   "units": {
+    "pallet": {
+     "on": true
+    }
+   },
+   "prices": {},
+   "settings": {}
+  },
+  "IN-SORT": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OB-ORDER": {
+   "on": true,
+   "conds": {
+    "businessType": {
+     "on": true,
+     "values": [
+      "B2B",
+      "D2C"
+     ]
+    }
+   },
+   "units": {
+    "order": {
+     "on": true
+    }
+   },
+   "prices": {},
+   "settings": {}
+  },
+  "OB-PICK": {
+   "on": true,
+   "conds": {
+    "businessType": {
+     "on": true,
+     "values": [
+      "B2B",
+      "D2C"
+     ]
+    }
+   },
+   "units": {
+    "pallet": {
+     "on": true
+    },
+    "case": {
+     "on": true
+    },
+    "each": {
+     "on": true
+    }
+   },
+   "prices": {},
+   "settings": {}
+  },
+  "OB-ROUTING": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "ST-STORAGE": {
+   "on": true,
+   "conds": {},
+   "units": {
+    "pallet": {
+     "on": true
+    },
+    "bin": {
+     "on": true,
+     "driver": "binSize"
+    }
+   },
+   "prices": {},
+   "settings": {}
+  },
+  "RT-RETURN": {
+   "on": true,
+   "conds": {
+    "returnType": {
+     "on": true,
+     "values": [
+      "Consumer return (D2C)",
+      "Retailer return (B2B)"
+     ]
+    }
+   },
+   "units": {
+    "package": {
+     "on": true
+    },
+    "each": {
+     "on": true
+    },
+    "case": {
+     "on": true
+    }
+   },
+   "prices": {},
+   "settings": {}
+  },
+  "VA-SERIAL": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "VA-PACKSLIP": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "VA-KIT": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "VA-RELABEL": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-MANUALORDER": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-MANUALRCPT": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-RUSH": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-CANCEL": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-NOASN": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-LABOR": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-OT": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-COUNT": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-DOCS": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-COPIES": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-WRAP": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-PALLET-A": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-PALLET-B": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  },
+  "OT-SUPPLIES": {
+   "on": true,
+   "conds": {},
+   "units": {},
+   "prices": {},
+   "settings": {}
+  }
  }
 }

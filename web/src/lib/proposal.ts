@@ -115,9 +115,11 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
       const keep = dims.map((_, i) => !merged.every(r => same(r.sets[i], merged[0].sets[i])));
       const lifted = dims.map((d, i) => ({ label: d.label, values: merged[0]?.sets[i] ?? [] })).filter((_, i) => !keep[i]);
       const suffix = unitIds.length > 1 ? u.label : undefined;
-      if (merged.length === 1 && !mins.length) {
+      if (merged.length === 1) {
+        // one price: show it on the service line itself; a minimum follows as its own row
         sec.rows.push({ type: "item", service: b.name, unitSuffix: suffix, desc: b.desc, rate: merged[0].rate, unit: u.label,
                         qualifiers: lifted });
+        for (const m of mins) sec.rows.push({ type: "min", service: "", rate: { kind: "single", p: m.price }, unit: m.minBasis, isMinBasis: true });
         continue;
       }
       sec.rows.push({ type: "group", service: b.name, unitSuffix: suffix, desc: b.desc, qualifiers: lifted });
