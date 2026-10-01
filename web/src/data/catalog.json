@@ -92,7 +92,7 @@
       "SYSTEM & MANAGEMENT FEE-0003",
       "SYSTEM & MANAGEMENT FEE-0005"
      ],
-     "invoiceLines": 393
+     "invoiceLines": 528
     },
     {
      "id": "SU-EDI",
@@ -112,7 +112,7 @@
       "HANDLING-0193",
       "HANDLING-0194"
      ],
-     "invoiceLines": 8
+     "invoiceLines": 6
     },
     {
      "id": "SU-ECOM",
@@ -158,28 +158,28 @@
       "HANDLING-0102",
       "HANDLING-0103"
      ],
-     "invoiceLines": 54
+     "invoiceLines": 2036
     },
     {
      "id": "SU-VAN",
      "kind": "simple",
-     "name": "EDI VAN charges",
-     "desc": "VAN provider cost re-billed plus markup.",
-     "unit": "% on cost",
-     "default": 0.2,
-     "lo": 0,
-     "hi": 0.2,
-     "basis": "UNIS template",
+     "name": "EDI VAN charge",
+     "desc": "VAN transmission charge per EDI order.",
+     "unit": "Order",
+     "default": 0.5,
+     "lo": 0.25,
+     "hi": 1.0,
+     "basis": "UNIS median (n=40)",
      "channel": "Both",
      "tier": "advanced",
-     "pct": true,
+     "pct": false,
      "new": false,
      "codes": [
       "HANDLING-0098",
       "HANDLING-0100",
       "HANDLING-0101"
      ],
-     "invoiceLines": 0
+     "invoiceLines": 169
     },
     {
      "id": "SU-RETAILER",
@@ -1015,11 +1015,10 @@
       "HANDLING-0180",
       "HANDLING-0181",
       "HANDLING-0188",
-      "HANDLING-0195",
       "HANDLING-0252"
      ],
      "invalid": [],
-     "invoiceLines": 2474
+     "invoiceLines": 3992
     },
     {
      "id": "IN-EXCESSCASE",
@@ -1143,7 +1142,7 @@
       "HANDLING-0055"
      ],
      "invalid": [],
-     "invoiceLines": 29
+     "invoiceLines": 754
     },
     {
      "id": "IN-TRANSLOAD",
@@ -1390,7 +1389,7 @@
       "HANDLING-0027"
      ],
      "invalid": [],
-     "invoiceLines": 7
+     "invoiceLines": 983
     },
     {
      "id": "IN-XDOCK",
@@ -1432,7 +1431,7 @@
       "HANDLING-0031",
       "HANDLING-0032"
      ],
-     "invoiceLines": 28
+     "invoiceLines": 263
     },
     {
      "id": "IN-SHOTGUN",
@@ -1453,7 +1452,7 @@
       "HANDLING-0034",
       "HANDLING-0035"
      ],
-     "invoiceLines": 0
+     "invoiceLines": 16
     },
     {
      "id": "IN-PALLETIZE",
@@ -1765,7 +1764,7 @@
        ]
       }
      ],
-     "invoiceLines": 9864
+     "invoiceLines": 6483
     },
     {
      "id": "OB-PICK",
@@ -1976,16 +1975,16 @@
          "kind": "attr",
          "values": [
           {
-           "v": "0 - 5 lbs",
-           "d": 0.5
-          },
-          {
-           "v": "5 - 30 lbs",
+           "v": "0 - 30 lbs",
            "d": 0.75
           },
           {
-           "v": "Over 30 lbs",
-           "d": 1.5
+           "v": "31 - 90 lbs",
+           "d": 1.25
+          },
+          {
+           "v": "Over 90 lbs",
+           "d": 2.0
           }
          ],
          "when": {},
@@ -2030,6 +2029,51 @@
        "byCombo": [],
        "minDefault": {},
        "note": "First / additional split = industry 'pick & pack' style (first $3.00 incl. order, additional $0.75)."
+      },
+      {
+       "id": "line",
+       "label": "Pick line",
+       "flat": 0.5,
+       "lo": 0.25,
+       "hi": 1.25,
+       "basis": "UNIS median (n=79)",
+       "drivers": [
+        {
+         "id": "unitWeight",
+         "label": "Unit weight",
+         "kind": "attr",
+         "values": [
+          {
+           "v": "0 - 30 lbs",
+           "d": 0.5
+          },
+          {
+           "v": "31 - 90 lbs",
+           "d": 1.0
+          },
+          {
+           "v": "Over 90 lbs",
+           "d": 1.5
+          }
+         ],
+         "when": {},
+         "calc": false,
+         "help": ""
+        }
+       ],
+       "mins": [],
+       "second": false,
+       "common": false,
+       "when": {},
+       "by": {
+        "businessType": {
+         "B2B": 1.0,
+         "D2C": 0.5
+        }
+       },
+       "byCombo": [],
+       "minDefault": {},
+       "note": "Per pick line (one SKU location visit), any quantity."
       },
       {
        "id": "inner",
@@ -2125,7 +2169,7 @@
        ]
       }
      ],
-     "invoiceLines": 1032
+     "invoiceLines": 9757
     },
     {
      "id": "OB-PACK",
@@ -2215,7 +2259,7 @@
        ]
       }
      ],
-     "invoiceLines": 29
+     "invoiceLines": 436
     },
     {
      "id": "OB-LABEL",
@@ -2235,7 +2279,7 @@
       "HANDLING-0155",
       "HANDLING-0156"
      ],
-     "invoiceLines": 1
+     "invoiceLines": 67
     },
     {
      "id": "OB-ROUTING",
@@ -2254,7 +2298,7 @@
      "codes": [
       "HANDLING-0239"
      ],
-     "invoiceLines": 302
+     "invoiceLines": 298
     },
     {
      "id": "OB-PALLETBUILD",
@@ -2457,7 +2501,7 @@
       "HANDLING-0197"
      ],
      "invalid": [],
-     "invoiceLines": 1
+     "invoiceLines": 10
     }
    ]
   },
@@ -2837,7 +2881,7 @@
       "Sublease Revenue-0001"
      ],
      "invalid": [],
-     "invoiceLines": 12314
+     "invoiceLines": 5663
     }
    ]
   },
@@ -3005,7 +3049,7 @@
       "RMS-001"
      ],
      "invalid": [],
-     "invoiceLines": 113
+     "invoiceLines": 159
     },
     {
      "id": "RT-INSPECT",
@@ -3114,7 +3158,7 @@
       "HANDLING-0207",
       "HANDLING-0208"
      ],
-     "invoiceLines": 86
+     "invoiceLines": 85
     },
     {
      "id": "VA-RELABEL",
@@ -3137,7 +3181,7 @@
       "HANDLING-0232",
       "RELABELING"
      ],
-     "invoiceLines": 32
+     "invoiceLines": 54
     },
     {
      "id": "VA-FNSKU",
@@ -3195,7 +3239,7 @@
      "codes": [
       "ACCESSORIAL-0023"
      ],
-     "invoiceLines": 197
+     "invoiceLines": 196
     },
     {
      "id": "VA-BRANDED",
@@ -3266,7 +3310,7 @@
       "ACCESSORIAL-0027",
       "RMS-005"
      ],
-     "invoiceLines": 35
+     "invoiceLines": 34
     },
     {
      "id": "VA-OVERBOX",
@@ -3283,8 +3327,7 @@
      "pct": false,
      "new": false,
      "codes": [
-      "ACC-0003",
-      "OVERBOX"
+      "ACC-0003"
      ],
      "invoiceLines": 15
     },
@@ -3399,7 +3442,7 @@
       "HOURLY LABOR",
       "OTHERS-0002"
      ],
-     "invoiceLines": 1250
+     "invoiceLines": 1256
     },
     {
      "id": "OT-OT",
@@ -3420,7 +3463,7 @@
       "HANDLING-0224",
       "HANDLING-0225"
      ],
-     "invoiceLines": 123
+     "invoiceLines": 124
     },
     {
      "id": "OT-COUNT",
@@ -3459,7 +3502,7 @@
       "HANDLING-0096",
       "HANDLING-0097"
      ],
-     "invoiceLines": 13340
+     "invoiceLines": 2232
     },
     {
      "id": "OT-RUSH",
@@ -3478,7 +3521,7 @@
      "codes": [
       "HANDLING-0088"
      ],
-     "invoiceLines": 252
+     "invoiceLines": 424
     },
     {
      "id": "OT-CANCEL",
@@ -3498,7 +3541,7 @@
       "ACCESSORIAL-0002",
       "ACCESSORIAL-0007"
      ],
-     "invoiceLines": 97
+     "invoiceLines": 602
     },
     {
      "id": "OT-NOASN",
@@ -3539,7 +3582,7 @@
       "HANDLING-0051",
       "HANDLING-0052"
      ],
-     "invoiceLines": 105
+     "invoiceLines": 626
     },
     {
      "id": "OT-OSD",
@@ -3674,7 +3717,7 @@
       "ACCESSORIAL-0038",
       "Freight-0001"
      ],
-     "invoiceLines": 39
+     "invoiceLines": 4455
     },
     {
      "id": "OT-FREIGHT",
@@ -3696,7 +3739,7 @@
       "Small Parcel-0005",
       "TRANSPORTATION-0002"
      ],
-     "invoiceLines": 1
+     "invoiceLines": 6927
     },
     {
      "id": "OT-3PPOSTAGE",
@@ -3715,7 +3758,7 @@
      "codes": [
       "HANDLING-0182"
      ],
-     "invoiceLines": 0
+     "invoiceLines": 1
     },
     {
      "id": "OT-RUSHRCPT",
@@ -3734,7 +3777,7 @@
      "codes": [
       "HANDLING-0040"
      ],
-     "invoiceLines": 15
+     "invoiceLines": 4
     },
     {
      "id": "OT-CANCELPRE",
@@ -3753,7 +3796,7 @@
      "codes": [
       "ACCESSORIAL-0001"
      ],
-     "invoiceLines": 9
+     "invoiceLines": 37
     },
     {
      "id": "OT-MISSEDAPPT",
@@ -3774,7 +3817,7 @@
       "HANDLING-0044",
       "HANDLING-0095"
      ],
-     "invoiceLines": 47
+     "invoiceLines": 737
     },
     {
      "id": "OT-COPIES",
@@ -3794,7 +3837,7 @@
       "ACCESSORIAL-0012",
       "ACCESSORIAL-0026"
      ],
-     "invoiceLines": 266
+     "invoiceLines": 260
     },
     {
      "id": "OT-MANIFEST",
@@ -4401,6 +4444,316 @@
    "settings": {}
   }
  },
+ "commonItems": [
+  {
+   "code": "HANDLING-0093",
+   "name": "Order Entry(Order Processing)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 100
+  },
+  {
+   "code": "ACCESSORIAL-0038",
+   "name": "Material",
+   "uom": "Unit",
+   "tag": "Other",
+   "hlCustomers": 94
+  },
+  {
+   "code": "ACCESSORIAL-0002",
+   "name": "Order Entry(Cancel Order After Picking)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 72
+  },
+  {
+   "code": "HANDLING-0095",
+   "name": "Order Entry(Miss Order Appointment)",
+   "uom": "Order",
+   "tag": "Inbound",
+   "hlCustomers": 72
+  },
+  {
+   "code": "HANDLING-0096",
+   "name": "Order Entry(Manual Order Entry)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 71
+  },
+  {
+   "code": "HANDLING-0199",
+   "name": "HOURLY LABOR $ / HOUR",
+   "uom": "Hour",
+   "tag": "Other",
+   "hlCustomers": 70
+  },
+  {
+   "code": "HANDLING-0113",
+   "name": "Offload(Rate by Unit)",
+   "uom": "Pallet",
+   "tag": "Inbound",
+   "hlCustomers": 68
+  },
+  {
+   "code": "HANDLING-0067",
+   "name": "Pick(Rate by Unit)",
+   "uom": "Pallet",
+   "tag": "Outbound",
+   "hlCustomers": 63
+  },
+  {
+   "code": "Small Parcel-0005",
+   "name": "Small Parcel Freight Cost",
+   "uom": "Tracking",
+   "tag": "Other",
+   "hlCustomers": 62
+  },
+  {
+   "code": "STORAGE INCOME-0004",
+   "name": "Recurring Storage",
+   "uom": "Pallet",
+   "tag": "Storage",
+   "hlCustomers": 55
+  },
+  {
+   "code": "STORAGE INCOME-0017",
+   "name": "Initial Storage(Rate by Unit)",
+   "uom": "Pallet",
+   "tag": "Storage",
+   "hlCustomers": 54
+  },
+  {
+   "code": "HANDLING-0072",
+   "name": "Pick(Rate by Unit Weight)",
+   "uom": "Case",
+   "tag": "Outbound",
+   "hlCustomers": 50
+  },
+  {
+   "code": "HANDLING-0088",
+   "name": "Order Entry(Rush Order)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 46
+  },
+  {
+   "code": "HOURLY LABOR",
+   "name": "HOURLY LABOR",
+   "uom": "Hour",
+   "tag": "Other",
+   "hlCustomers": 39
+  },
+  {
+   "code": "HANDLING-0063",
+   "name": "Pick(Rate by Unit)",
+   "uom": "Case",
+   "tag": "Outbound",
+   "hlCustomers": 36
+  },
+  {
+   "code": "HANDLING-0129",
+   "name": "Offload(Rate by Case qty)-Range Rate",
+   "uom": "CNTR",
+   "tag": "Inbound",
+   "hlCustomers": 35
+  },
+  {
+   "code": "HANDLING-0053",
+   "name": "Put Away",
+   "uom": "Pallet",
+   "tag": "Inbound",
+   "hlCustomers": 34
+  },
+  {
+   "code": "HANDLING-0102",
+   "name": "Order Entry(EDI Order Processing)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 30
+  },
+  {
+   "code": "HANDLING-0049",
+   "name": "Receipt Entry(EDI Receipt)",
+   "uom": "Receipt",
+   "tag": "Inbound",
+   "hlCustomers": 29
+  },
+  {
+   "code": "HANDLING-0051",
+   "name": "Receipt Entry",
+   "uom": "Receipt",
+   "tag": "Inbound",
+   "hlCustomers": 27
+  },
+  {
+   "code": "HANDLING-0073",
+   "name": "Pick(Rate by Unit Weight)",
+   "uom": "Pick",
+   "tag": "Outbound",
+   "hlCustomers": 25
+  },
+  {
+   "code": "HANDLING-0029",
+   "name": "Sorting",
+   "uom": "Case",
+   "tag": "Inbound",
+   "hlCustomers": 24
+  },
+  {
+   "code": "HANDLING-0074",
+   "name": "Pick(Rate by Unit Weight)",
+   "uom": "Piece",
+   "tag": "Outbound",
+   "hlCustomers": 23
+  },
+  {
+   "code": "HANDLING-0069",
+   "name": "Pick(Rate by Unit)",
+   "uom": "Piece",
+   "tag": "Outbound",
+   "hlCustomers": 22
+  },
+  {
+   "code": "HANDLING-0239",
+   "name": "ROUTING",
+   "uom": "Order",
+   "tag": "Other",
+   "hlCustomers": 21
+  },
+  {
+   "code": "STORAGE INCOME-0013",
+   "name": "Recurring Storage",
+   "uom": "CapacityType",
+   "tag": "Storage",
+   "hlCustomers": 20
+  },
+  {
+   "code": "SYSTEM & MANAGEMENT FEE-0005",
+   "name": "WMS/IT MONTHLY MAINTENANCE",
+   "uom": "Each",
+   "tag": "Other",
+   "hlCustomers": 18
+  },
+  {
+   "code": "HANDLING-0068",
+   "name": "Pick(Rate by Unit)",
+   "uom": "Pick",
+   "tag": "Outbound",
+   "hlCustomers": 17
+  },
+  {
+   "code": "STORAGE INCOME-0008",
+   "name": "Recurring Storage",
+   "uom": "Location square footage",
+   "tag": "Storage",
+   "hlCustomers": 16
+  },
+  {
+   "code": "HANDLING-0044",
+   "name": "Receipt Entry(Miss Receipt Appointment)",
+   "uom": "Receipt",
+   "tag": "Inbound",
+   "hlCustomers": 15
+  },
+  {
+   "code": "HANDLING-0107",
+   "name": "Offload(Rate by Unit)",
+   "uom": "Case",
+   "tag": "Inbound",
+   "hlCustomers": 15
+  },
+  {
+   "code": "HANDLING-0001",
+   "name": "Order Entry(FTP Order Processing)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 13
+  },
+  {
+   "code": "HANDLING-0124",
+   "name": "Offload(Rate by Hour)",
+   "uom": "Hour",
+   "tag": "Inbound",
+   "hlCustomers": 13
+  },
+  {
+   "code": "STORAGE INCOME-0002",
+   "name": "Recurring Storage",
+   "uom": "Cubic footage",
+   "tag": "Storage",
+   "hlCustomers": 13
+  },
+  {
+   "code": "HANDLING-0084",
+   "name": "Packing(Small Parcel Processing)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 12
+  },
+  {
+   "code": "HANDLING-0125",
+   "name": "Offload(Rate by each receipt)",
+   "uom": "Receipt",
+   "tag": "Inbound",
+   "hlCustomers": 12
+  },
+  {
+   "code": "HANDLING-0225",
+   "name": "OVERTIME",
+   "uom": "Hour",
+   "tag": "Other",
+   "hlCustomers": 12
+  },
+  {
+   "code": "STORAGE INCOME-0011",
+   "name": "Recurring Storage(Rate by Item Stack High)",
+   "uom": "Pallet",
+   "tag": "Storage",
+   "hlCustomers": 12
+  },
+  {
+   "code": "STORAGE INCOME-0026",
+   "name": "Initial Storage(Rate by Capacity Type)",
+   "uom": "CapacityType",
+   "tag": "Storage",
+   "hlCustomers": 12
+  },
+  {
+   "code": "ACCESSORIAL-0007",
+   "name": "Cancellation Charge",
+   "uom": "Order",
+   "tag": "Other",
+   "hlCustomers": 11
+  },
+  {
+   "code": "HANDLING-0037",
+   "name": "Return",
+   "uom": "Hour",
+   "tag": "Inbound",
+   "hlCustomers": 11
+  },
+  {
+   "code": "HANDLING-0039",
+   "name": "Return",
+   "uom": "Piece",
+   "tag": "Inbound",
+   "hlCustomers": 11
+  },
+  {
+   "code": "HANDLING-0100",
+   "name": "Order Entry(EDI Order VAN Charge)",
+   "uom": "Order",
+   "tag": "Outbound",
+   "hlCustomers": 10
+  },
+  {
+   "code": "STORAGE INCOME-0024",
+   "name": "Initial Storage(Rate by Item Stack High)",
+   "uom": "Pallet",
+   "tag": "Storage",
+   "hlCustomers": 10
+  }
+ ],
  "mapback": {
   "builder": {
    "IN-OFFLOAD": {
@@ -4540,6 +4893,12 @@
      },
      "second": "HANDLING-0062"
     },
+    "line": {
+     "flat": "HANDLING-0068",
+     "drivers": {
+      "unitWeight": "HANDLING-0073"
+     }
+    },
     "inner": {
      "flat": "HANDLING-0064"
     },
@@ -4631,7 +4990,13 @@
    },
    "RT-RETURN": {
     "package": {
-     "flat": "RMS-001"
+     "flat": "HANDLING-0125",
+     "fixed": {
+      "Receipt Type": "RETURN_FROM_END_USER"
+     },
+     "alt": [
+      "RMS-001"
+     ]
     },
     "each": {
      "flat": "HANDLING-0039"
@@ -4688,22 +5053,87 @@
    "OT-OSD": "HANDLING-0219",
    "OT-ADDRESS": "ACCESSORIAL-0037",
    "OT-DOCS": "ACCESSORIAL-0009",
-   "OT-WRAP": "ACCESSORIAL-0033",
+   "OT-WRAP": "ACCESSORIAL-0038",
    "OT-SUPPLIES": "Freight-0001",
-   "OT-FREIGHT": "TRANSPORTATION-0002",
+   "OT-FREIGHT": "Small Parcel-0005",
    "OT-3PPOSTAGE": "HANDLING-0182",
    "OT-RUSHRCPT": "HANDLING-0040",
    "OT-CANCELPRE": "ACCESSORIAL-0001",
    "OT-MISSEDAPPT": "HANDLING-0095",
    "OT-COPIES": "ACCESSORIAL-0026",
    "OT-MANIFEST": "ACCESSORIAL-0013",
-   "OT-STRAP": "OTHERS-0004",
+   "OT-STRAP": "ACCESSORIAL-0038",
+   "OT-PALLET-A": "ACCESSORIAL-0038",
+   "OT-PALLET-B": "ACCESSORIAL-0038",
+   "OT-CORNER": "ACCESSORIAL-0038",
    "OT-SLIP": "SLIPSHEET",
    "OT-YARD": "YARD-0001",
    "OT-HOSTLER": "HANDLING-0250",
    "OT-OUTSIDECARRIER": "OTHERS-0003",
    "OT-ACCOUNT": "ACCESSORIAL-0005",
    "OT-PASSTHRU": "ACCESSORIAL-0028"
+  },
+  "simpleExtra": {
+   "OT-PALLET-A": {
+    "fixed": {
+     "Material Type": "Grade A Pallet (40 x 48)"
+    }
+   },
+   "OT-PALLET-B": {
+    "fixed": {
+     "Material Type": "Grade B Pallet (40 x 48)"
+    }
+   },
+   "OT-CORNER": {
+    "fixed": {
+     "Material Type": "Corner Board"
+    }
+   },
+   "OT-WRAP": {
+    "fixed": {
+     "Material Type": "Stretch Wrap"
+    },
+    "alt": [
+     "ACCESSORIAL-0033"
+    ]
+   },
+   "OT-STRAP": {
+    "fixed": {
+     "Material Type": "Plastic Strapping"
+    },
+    "alt": [
+     "OTHERS-0004"
+    ]
+   },
+   "OT-LABOR": {
+    "alt": [
+     "HOURLY LABOR"
+    ]
+   },
+   "OT-CANCEL": {
+    "alt": [
+     "ACCESSORIAL-0007"
+    ]
+   },
+   "OT-MISSEDAPPT": {
+    "alt": [
+     "HANDLING-0044",
+     "HANDLING-0043"
+    ]
+   },
+   "SU-EDITX": {
+    "alt": [
+     "HANDLING-0049",
+     "HANDLING-0001",
+     "HANDLING-0099",
+     "HANDLING-0048"
+    ]
+   },
+   "OT-FREIGHT": {
+    "alt": [
+     "TRANSPORTATION-0002"
+    ]
+   }
   },
   "newItems": {
    "SU-SETUP": "ACCOUNT SETUP & IMPLEMENTATION (one-time)",
@@ -4715,18 +5145,18 @@
    "VA-FRAGILE": "FRAGILE / TISSUE WRAP",
    "VA-GIFT": "GIFT WRAP / GIFT MESSAGE",
    "VA-POLYBAG": "POLY BAG + SUFFOCATION LABEL",
-   "OT-PALLET-A": "PALLET CHARGE - GRADE A",
-   "OT-PALLET-B": "PALLET CHARGE - GRADE B",
-   "OT-CORNER": "CORNER BOARDS",
    "OT-PEAK": "PEAK SEASON SURCHARGE",
    "OT-MINIMUM": "MONTHLY MINIMUM BILLING"
   },
   "notes": {
    "IN-EXCESSCASE": "Configure HANDLING-0127 with Case Qty: over 2500 and CalculationOption: Incremental.",
    "SU-EDITX": "EDI document type decides the code: 940 HANDLING-0102, 945 HANDLING-0099, 856 HANDLING-0048, 850 HANDLING-0049, FTP HANDLING-0001.",
-   "OT-MISSEDAPPT": "Outbound HANDLING-0095; inbound receipt HANDLING-0044 / load HANDLING-0043.",
+   "OT-MISSEDAPPT": "Outbound order HANDLING-0095; inbound receipt HANDLING-0044; inbound load HANDLING-0043 (same rate).",
+   "OT-LABOR": "HANDLING-0199 when entered as an accessorial; HOURLY LABOR when billed from a closed general task.",
+   "OT-CANCEL": "ACCESSORIAL-0002 from the cancelled order; ACCESSORIAL-0007 when billed from a closed task.",
+   "OT-WRAP": "Material charge (ACCESSORIAL-0038, Material Type: Stretch Wrap); ACCESSORIAL-0033 = application labor billing.",
    "OT-PASSTHRU": "Pick per item: rental ACCESSORIAL-0028, waste ACCESSORIAL-0036, utility ACCESSORIAL-0034, security HANDLING-0241.",
-   "OT-FREIGHT": "Small parcel postage: Small Parcel-0005; FTL/LTL: TRANSPORTATION-0002."
+   "OT-FREIGHT": "Small parcel: Small Parcel-0005 (markup on carrier cost, by carrier); FTL / LTL: TRANSPORTATION-0002."
   },
   "conds": {
    "offloadType": {
@@ -4893,833 +5323,936 @@
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACC-0002": {
    "name": "CUSTOMIZED LABELING",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 3,
+   "hlCustomers": 3
   },
   "ACC-0003": {
    "name": "OVERBOX GOODS",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 15
+   "invoiceLines": 15,
+   "hlCustomers": 2
   },
   "SLIPSHEET": {
    "name": "Slip Sheet Application",
    "uom": "Pallet",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 6
+   "invoiceLines": 6,
+   "hlCustomers": 0
   },
   "RMS-006": {
    "name": "Restocking",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "RMS-005": {
    "name": "Picture",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "RMS-004": {
    "name": "Hourly Inspection",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "RMS-003": {
    "name": "Complex Inspection",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "RMS-002": {
    "name": "Standard Inspection",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "RMS-001": {
    "name": "Standard Return",
    "uom": "Tracking",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "RELABELING": {
    "name": "Relabeling",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
-  },
-  "OVERBOX": {
-   "name": "OVERBOX",
-   "uom": "Box",
-   "category": "HANDLING",
-   "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "DUNNAGE": {
    "name": "DUNNAGE",
    "uom": "Each",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 28
+   "invoiceLines": 28,
+   "hlCustomers": 3
   },
   "HOURLY LABOR": {
    "name": "HOURLY LABOR",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 278
+   "invoiceLines": 278,
+   "hlCustomers": 39
   },
   "HANDLING-0254": {
    "name": "HANDLING",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0252": {
    "name": "Offloading",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 46
+   "invoiceLines": 46,
+   "hlCustomers": 4
   },
   "ACCESSORIAL-0037": {
    "name": "ADDRESS CORRECTION",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 21
+   "invoiceLines": 21,
+   "hlCustomers": 2
   },
   "YARD-0002": {
    "name": "YARD STORAGE",
    "uom": "Service",
    "category": "YARD",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0251": {
    "name": "YARD HOSTLER WEEKEND",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 31
+   "invoiceLines": 31,
+   "hlCustomers": 2
   },
   "HANDLING-0250": {
    "name": "YARD HOSTLER WEEKDAY",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 69
+   "invoiceLines": 69,
+   "hlCustomers": 2
   },
   "SYSTEM & MANAGEMENT FEE-0005": {
    "name": "WMS/IT MONTHLY MAINTENANCE",
    "uom": "Each",
    "category": "SYSTEM & MANAGEMENT FEE",
    "keys": [],
-   "invoiceLines": 393
+   "invoiceLines": 385,
+   "hlCustomers": 18
   },
   "SYSTEM & MANAGEMENT FEE-0004": {
    "name": "WISE ENTERPRISE SINGLE ENTITY SUBSCRIPTION",
    "uom": "Entity",
    "category": "SYSTEM & MANAGEMENT FEE",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0036": {
    "name": "WASTE REMOVAL",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0035": {
    "name": "Warehouse Supplies Management",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 35
+   "invoiceLines": 35,
+   "hlCustomers": 3
   },
   "ACCESSORIAL-0034": {
    "name": "Utility Jobs",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 5
+   "invoiceLines": 5,
+   "hlCustomers": 0
   },
   "TRANSPORTATION-0002": {
    "name": "TRANSPORTATION",
    "uom": "Unit",
    "category": "TRANSPORTATION",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0248": {
    "name": "Training",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "OTHERS-0005": {
    "name": "Toppers",
    "uom": "Pallet",
    "category": "OTHERS",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "Sublease Revenue-0001": {
    "name": "Sublease",
    "uom": "Monthly",
    "category": "Sublease Revenue",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0033": {
    "name": "Stretch Wrap Application",
    "uom": "Pallet",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 22
+   "invoiceLines": 22,
+   "hlCustomers": 8
   },
   "OTHERS-0004": {
    "name": "Straps",
    "uom": "Pallet",
    "category": "OTHERS",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0029": {
    "name": "Storage-Claim",
    "uom": "Unit",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0032": {
    "name": "Special Project",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 7
+   "invoiceLines": 7,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0028": {
    "name": "SPACE RENTAL",
    "uom": "Unit",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0246": {
    "name": "Sorting",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "HANDLING-0244": {
    "name": "Setup Labels and Other Documents by Retailer",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0029": {
    "name": "Service Charge",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 39
+   "invoiceLines": 39,
+   "hlCustomers": 1
   },
   "HANDLING-0243": {
    "name": "SERIAL NUMBER TRACKING",
    "uom": "Scan",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 415
+   "invoiceLines": 415,
+   "hlCustomers": 9
   },
   "HANDLING-0241": {
    "name": "SECURITY CHARGE",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0240": {
    "name": "Scanning",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0239": {
    "name": "ROUTING",
    "uom": "Order",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 302
+   "invoiceLines": 298,
+   "hlCustomers": 21
   },
   "HANDLING-0238": {
    "name": "Rework",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 14
+   "invoiceLines": 14,
+   "hlCustomers": 4
   },
   "HANDLING-0236": {
    "name": "RE-STOCK FEE",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0235": {
    "name": "Request Data and Spec",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0233": {
    "name": "REPACK",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0028": {
    "name": "Rental Equipment Management",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 11
+   "invoiceLines": 11,
+   "hlCustomers": 1
   },
   "HANDLING-0232": {
    "name": "Remark master carton",
    "uom": "Carton",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0230": {
    "name": "Pre Golive Meeting",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0229": {
    "name": "Post Golive Meeting",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0027": {
    "name": "PICTURES/PHOTOS",
    "uom": "Piece",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 35
+   "invoiceLines": 34,
+   "hlCustomers": 1
   },
   "ACCESSORIAL-0026": {
    "name": "PHOTO COPIES (BLACK & WHITE)",
    "uom": "Document",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 167
+   "invoiceLines": 165,
+   "hlCustomers": 7
   },
   "HANDLING-0227": {
    "name": "Palletizing & Wrapping",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 9
+   "invoiceLines": 9,
+   "hlCustomers": 3
   },
   "ACCESSORIAL-0023": {
    "name": "Packing list",
    "uom": "Document",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 197
+   "invoiceLines": 196,
+   "hlCustomers": 8
   },
   "ACCESSORIAL-0022": {
    "name": "Packaging Material Management",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "HANDLING-0226": {
    "name": "Package Prepare",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0225": {
    "name": "OVERTIME",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 108
+   "invoiceLines": 109,
+   "hlCustomers": 12
   },
   "HANDLING-0224": {
    "name": "OVERNIGHT CLERKS",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0223": {
    "name": "OVER TIME",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 15
+   "invoiceLines": 15,
+   "hlCustomers": 7
   },
   "HANDLING-0222": {
    "name": "Outbound UAT",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0221": {
    "name": "Outbound QC",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 8
+   "invoiceLines": 8,
+   "hlCustomers": 1
   },
   "HANDLING-0220": {
    "name": "Other UAT",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0219": {
    "name": "OSD (OVERAGE, SHORTAGE AND DAMAGE REPORT) ",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 7
+   "invoiceLines": 7,
+   "hlCustomers": 2
   },
   "HANDLING-0218": {
    "name": "Operation Clarify Meeting",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0217": {
    "name": "On Going Support",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 2
   },
   "ACCESSORIAL-0019": {
    "name": "Office Supplies Management",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0018": {
    "name": "NO ASN/PACKING LIST",
    "uom": "receipt",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 13
+   "invoiceLines": 13,
+   "hlCustomers": 1
   },
   "ACCESSORIAL-0017": {
    "name": "MONTHLY ADMINISTRATION",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "MISCELLANEOUS REVENUE-0001": {
    "name": "Misc",
    "uom": "Service",
    "category": "MISCELLANEOUS REVENUE",
    "keys": [],
-   "invoiceLines": 98
+   "invoiceLines": 98,
+   "hlCustomers": 3
   },
   "LATE CHARGE-0001": {
    "name": "LATE FEE",
    "uom": "Service",
    "category": "LATE CHARGE",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0213": {
    "name": "Labor",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0212": {
    "name": "APPLYING LABELS",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 59
+   "invoiceLines": 59,
+   "hlCustomers": 9
   },
   "HANDLING-0211": {
    "name": "Labeling (Serial Number)",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0210": {
    "name": "Labeling (Item Label)",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 30
+   "invoiceLines": 30,
+   "hlCustomers": 5
   },
   "HANDLING-0209": {
    "name": "LABEL APPLICATION/REMOVAL",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 21,
+   "hlCustomers": 2
   },
   "HANDLING-0208": {
    "name": "KITTING",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 72
+   "invoiceLines": 72,
+   "hlCustomers": 5
   },
   "HANDLING-0207": {
    "name": "Kitting - Assembly with Workorder",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 10
+   "invoiceLines": 10,
+   "hlCustomers": 0
   },
   "HANDLING-0206": {
    "name": "Kick Off",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0014": {
    "name": "Item Setup",
    "uom": "Each",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 11
+   "invoiceLines": 11,
+   "hlCustomers": 1
   },
   "SYSTEM & MANAGEMENT FEE-0003": {
    "name": "IT MAINTENANCE",
    "uom": "Each",
    "category": "SYSTEM & MANAGEMENT FEE",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 143,
+   "hlCustomers": 8
   },
   "HANDLING-0205": {
    "name": "IT Discussion Meeting",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0204": {
    "name": "Inventory Consolidation",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "Gift-0001": {
    "name": "Incentive Program",
    "uom": "Unit",
    "category": "Gift",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0202": {
    "name": "Inbound UAT",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0201": {
    "name": "Inbound QC",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 5
+   "invoiceLines": 5,
+   "hlCustomers": 2
   },
   "OTHERS-0003": {
    "name": "Inbound deliver by outside carrier",
    "uom": "CNTR",
    "category": "OTHERS",
    "keys": [],
-   "invoiceLines": 41
+   "invoiceLines": 41,
+   "hlCustomers": 1
   },
   "HANDLING-0200": {
    "name": "Import Item Master",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0199": {
    "name": "HOURLY LABOR $ / HOUR",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 824
+   "invoiceLines": 830,
+   "hlCustomers": 70
   },
   "HANDLING-0198": {
    "name": "Handling-Claim",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "HANDLING-0197": {
    "name": "HANDLING OUT",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
-  },
-  "HANDLING-0195": {
-   "name": "HANDLING IN",
-   "uom": "Unit",
-   "category": "HANDLING",
-   "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "Small Parcel-0006": {
    "name": "Freight-Claim",
    "uom": "Unit",
    "category": "Small Package",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0194": {
    "name": "EDI/FTP Development",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 8
+   "invoiceLines": 6,
+   "hlCustomers": 3
   },
   "HANDLING-0193": {
    "name": "EDI/FTP Data Mapping",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0192": {
    "name": "DROPSHIP RE-PROCESSING FEE",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 1
   },
   "DRAYAGE-0002": {
    "name": "Drayage-Claim",
    "uom": "Each",
    "category": "DRAYAGE",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0013": {
    "name": "Documentation",
    "uom": "Order",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0012": {
    "name": "DOCUMENT SCANNING",
    "uom": "Document",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 99
+   "invoiceLines": 95,
+   "hlCustomers": 3
   },
   "ACCESSORIAL-0011": {
    "name": "DISPOSAL FEE",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "DISCOUNT-0001": {
    "name": "DISCOUNT",
    "uom": "Service",
    "category": "DISCOUNT",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "SECURITY DEPOSIT-0001": {
    "name": "DEPOSIT",
    "uom": "Unit",
    "category": "SECURITY DEPOSIT",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0010": {
    "name": "CYCLE COUNTING",
    "uom": "Hour",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 6
+   "invoiceLines": 6,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0009": {
    "name": "CUSTOMIZED SHIPPING DOCUMENTS",
    "uom": "Document",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 215
+   "invoiceLines": 215,
+   "hlCustomers": 9
   },
   "HANDLING-0191": {
    "name": "CUSTOMER SERVICE",
    "uom": "Service",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0008": {
    "name": "Custom Bond document",
    "uom": "Document",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0190": {
    "name": "Create Customer Code & Setup Customer/Facility BNP",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0189": {
    "name": "Create and Setup Customer/Facility in WISE",
    "uom": "Each",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0027": {
    "name": "Container Layover",
    "uom": "days",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 8
+   "invoiceLines": 8,
+   "hlCustomers": 4
   },
   "HANDLING-0188": {
    "name": "CHEP OFFLOADING",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "TRANSPORTATION-0001": {
    "name": "Carrier Management",
    "uom": "Area",
    "category": "TRANSPORTATION",
    "keys": [],
-   "invoiceLines": 3
+   "invoiceLines": 3,
+   "hlCustomers": 0
   },
   "ACCESSORIAL-0007": {
    "name": "Cancellation Charge",
    "uom": "Order",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 64
+   "invoiceLines": 65,
+   "hlCustomers": 11
   },
   "ACCESSORIAL-0006": {
    "name": "BOL",
    "uom": "Document",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "HANDLING-0187": {
    "name": "Assembly",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 3
+   "invoiceLines": 2,
+   "hlCustomers": 0
   },
   "HANDLING-0186": {
    "name": "Assembly Putaway",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "HANDLING-0185": {
    "name": "Assembly Pick",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0184": {
    "name": "Amazon Labeling",
    "uom": "Label",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 21
+   "invoiceLines": 21,
+   "hlCustomers": 2
   },
   "ACCESSORIAL-0005": {
    "name": "ADMIN FEE",
    "uom": "Service",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 122
+   "invoiceLines": 122,
+   "hlCustomers": 9
   },
   "ACCESSORIAL-0004": {
    "name": "Accessorial-Claim",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 9
+   "invoiceLines": 9,
+   "hlCustomers": 2
   },
   "ACCESSORIAL-0003": {
    "name": "ACCESSORIAL CHARGE",
    "uom": "Unit",
    "category": "ACCESSORIAL",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0182": {
    "name": "3RD PARTY POSTAGE",
    "uom": "Order",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "YARD-0001": {
    "name": "Yard Storage",
@@ -5729,14 +6262,16 @@
     "Container Size",
     "Period"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 3,
+   "hlCustomers": 1
   },
   "Small Parcel-0004": {
    "name": "Transportation",
    "uom": "Order",
    "category": "Small Package",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "Small Parcel-0003": {
    "name": "Transportation",
@@ -5745,42 +6280,48 @@
    "keys": [
     "Container Size"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0005": {
    "name": "Transload(Rate by Unit)-split rate",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0004": {
    "name": "Transload(Rate by Unit)-split rate",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0003": {
    "name": "Transload(Rate by Unit)-split rate",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0015": {
    "name": "Transload(Rate by Unit)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0010": {
    "name": "Transload(Rate by Unit)",
    "uom": "Metric Ton",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0008": {
    "name": "Transload(Rate by Unit)",
@@ -5791,7 +6332,8 @@
     "Receipt Type",
     "Volume"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 936,
+   "hlCustomers": 2
   },
   "HANDLING-0007": {
    "name": "Transload(Rate by Unit)",
@@ -5800,21 +6342,24 @@
    "keys": [
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0014": {
    "name": "Transload(Rate by Unit)",
    "uom": "Rail",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0012": {
    "name": "Transload(Rate by Unit)",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0011": {
    "name": "Transload(Rate by Unit)",
@@ -5823,7 +6368,8 @@
    "keys": [
     "OFFLoad Type"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0009": {
    "name": "Transload(Rate by Unit)",
@@ -5832,7 +6378,8 @@
    "keys": [
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0006": {
    "name": "Transload(Rate by Unit)",
@@ -5843,7 +6390,8 @@
     "OFFLoad Type",
     "Ship Method"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0016": {
    "name": "Transload(Rate by Pallet size)",
@@ -5853,21 +6401,24 @@
     "OFFLoad Type",
     "Pallet Size"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0019": {
    "name": "Transload(Rate by pallet qty)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0018": {
    "name": "Transload(Rate by pallet qty)",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0017": {
    "name": "Transload(Rate by pallet qty)",
@@ -5878,21 +6429,24 @@
     "OFFLoad Type",
     "Pallet Qty Range"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "HANDLING-0020": {
    "name": "Transload(Rate by Item type)",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0021": {
    "name": "Transload(Rate by Hour)",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0022": {
    "name": "Transload(Rate by each receipt)",
@@ -5901,7 +6455,8 @@
    "keys": [
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0023": {
    "name": "Transload(Rate by Container size)",
@@ -5912,7 +6467,8 @@
     "OFFLoad Type",
     "Ship Method"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 21,
+   "hlCustomers": 0
   },
   "HANDLING-0024": {
    "name": "Transload(Rate by Case qty)-Tier Rate",
@@ -5924,14 +6480,16 @@
     "Container Size",
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0027": {
    "name": "Transload(Rate by Case qty)-Range Rate",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0026": {
    "name": "Transload(Rate by Case qty)-Range Rate",
@@ -5945,7 +6503,8 @@
     "SKU Qty Range",
     "Ship Method"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 22,
+   "hlCustomers": 1
   },
   "HANDLING-0025": {
    "name": "Transload(Rate by Case qty)-Range Rate",
@@ -5957,28 +6516,32 @@
     "Container Size",
     "OFFLoad Type"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "HANDLING-0031": {
    "name": "Sorting",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0030": {
    "name": "Sorting",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 23,
+   "hlCustomers": 2
   },
   "HANDLING-0032": {
    "name": "Sorting",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0029": {
    "name": "Sorting",
@@ -5990,7 +6553,8 @@
     "SKU Qty",
     "Ship Method"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 178,
+   "hlCustomers": 24
   },
   "Small Parcel-0005": {
    "name": "Small Parcel Freight Cost",
@@ -6000,21 +6564,24 @@
     "Carrier",
     "Charge Item"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 6927,
+   "hlCustomers": 62
   },
   "HANDLING-0033": {
    "name": "Shotgun",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0035": {
    "name": "Shotgun",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0034": {
    "name": "Shotgun",
@@ -6023,7 +6590,8 @@
    "keys": [
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 16,
+   "hlCustomers": 2
   },
   "HANDLING-0039": {
    "name": "Return",
@@ -6032,21 +6600,24 @@
    "keys": [
     "Title"
    ],
-   "invoiceLines": 21
+   "invoiceLines": 57,
+   "hlCustomers": 11
   },
   "HANDLING-0038": {
    "name": "Return",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 7
+   "invoiceLines": 7,
+   "hlCustomers": 2
   },
   "HANDLING-0037": {
    "name": "Return",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 53
+   "invoiceLines": 60,
+   "hlCustomers": 11
   },
   "HANDLING-0036": {
    "name": "Return",
@@ -6055,7 +6626,8 @@
    "keys": [
     "Title"
    ],
-   "invoiceLines": 28
+   "invoiceLines": 31,
+   "hlCustomers": 6
   },
   "STORAGE INCOME-0009": {
    "name": "Recurring Storage(Rate by Pallet Size)",
@@ -6066,7 +6638,8 @@
     "Pallet Size",
     "Period"
    ],
-   "invoiceLines": 8
+   "invoiceLines": 100,
+   "hlCustomers": 6
   },
   "STORAGE INCOME-0010": {
    "name": "Recurring Storage(Rate by Item Type)",
@@ -6077,7 +6650,8 @@
     "Period",
     "TV Size"
    ],
-   "invoiceLines": 1690
+   "invoiceLines": 22,
+   "hlCustomers": 2
   },
   "STORAGE INCOME-0011": {
    "name": "Recurring Storage(Rate by Item Stack High)",
@@ -6091,7 +6665,8 @@
     "Temperature",
     "Title"
    ],
-   "invoiceLines": 61
+   "invoiceLines": 205,
+   "hlCustomers": 12
   },
   "STORAGE INCOME-0001": {
    "name": "Recurring Storage",
@@ -6101,7 +6676,8 @@
     "Period",
     "Weight"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 7,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0003": {
    "name": "Recurring Storage",
@@ -6113,7 +6689,8 @@
     "Title",
     "Volume"
    ],
-   "invoiceLines": 2
+   "invoiceLines": 25,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0002": {
    "name": "Recurring Storage",
@@ -6125,7 +6702,8 @@
     "Title",
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 254,
+   "hlCustomers": 13
   },
   "STORAGE INCOME-0004": {
    "name": "Recurring Storage",
@@ -6135,7 +6713,8 @@
     "Days Range",
     "Period"
    ],
-   "invoiceLines": 9961
+   "invoiceLines": 1744,
+   "hlCustomers": 55
   },
   "STORAGE INCOME-0012": {
    "name": "Recurring Storage",
@@ -6147,7 +6726,8 @@
     "Period",
     "Title"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 3,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0013": {
    "name": "Recurring Storage",
@@ -6158,7 +6738,8 @@
     "Minimum Charge Condition",
     "Period"
    ],
-   "invoiceLines": 10
+   "invoiceLines": 459,
+   "hlCustomers": 20
   },
   "STORAGE INCOME-0008": {
    "name": "Recurring Storage",
@@ -6170,21 +6751,24 @@
     "Period",
     "Title"
    ],
-   "invoiceLines": 507
+   "invoiceLines": 287,
+   "hlCustomers": 16
   },
   "OTHERS-0002": {
    "name": "Clean Up",
    "uom": "Hour",
    "category": "OTHERS",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0013": {
    "name": "Transload(Rate by Unit)",
    "uom": "Pound",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "Freight-0001": {
    "name": "Supplies Management",
@@ -6193,7 +6777,8 @@
    "keys": [
     "Charge Item"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 18,
+   "hlCustomers": 6
   },
   "HANDLING-0028": {
    "name": "Sorting",
@@ -6203,7 +6788,8 @@
     "Receipt Type",
     "SKU Qty"
    ],
-   "invoiceLines": 23
+   "invoiceLines": 60,
+   "hlCustomers": 6
   },
   "STORAGE INCOME-0007": {
    "name": "Recurring Storage",
@@ -6214,28 +6800,32 @@
     "Minimum Charge Condition",
     "Period"
    ],
-   "invoiceLines": 11
+   "invoiceLines": 42,
+   "hlCustomers": 5
   },
   "STORAGE INCOME-0006": {
    "name": "Recurring Storage",
    "uom": "Piece",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0005": {
    "name": "Recurring Storage",
    "uom": "Case",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 6
+   "invoiceLines": 12,
+   "hlCustomers": 2
   },
   "HANDLING-0040": {
    "name": "Receipt Entry(Rush Receipt)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 15
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "HANDLING-0042": {
    "name": "Receipt Entry(Receipt Processing)",
@@ -6244,28 +6834,32 @@
    "keys": [
     "Receipt Type"
    ],
-   "invoiceLines": 10
+   "invoiceLines": 36,
+   "hlCustomers": 5
   },
   "HANDLING-0041": {
    "name": "Receipt Entry(Receipt Processing)",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 6
+   "invoiceLines": 6,
+   "hlCustomers": 2
   },
   "HANDLING-0044": {
    "name": "Receipt Entry(Miss Receipt Appointment)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 11
+   "invoiceLines": 90,
+   "hlCustomers": 15
   },
   "HANDLING-0043": {
    "name": "Receipt Entry(Miss Receipt Appointment)",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 28
+   "invoiceLines": 37,
+   "hlCustomers": 8
   },
   "HANDLING-0045": {
    "name": "Receipt Entry(FTP Receipt Processing)-received confirmation",
@@ -6274,7 +6868,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0046": {
    "name": "Receipt Entry(FTP Receipt Processing)",
@@ -6283,7 +6878,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0047": {
    "name": "Receipt Entry(FTP Receipt Processing)",
@@ -6292,7 +6888,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0048": {
    "name": "Receipt Entry(EDI Receipt)-received confirmation",
@@ -6301,7 +6898,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 137,
+   "hlCustomers": 9
   },
   "HANDLING-0049": {
    "name": "Receipt Entry(EDI Receipt)",
@@ -6311,21 +6909,24 @@
     "Order Entry Type",
     "Receipt Type"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 454,
+   "hlCustomers": 29
   },
   "HANDLING-0050": {
    "name": "Receipt Entry(EDI Receipt)",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 6
+   "invoiceLines": 6,
+   "hlCustomers": 1
   },
   "HANDLING-0052": {
    "name": "Receipt Entry",
    "uom": "ReceiptLine",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 9,
+   "hlCustomers": 6
   },
   "HANDLING-0051": {
    "name": "Receipt Entry",
@@ -6334,7 +6935,8 @@
    "keys": [
     "Receipt Type"
    ],
-   "invoiceLines": 85
+   "invoiceLines": 575,
+   "hlCustomers": 27
   },
   "HANDLING-0053": {
    "name": "Put Away",
@@ -6343,7 +6945,8 @@
    "keys": [
     "OFFLoad Type"
    ],
-   "invoiceLines": 29
+   "invoiceLines": 751,
+   "hlCustomers": 34
   },
   "HANDLING-0056": {
    "name": "Pick(Rate by Unit)-split rate-WeightRangePerOrder",
@@ -6356,21 +6959,24 @@
     "Unit Sequence",
     "Weight Range Per Order"
    ],
-   "invoiceLines": 8
+   "invoiceLines": 40,
+   "hlCustomers": 3
   },
   "HANDLING-0055": {
    "name": "Put Away",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0054": {
    "name": "Put Away",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 3,
+   "hlCustomers": 1
   },
   "HANDLING-0062": {
    "name": "Pick(Rate by Unit)-split rate",
@@ -6384,7 +6990,8 @@
     "Unit Sequence",
     "Weight Range"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 29,
+   "hlCustomers": 2
   },
   "HANDLING-0061": {
    "name": "Pick(Rate by Unit)-split rate",
@@ -6399,7 +7006,8 @@
     "Unit Sequence",
     "Weight Range"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 185,
+   "hlCustomers": 8
   },
   "HANDLING-0060": {
    "name": "Pick(Rate by Unit)-split rate",
@@ -6408,7 +7016,8 @@
    "keys": [
     "Unit Sequence"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0059": {
    "name": "Pick(Rate by Unit)-split rate",
@@ -6420,7 +7029,8 @@
     "Order Type",
     "Unit Sequence"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0058": {
    "name": "Pick(Rate by Unit)-split rate",
@@ -6432,7 +7042,8 @@
     "Unit Sequence",
     "Weight Range"
    ],
-   "invoiceLines": 2
+   "invoiceLines": 6,
+   "hlCustomers": 2
   },
   "HANDLING-0057": {
    "name": "Pick(Rate by Unit)-split rate",
@@ -6445,7 +7056,8 @@
     "Unit Sequence",
     "Weight Range Per Case"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 23,
+   "hlCustomers": 3
   },
   "HANDLING-0071": {
    "name": "Pick(Rate by Unit)",
@@ -6454,18 +7066,16 @@
    "keys": [
     "Weight"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0070": {
    "name": "Pick(Rate by Unit)",
    "uom": "Pound",
    "category": "HANDLING",
-   "keys": [
-    "Business Type",
-    "Order Type",
-    "Weight"
-   ],
-   "invoiceLines": 0
+   "keys": [],
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0069": {
    "name": "Pick(Rate by Unit)",
@@ -6477,7 +7087,8 @@
     "Retailer",
     "Ship Method"
    ],
-   "invoiceLines": 36
+   "invoiceLines": 713,
+   "hlCustomers": 22
   },
   "HANDLING-0068": {
    "name": "Pick(Rate by Unit)",
@@ -6489,7 +7100,8 @@
     "Retailer",
     "Ship Method"
    ],
-   "invoiceLines": 10
+   "invoiceLines": 866,
+   "hlCustomers": 17
   },
   "HANDLING-0067": {
    "name": "Pick(Rate by Unit)",
@@ -6502,7 +7114,8 @@
     "Retailer",
     "Ship Method"
    ],
-   "invoiceLines": 831
+   "invoiceLines": 3573,
+   "hlCustomers": 63
   },
   "HANDLING-0066": {
    "name": "Pick(Rate by Unit)",
@@ -6511,14 +7124,16 @@
    "keys": [
     "Order Type"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 15,
+   "hlCustomers": 4
   },
   "HANDLING-0065": {
    "name": "Pick(Rate by Unit)",
    "uom": "ItemLine",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 1
   },
   "HANDLING-0064": {
    "name": "Pick(Rate by Unit)",
@@ -6530,7 +7145,8 @@
     "Retailer",
     "Ship Method"
    ],
-   "invoiceLines": 54
+   "invoiceLines": 24,
+   "hlCustomers": 3
   },
   "HANDLING-0063": {
    "name": "Pick(Rate by Unit)",
@@ -6543,7 +7159,8 @@
     "Retailer",
     "Ship Method"
    ],
-   "invoiceLines": 33
+   "invoiceLines": 952,
+   "hlCustomers": 36
   },
   "HANDLING-0074": {
    "name": "Pick(Rate by Unit Weight)",
@@ -6556,7 +7173,8 @@
     "Ship Method",
     "Weight Range"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 472,
+   "hlCustomers": 23
   },
   "HANDLING-0073": {
    "name": "Pick(Rate by Unit Weight)",
@@ -6568,7 +7186,8 @@
     "Ship Method",
     "Weight Range"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 641,
+   "hlCustomers": 25
   },
   "HANDLING-0072": {
    "name": "Pick(Rate by Unit Weight)",
@@ -6582,7 +7201,8 @@
     "Ship Method",
     "Weight Range"
    ],
-   "invoiceLines": 25
+   "invoiceLines": 1649,
+   "hlCustomers": 50
   },
   "HANDLING-0075": {
    "name": "Pick(Rate by Unit Qty)-PalletQtyRange",
@@ -6594,7 +7214,8 @@
     "Pallet Qty Range",
     "Ship Method"
    ],
-   "invoiceLines": 5
+   "invoiceLines": 6,
+   "hlCustomers": 4
   },
   "HANDLING-0077": {
    "name": "Pick(Rate by Unit Qty)",
@@ -6605,7 +7226,8 @@
     "Order Type",
     "Ship Method"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 236,
+   "hlCustomers": 9
   },
   "HANDLING-0076": {
    "name": "Pick(Rate by Unit Qty)",
@@ -6617,7 +7239,8 @@
     "Pallet Qty Range",
     "SKU Qty Range"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 16,
+   "hlCustomers": 2
   },
   "HANDLING-0081": {
    "name": "Palletizing(Inbound - Palletizing)",
@@ -6626,21 +7249,24 @@
    "keys": [
     "Palletizing Type"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0083": {
    "name": "Palletizing(Inbound - Palletizing)",
    "uom": "CNTR",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 5
+   "invoiceLines": 5,
+   "hlCustomers": 3
   },
   "HANDLING-0082": {
    "name": "Palletizing(Inbound - Palletizing)",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 1
   },
   "HANDLING-0084": {
    "name": "Packing(Small Parcel Processing)",
@@ -6649,7 +7275,8 @@
    "keys": [
     "Order Type"
    ],
-   "invoiceLines": 14
+   "invoiceLines": 324,
+   "hlCustomers": 12
   },
   "HANDLING-0085": {
    "name": "Packing(Small Parcel Processing)",
@@ -6658,14 +7285,16 @@
    "keys": [
     "Order Type"
    ],
-   "invoiceLines": 15
+   "invoiceLines": 108,
+   "hlCustomers": 4
   },
   "HANDLING-0086": {
    "name": "Packing(Regular Processing)",
    "uom": "Order",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0087": {
    "name": "Packing(Regular Processing)",
@@ -6674,7 +7303,8 @@
    "keys": [
     "Order Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "HANDLING-0088": {
    "name": "Order Entry(Rush Order)",
@@ -6683,7 +7313,8 @@
    "keys": [
     "Business Type"
    ],
-   "invoiceLines": 252
+   "invoiceLines": 424,
+   "hlCustomers": 46
   },
   "HANDLING-0089": {
    "name": "Order Entry(Order Processing)-Single SKU",
@@ -6697,7 +7328,8 @@
     "Ship Method",
     "Weight Range Per SKU"
    ],
-   "invoiceLines": 116
+   "invoiceLines": 169,
+   "hlCustomers": 6
   },
   "HANDLING-0093": {
    "name": "Order Entry(Order Processing)",
@@ -6713,7 +7345,8 @@
     "Ship Method",
     "Weight Range Per Order"
    ],
-   "invoiceLines": 9714
+   "invoiceLines": 6253,
+   "hlCustomers": 100
   },
   "HANDLING-0092": {
    "name": "Order Entry(Order Processing)",
@@ -6722,14 +7355,16 @@
    "keys": [
     "Order Type"
    ],
-   "invoiceLines": 20
+   "invoiceLines": 21,
+   "hlCustomers": 3
   },
   "HANDLING-0091": {
    "name": "Order Entry(Order Processing)",
    "uom": "ItemLine",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 9
+   "invoiceLines": 9,
+   "hlCustomers": 5
   },
   "HANDLING-0090": {
    "name": "Order Entry(Order Processing)",
@@ -6740,14 +7375,16 @@
     "Order Type",
     "Ship Method"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 27,
+   "hlCustomers": 1
   },
   "HANDLING-0094": {
    "name": "Order Entry(Order Processing)",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 3
   },
   "HANDLING-0095": {
    "name": "Order Entry(Miss Order Appointment)",
@@ -6759,14 +7396,16 @@
     "Order Type",
     "Ship Method"
    ],
-   "invoiceLines": 8
+   "invoiceLines": 610,
+   "hlCustomers": 72
   },
   "HANDLING-0097": {
    "name": "Order Entry(Manual Order Entry)",
    "uom": "OrderLine",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 6
+   "invoiceLines": 17,
+   "hlCustomers": 5
   },
   "HANDLING-0096": {
    "name": "Order Entry(Manual Order Entry)",
@@ -6776,7 +7415,8 @@
     "Business Type",
     "Order Type"
    ],
-   "invoiceLines": 13334
+   "invoiceLines": 2215,
+   "hlCustomers": 71
   },
   "HANDLING-0001": {
    "name": "Order Entry(FTP Order Processing)",
@@ -6785,7 +7425,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 2
+   "invoiceLines": 221,
+   "hlCustomers": 13
   },
   "HANDLING-0002": {
    "name": "Order Entry(FTP Order Processing)",
@@ -6794,14 +7435,16 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 4,
+   "hlCustomers": 1
   },
   "HANDLING-0098": {
    "name": "Order Entry(EDI Order VAN charge)",
    "uom": "Document",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0099": {
    "name": "Order Entry(EDI Order Processing)",
@@ -6810,7 +7453,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 163,
+   "hlCustomers": 6
   },
   "HANDLING-0100": {
    "name": "Order Entry(EDI Order VAN Charge)",
@@ -6819,7 +7463,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 169,
+   "hlCustomers": 10
   },
   "HANDLING-0080": {
    "name": "Pick(Outbound - Pick)",
@@ -6828,7 +7473,8 @@
    "keys": [
     "Weight"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 52,
+   "hlCustomers": 1
   },
   "HANDLING-0079": {
    "name": "Pick(Outbound - Pick)",
@@ -6840,7 +7486,8 @@
     "Ship Method",
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 11,
+   "hlCustomers": 1
   },
   "HANDLING-0078": {
    "name": "Pick(Outbound - Pick)",
@@ -6852,14 +7499,16 @@
     "Pick Option",
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 246,
+   "hlCustomers": 2
   },
   "HANDLING-0101": {
    "name": "Order Entry(EDI Order VAN Charge)",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0102": {
    "name": "Order Entry(EDI Order Processing)",
@@ -6868,7 +7517,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 9
+   "invoiceLines": 1018,
+   "hlCustomers": 30
   },
   "HANDLING-0103": {
    "name": "Order Entry(EDI Order Processing)",
@@ -6877,7 +7527,8 @@
    "keys": [
     "Order Entry Type"
    ],
-   "invoiceLines": 28
+   "invoiceLines": 33,
+   "hlCustomers": 2
   },
   "ACCESSORIAL-0001": {
    "name": "Order Entry(Cancel Order Before Picking)",
@@ -6886,7 +7537,8 @@
    "keys": [
     "Is Picked"
    ],
-   "invoiceLines": 9
+   "invoiceLines": 37,
+   "hlCustomers": 7
   },
   "ACCESSORIAL-0002": {
    "name": "Order Entry(Cancel Order After Picking)",
@@ -6895,7 +7547,8 @@
    "keys": [
     "Is Picked"
    ],
-   "invoiceLines": 33
+   "invoiceLines": 537,
+   "hlCustomers": 72
   },
   "HANDLING-0106": {
    "name": "Offload(Rate by Unit)-split rate",
@@ -6905,7 +7558,8 @@
     "Receipt Type",
     "Unit Sequence"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 23,
+   "hlCustomers": 5
   },
   "HANDLING-0105": {
    "name": "Offload(Rate by Unit)-split rate",
@@ -6917,7 +7571,8 @@
     "Ship Method",
     "Unit Sequence"
    ],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 1
   },
   "HANDLING-0104": {
    "name": "Offload(Rate by Unit)-split rate",
@@ -6926,7 +7581,8 @@
    "keys": [
     "Unit Sequence"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0108": {
    "name": "Offload(Rate by Unit)-per item",
@@ -6937,7 +7593,8 @@
     "Receipt Type",
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 107,
+   "hlCustomers": 2
   },
   "HANDLING-0117": {
    "name": "Offload(Rate by Unit)",
@@ -6946,17 +7603,16 @@
    "keys": [
     "Weight"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0115": {
    "name": "Offload(Rate by Unit)",
    "uom": "Pound",
    "category": "HANDLING",
-   "keys": [
-    "OFFLoad Type",
-    "Weight"
-   ],
-   "invoiceLines": 1
+   "keys": [],
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0109": {
    "name": "Offload(Rate by Unit)",
@@ -6966,14 +7622,16 @@
     "Receipt Type",
     "Volume"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0116": {
    "name": "Offload(Rate by Unit)",
    "uom": "Rail",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0114": {
    "name": "Offload(Rate by Unit)",
@@ -6985,7 +7643,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 72,
+   "hlCustomers": 9
   },
   "HANDLING-0113": {
    "name": "Offload(Rate by Unit)",
@@ -6998,7 +7657,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 18
+   "invoiceLines": 2155,
+   "hlCustomers": 68
   },
   "HANDLING-0119": {
    "name": "Offload(Rate by pallet qty)-Tier Rate",
@@ -7011,14 +7671,16 @@
     "Pallet Qty Range",
     "Ship Method"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 3,
+   "hlCustomers": 1
   },
   "HANDLING-0122": {
    "name": "Offload(Rate by pallet qty)-Range Rate",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 2
+   "invoiceLines": 2,
+   "hlCustomers": 1
   },
   "HANDLING-0112": {
    "name": "Offload(Rate by Unit)",
@@ -7029,7 +7691,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 37,
+   "hlCustomers": 4
   },
   "HANDLING-0111": {
    "name": "Offload(Rate by Unit)",
@@ -7038,7 +7701,8 @@
    "keys": [
     "Receipt Type"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0107": {
    "name": "Offload(Rate by Unit)",
@@ -7051,7 +7715,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 145,
+   "hlCustomers": 15
   },
   "HANDLING-0118": {
    "name": "Offload(Rate by Pallet size)",
@@ -7063,7 +7728,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 108,
+   "hlCustomers": 3
   },
   "HANDLING-0121": {
    "name": "Offload(Rate by pallet qty)-Range Rate",
@@ -7076,7 +7742,8 @@
     "Pallet Qty Range",
     "Ship Method"
    ],
-   "invoiceLines": 2
+   "invoiceLines": 19,
+   "hlCustomers": 1
   },
   "HANDLING-0120": {
    "name": "Offload(Rate by pallet qty)-Range Rate",
@@ -7089,7 +7756,8 @@
     "Pallet Qty Range",
     "SKU Qty Range"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 3,
+   "hlCustomers": 0
   },
   "HANDLING-0123": {
    "name": "Offload(Rate by Item type)",
@@ -7099,7 +7767,8 @@
     "Receipt Type",
     "TV Size"
    ],
-   "invoiceLines": 2219
+   "invoiceLines": 2,
+   "hlCustomers": 0
   },
   "HANDLING-0124": {
    "name": "Offload(Rate by Hour)",
@@ -7111,7 +7780,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 8
+   "invoiceLines": 149,
+   "hlCustomers": 13
   },
   "HANDLING-0125": {
    "name": "Offload(Rate by each receipt)",
@@ -7123,7 +7793,8 @@
     "Ship Method",
     "Title"
    ],
-   "invoiceLines": 2
+   "invoiceLines": 107,
+   "hlCustomers": 12
   },
   "HANDLING-0126": {
    "name": "Offload(Rate by Container size)",
@@ -7135,7 +7806,8 @@
     "Receipt Type",
     "Ship Method"
    ],
-   "invoiceLines": 3
+   "invoiceLines": 286,
+   "hlCustomers": 8
   },
   "HANDLING-0127": {
    "name": "Offload(Rate by Case qty)-Tier Rate",
@@ -7147,7 +7819,8 @@
     "Container Size",
     "OFFLoad Type"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 2,
+   "hlCustomers": 2
   },
   "HANDLING-0130": {
    "name": "Offload(Rate by Case qty)-Range Rate",
@@ -7158,7 +7831,8 @@
     "Case Qty",
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 38,
+   "hlCustomers": 3
   },
   "HANDLING-0129": {
    "name": "Offload(Rate by Case qty)-Range Rate",
@@ -7173,7 +7847,8 @@
     "SKU Qty Range",
     "Ship Method"
    ],
-   "invoiceLines": 139
+   "invoiceLines": 567,
+   "hlCustomers": 35
   },
   "HANDLING-0128": {
    "name": "Offload(Rate by Case qty)-Range Rate",
@@ -7189,28 +7864,39 @@
     "Ship Method",
     "Weight Range Per Case"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 97,
+   "hlCustomers": 6
   },
   "ACCESSORIAL-0038": {
    "name": "Material",
    "uom": "Unit",
    "category": "ACCESSORIAL",
-   "keys": [],
-   "invoiceLines": 0
+   "keys": [
+    "Material Type",
+    "Oversized Pallet",
+    "Pallet Option",
+    "Pallet Size",
+    "Retailer",
+    "Standard Pallet"
+   ],
+   "invoiceLines": 4401,
+   "hlCustomers": 94
   },
   "HANDLING-0131": {
    "name": "Loading(Rate by Unit)-TotalPieceQtyPerPeriod",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0132": {
    "name": "Loading(Rate by Unit)-TotalPieceQtyPerPeriod",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0133": {
    "name": "Loading(Rate by Unit)-TotalCaseQtyPerPeriod",
@@ -7220,28 +7906,32 @@
     "Case Qty Range",
     "Order Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 7,
+   "hlCustomers": 1
   },
   "HANDLING-0134": {
    "name": "Loading(Rate by Unit)-TotalCaseQtyPerPeriod",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0137": {
    "name": "Loading(Rate by Unit)-split rate",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0144": {
    "name": "Loading(Rate by Unit)",
    "uom": "Pound",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0141": {
    "name": "Loading(Rate by Unit)",
@@ -7250,14 +7940,16 @@
    "keys": [
     "Weight"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0140": {
    "name": "Loading(Rate by Unit)",
    "uom": "Cubic meter",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0139": {
    "name": "Loading(Rate by Unit)",
@@ -7266,7 +7958,8 @@
    "keys": [
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0143": {
    "name": "Loading(Rate by Unit)",
@@ -7276,21 +7969,24 @@
     "OrderTypeCode",
     "Sub Order Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0142": {
    "name": "Loading(Rate by Unit)",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0138": {
    "name": "Loading(Rate by Unit)",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0146": {
    "name": "Loading(Rate by Pallet size)",
@@ -7299,7 +7995,8 @@
    "keys": [
     "Pallet Size"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0147": {
    "name": "Loading(Rate by Item type)",
@@ -7308,21 +8005,24 @@
    "keys": [
     "TV Size"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0149": {
    "name": "Loading(Rate by each order/load handling fee)",
    "uom": "Order",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0150": {
    "name": "Loading(Rate by each order/load handling fee)",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0148": {
    "name": "Loading(Rate by each load)",
@@ -7332,7 +8032,8 @@
     "Inbound Equipment Type",
     "Outbound Equipment Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 2,
+   "hlCustomers": 0
   },
   "HANDLING-0151": {
    "name": "Loading(Rate by Container Size )",
@@ -7341,14 +8042,16 @@
    "keys": [
     "Container Size"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0154": {
    "name": "Loading(Rate by Case qty)",
    "uom": "Order",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0153": {
    "name": "Loading(Rate by Case qty)",
@@ -7358,7 +8061,8 @@
     "Case Qty",
     "Container Size"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0152": {
    "name": "Loading(Rate by Case qty)",
@@ -7367,7 +8071,8 @@
    "keys": [
     "Case Qty"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0155": {
    "name": "Labeling(Print)",
@@ -7376,7 +8081,8 @@
    "keys": [
     "Charge Item"
    ],
-   "invoiceLines": 1
+   "invoiceLines": 67,
+   "hlCustomers": 2
   },
   "HANDLING-0156": {
    "name": "Labeling(Apply)",
@@ -7385,7 +8091,8 @@
    "keys": [
     "Charge Item"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0014": {
    "name": "Initial Storage(Rate by Weight)",
@@ -7395,7 +8102,8 @@
     "Charging Time",
     "Weight"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 13,
+   "hlCustomers": 2
   },
   "STORAGE INCOME-0016": {
    "name": "Initial Storage(Rate by Volume)",
@@ -7406,7 +8114,8 @@
     "Title",
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 6,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0015": {
    "name": "Initial Storage(Rate by Volume)",
@@ -7418,28 +8127,32 @@
     "Title",
     "Volume"
    ],
-   "invoiceLines": 16
+   "invoiceLines": 139,
+   "hlCustomers": 8
   },
   "HANDLING-0136": {
    "name": "Loading(Rate by Unit)-split rate",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0135": {
    "name": "Loading(Rate by Unit)-split rate",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0145": {
    "name": "Loading(Rate by Unit)",
    "uom": "US Ton",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0021": {
    "name": "Initial Storage(Rate by Square Footage)",
@@ -7450,7 +8163,8 @@
     "Charging Time",
     "Minimum Charge Condition"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0020": {
    "name": "Initial Storage(Rate by Square Footage)",
@@ -7459,7 +8173,8 @@
    "keys": [
     "Area"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 10,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0022": {
    "name": "Initial Storage(Rate by Pallet Size)",
@@ -7469,14 +8184,16 @@
     "Charging Time",
     "Pallet Size"
    ],
-   "invoiceLines": 4
+   "invoiceLines": 117,
+   "hlCustomers": 1
   },
   "STORAGE INCOME-0023": {
    "name": "Initial Storage(Rate by Item Type)",
    "uom": "Unit",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0024": {
    "name": "Initial Storage(Rate by Item Stack High)",
@@ -7490,7 +8207,8 @@
     "Temperature",
     "Title"
    ],
-   "invoiceLines": 20
+   "invoiceLines": 198,
+   "hlCustomers": 10
   },
   "STORAGE INCOME-0025": {
    "name": "Initial Storage(Rate by Container Size)",
@@ -7500,7 +8218,8 @@
     "Container Size",
     "Title"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0026": {
    "name": "Initial Storage(Rate by Capacity Type)",
@@ -7510,56 +8229,64 @@
     "Capacity Type",
     "Charging Time"
    ],
-   "invoiceLines": 6
+   "invoiceLines": 236,
+   "hlCustomers": 12
   },
   "HANDLING-0160": {
    "name": "Billed Upon Receipt(Rate by Unit)-split rate",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0159": {
    "name": "Billed Upon Receipt(Rate by Unit)-split rate",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0158": {
    "name": "Billed Upon Receipt(Rate by Unit)-split rate",
    "uom": "Case",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0170": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "US Ton",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0168": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "Pound",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0165": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "Metric Ton",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0163": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "Cubic meter",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0162": {
    "name": "Billed Upon Receipt(Rate by Unit)",
@@ -7568,7 +8295,8 @@
    "keys": [
     "Volume"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0017": {
    "name": "Initial Storage(Rate by Unit)",
@@ -7579,42 +8307,48 @@
     "Days Range",
     "Receipt Type"
    ],
-   "invoiceLines": 9
+   "invoiceLines": 1769,
+   "hlCustomers": 54
   },
   "STORAGE INCOME-0019": {
    "name": "Initial Storage(Rate by Unit)",
    "uom": "Piece",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "STORAGE INCOME-0018": {
    "name": "Initial Storage(Rate by Unit)",
    "uom": "Case",
    "category": "STORAGE INCOME",
    "keys": [],
-   "invoiceLines": 3
+   "invoiceLines": 14,
+   "hlCustomers": 3
   },
   "HANDLING-0157": {
    "name": "Cross dock(Cross dock)",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0169": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "Rail",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0167": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "Piece",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0166": {
    "name": "Billed Upon Receipt(Rate by Unit)",
@@ -7624,14 +8358,16 @@
     "OFFLoad Type",
     "Ship Method"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 2,
+   "hlCustomers": 0
   },
   "HANDLING-0164": {
    "name": "Billed Upon Receipt(Rate by Unit)",
    "uom": "Load",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0161": {
    "name": "Billed Upon Receipt(Rate by Unit)",
@@ -7640,56 +8376,64 @@
    "keys": [
     "Ship Method"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0171": {
    "name": "Billed Upon Receipt(Rate by Pallet size)",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0174": {
    "name": "Billed Upon Receipt(Rate by pallet qty)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 1
+   "invoiceLines": 1,
+   "hlCustomers": 1
   },
   "HANDLING-0173": {
    "name": "Billed Upon Receipt(Rate by pallet qty)",
    "uom": "Pallet",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0172": {
    "name": "Billed Upon Receipt(Rate by pallet qty)",
    "uom": "CNTR",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0175": {
    "name": "Billed Upon Receipt(Rate by Item type)",
    "uom": "Unit",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0176": {
    "name": "Billed Upon Receipt(Rate by Hour)",
    "uom": "Hour",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0177": {
    "name": "Billed Upon Receipt(Rate by each receipt)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 1,
+   "hlCustomers": 0
   },
   "HANDLING-0178": {
    "name": "Billed Upon Receipt(Rate by Container size)",
@@ -7698,14 +8442,16 @@
    "keys": [
     "Container Size"
    ],
-   "invoiceLines": 15
+   "invoiceLines": 15,
+   "hlCustomers": 0
   },
   "HANDLING-0181": {
    "name": "Billed Upon Receipt(Rate by Case qty)",
    "uom": "Receipt",
    "category": "HANDLING",
    "keys": [],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0180": {
    "name": "Billed Upon Receipt(Rate by Case qty)",
@@ -7715,7 +8461,8 @@
     "Case Qty",
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   },
   "HANDLING-0179": {
    "name": "Billed Upon Receipt(Rate by Case qty)",
@@ -7725,10 +8472,12 @@
     "Case Qty",
     "OFFLoad Type"
    ],
-   "invoiceLines": 0
+   "invoiceLines": 0,
+   "hlCustomers": 0
   }
  },
  "standardTemplate": {
+  "version": "2026-10-01 (44 common billing items)",
   "customer": {
    "company": "Standard Charge Template",
    "code": "STANDARD",
@@ -7763,6 +8512,9 @@
      },
      "each": {
       "on": true
+     },
+     "hour": {
+      "on": true
      }
     },
     "prices": {
@@ -7775,7 +8527,9 @@
      "pallet|Palletized|p": 10.0,
      "pallet|MIN|load": 325.0,
      "case|Floor loaded|p": 0.35,
-     "each|Floor loaded|p": 0.88
+     "each|Floor loaded|p": 0.88,
+     "hour|Floor loaded|p": 45.0,
+     "hour|Palletized|p": 45.0
     },
     "settings": {}
    },
@@ -7866,16 +8620,49 @@
      "case": {
       "on": true
      },
+     "case#2": {
+      "on": true,
+      "driver": "caseWeight"
+     },
      "each": {
       "on": true
+     },
+     "each#2": {
+      "on": true,
+      "driver": "unitWeight"
+     },
+     "line": {
+      "on": true
+     },
+     "line#2": {
+      "on": true,
+      "driver": "unitWeight"
      }
     },
     "prices": {
      "pallet|B2B|p": 9.0,
      "case|B2B|p": 1.05,
      "case|D2C|p": 1.05,
+     "case#2|B2B|0 - 30 lbs|p": 0.8,
+     "case#2|B2B|31 - 60 lbs|p": 1.0,
+     "case#2|B2B|Over 60 lbs|p": 10.5,
+     "case#2|D2C|0 - 30 lbs|p": 0.8,
+     "case#2|D2C|31 - 60 lbs|p": 1.0,
+     "case#2|D2C|Over 60 lbs|p": 10.5,
      "each|B2B|p": 0.85,
-     "each|D2C|p": 0.5
+     "each|D2C|p": 0.5,
+     "each#2|B2B|0 - 30 lbs|p": 0.69,
+     "each#2|B2B|Over 90 lbs|p": 8.66,
+     "each#2|D2C|0 - 30 lbs|p": 0.69,
+     "each#2|D2C|Over 90 lbs|p": 8.66,
+     "line|B2B|p": 1.05,
+     "line|D2C|p": 0.5,
+     "line#2|B2B|0 - 30 lbs|p": 0.5,
+     "line#2|B2B|31 - 90 lbs|p": 1.0,
+     "line#2|B2B|Over 90 lbs|p": 1.5,
+     "line#2|D2C|0 - 30 lbs|p": 0.5,
+     "line#2|D2C|31 - 90 lbs|p": 1.0,
+     "line#2|D2C|Over 90 lbs|p": 1.5
     },
     "settings": {}
    },
@@ -7887,12 +8674,33 @@
     "settings": {},
     "price": 7.5
    },
+   "OB-PACK": {
+    "on": true,
+    "conds": {},
+    "units": {
+     "order": {
+      "on": true
+     }
+    },
+    "prices": {
+     "order||p": 0.5
+    },
+    "settings": {}
+   },
    "ST-STORAGE": {
     "on": true,
     "conds": {},
     "units": {
      "pallet": {
       "on": true
+     },
+     "pallet#2": {
+      "on": true,
+      "driver": "stack"
+     },
+     "bin": {
+      "on": true,
+      "driver": "binSize"
      },
      "sqft": {
       "on": true
@@ -7904,7 +8712,12 @@
     "prices": {
      "pallet||p": 14.0,
      "sqft||p": 1.33,
-     "cubic||p": 0.36
+     "cubic||p": 0.36,
+     "pallet#2|Rack position|p": 14.73,
+     "pallet#2|Floor, 1-high (tall / oversize)|p": 28.0,
+     "pallet#2|Floor, 2-high|p": 15.95,
+     "pallet#2|Floor, 3-high|p": 12.3,
+     "pallet#2|Floor, 4-high +|p": 8.25
     },
     "settings": {}
    },
@@ -7912,12 +8725,20 @@
     "on": true,
     "conds": {},
     "units": {
+     "package": {
+      "on": true
+     },
      "each": {
+      "on": true
+     },
+     "hour": {
       "on": true
      }
     },
     "prices": {
-     "each||p": 2.5
+     "package||p": 2.5,
+     "each||p": 2.5,
+     "hour||p": 42.0
     },
     "settings": {}
    },
@@ -8064,6 +8885,62 @@
     "prices": {},
     "settings": {},
     "price": 0.2
+   },
+   "OT-PALLET-A": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 18.75
+   },
+   "OT-PALLET-B": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 14.75
+   },
+   "OT-WRAP": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 5.5
+   },
+   "OT-STRAP": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 6.5
+   },
+   "OT-CORNER": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 6.5
+   },
+   "OT-FREIGHT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.2
+   },
+   "SU-VAN": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.5
    }
   }
  }

@@ -9,7 +9,8 @@ import type { Catalog, Customer, Quote, QuoteData } from "./types";
 export interface ProposalMeta { quote: Quote; customer: Customer | null; data: QuoteData; versionLabel: string }
 
 export function serviceLabel(r: PRow, T: Translator): string {
-  const base = T.tc(r.service) + (r.unitSuffix ? `${T.t("p.sep")}${T.t("p.per", { unit: softLower(T.tc(r.unitSuffix)) })}` : "");
+  const base = T.tc(r.service) + (r.unitSuffix ? `${T.t("p.sep")}${T.t("p.per", { unit: softLower(T.tc(r.unitSuffix)) })}` : "")
+    + (r.bySuffix ? `${T.t("p.sep")}${T.t("p.by", { driver: softLower(T.tc(r.bySuffix)) })}` : "");
   return base;
 }
 export function descText(r: PRow, T: Translator): string {

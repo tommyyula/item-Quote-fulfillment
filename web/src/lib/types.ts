@@ -28,19 +28,23 @@ export interface Catalog {
   defaultPreset: Record<string, ChargeSel>;   // "default template": the most common charges, pre-configured
   mapback: Mapback;                            // quote line -> existing system charge code
   systemCodes: Record<string, SystemCode>;     // billing-system item metadata (name, UOM, condition keys in use)
+  commonItems: { code: string; name: string; uom: string; tag: string; hlCustomers: number }[];  // the 44 common billing items
   standardTemplate: {                          // standard rates from all customers' price lists, as a ready quote
-    customer: { company: string; code: string; channel: Channel }; title: string; note: string;
+    version: string; customer: { company: string; code: string; channel: Channel }; title: string; note: string;
     selections: Record<string, ChargeSel>;
   };
 }
 export interface SystemCode { name: string; uom: string; category: string; keys: string[]; invoiceLines: number }
 export interface UnitCodes {
   flat: string; initial?: string; second?: string;
+  fixed?: Record<string, string>;   // system conditions always set on this code (e.g. Receipt Type for return receipts)
+  alt?: string[];                   // other codes that bill the same service
   drivers?: Record<string, string | string[] | { range: string; incremental: string }>;
 }
 export interface Mapback {
   builder: Record<string, Record<string, UnitCodes>>;
   simple: Record<string, string>;
+  simpleExtra: Record<string, { fixed?: Record<string, string>; alt?: string[] }>;
   newItems: Record<string, string>;
   notes: Record<string, string>;
   conds: Record<string, { key: string; values: Record<string, string>; note?: string }>;
@@ -79,6 +83,7 @@ export type QuoteStatus = "draft" | "sent" | "accepted" | "archived";
 export interface Quote {
   id: string; number: string; customerId: string; createdAt: string; updatedAt: string; status: QuoteStatus;
   draft: QuoteData; versions: Version[];
+  templateVersion?: string;   // Standard Charge Template quote: catalog template version it holds
 }
 export interface Customer {
   id: string; code: string; company: string; contact: string; phone: string; email: string;
@@ -93,6 +98,7 @@ export type LineCol = "p" | "first" | "add" | "min";
 export interface QuoteLine {
   key: string;                // stable key: chargeId|unitId|cells|col
   chargeId: string; categoryId: string; unitId: string | null; unitLabel: string;
+  unitKey?: string;           // instance key when a unit is priced more than one way ("case#2"); equals unitId otherwise
   dims: DimCell[]; col: LineCol; minBasis?: string;
   price: number | null; benchmark: number | null; pct: boolean; lo?: number; hi?: number;
 }

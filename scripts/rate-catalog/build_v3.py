@@ -9,9 +9,8 @@ import model_v3 as M
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUTDIR = f"{ROOT}/workingfolder-output"
-src = openpyxl.load_workbook(f"{ROOT}/workingfolder-input/Billing Items Usage Sep 2026 Final(1).xlsx", read_only=True, data_only=True)
-usage = {r[1]: r for r in src["All Billing Items Usage"].iter_rows(min_row=2, values_only=True) if r[1]}
-master = {r[1]: r for r in src["All Billing Items"].iter_rows(min_row=2, values_only=True) if r[1]}
+import source as SRC  # BillingItem_Usage1001 -Final.xlsx, read by column name
+usage, master = SRC.usage, SRC.master
 
 charges = {c["id"]: (cat, c) for cat in M.CATEGORIES for c in cat["charges"]}
 
@@ -26,7 +25,7 @@ for code in M.INTERNAL:
 for code, m in master.items():
     if code in code_map:
         continue
-    trig = usage[code][16] if code in usage else m[8]
+    trig = usage[code]["trigger"] if code in usage else m["trigger"]
     if trig in M.TRIGGER_TO_CHARGE:
         code_map[code] = M.TRIGGER_TO_CHARGE[trig]
 unmapped = sorted(set(master) - set(code_map))
@@ -37,7 +36,7 @@ by_charge = collections.defaultdict(list)
 for code, cid in code_map.items():
     by_charge[cid].append(code)
 def inv_lines(cid):
-    return sum((usage[c][13] or 0) for c in by_charge[cid] if c in usage)
+    return sum(usage[c]["freq"] for c in by_charge[cid] if c in usage)
 
 # ------------------------------------------------------------------ JSON
 model = {"version": "v3", "categories": [], "proposal": {"sections": M.PROPOSAL_SECTIONS, "categoryToSection": M.CATEGORY_TO_SECTION,
@@ -48,20 +47,25 @@ assert all(k in charges for k in M.DEFAULT_PRESET), [k for k in M.DEFAULT_PRESET
 # ---- mapback tables + system code metadata (names / UOM / condition keys only - no customer data)
 import re as _re
 def _cond_keys(cond):
+    """Condition keys of a usage-sheet Condition cell. Exports separate keys with ';' or ', <Key>:' (older layout)."""
     if not cond:
         return []
-    found = [m.group(1).strip() for m in _re.finditer(r"([A-Za-z][A-Za-z ]+?):\s*(.*?)(?=,\s*\n?[A-Z][A-Za-z ]+?:|$)", str(cond).replace("\n", " "))]
-    return sorted(set(found))
+    keys = set()
+    for seg in _re.split(r"[;\n]", str(cond)):
+        for m in _re.finditer(r"(?:^|,)\s*([A-Za-z][A-Za-z ]*?)\s*:", seg):
+            keys.add(m.group(1).strip())
+    return sorted(k for k in keys if k)
 system_codes = {}
 for code, m in master.items():
     u = usage.get(code)
     # no description field: billing-system descriptions embed customer names ("Special Customer (...)")
-    system_codes[code] = {"name": (u[3] if u else m[2]) or "", "uom": (u[5] if u else m[3]) or "",
-                          "category": (u[2] if u else m[6]) or "", "keys": _cond_keys(u[10]) if u else [], "invoiceLines": (u[13] or 0) if u else 0}
+    system_codes[code] = {"name": (u["name"] if u else m["name"]), "uom": (u["uom"] if u else m["uom"]),
+                          "category": (u["category"] if u else m["category"]), "keys": _cond_keys(u["cond"]) if u else [],
+                          "invoiceLines": u["freq"] if u else 0, "hlCustomers": u["hl_customers"] if u else 0}
 def _codes_in(x):
     if isinstance(x, str): return [x]
     if isinstance(x, list): return x
-    if isinstance(x, dict): return [c for v in x.values() for c in _codes_in(v)]
+    if isinstance(x, dict): return [c for k, v in x.items() if k != "fixed" for c in _codes_in(v)]  # fixed = condition values
     return []
 for cid, units in M.BUILDER_CODES.items():
     c = charges[cid][1]
@@ -81,7 +85,12 @@ for cid, (_, c) in charges.items():
             assert d["id"] in M.DRIVER_SYSTEM, f"driver {d['id']} has no system condition"
 for code in M.SIMPLE_CODES.values():
     assert code in master, code
-model["mapback"] = {"builder": M.BUILDER_CODES, "simple": M.SIMPLE_CODES, "newItems": M.NEW_ITEM_NAMES, "notes": M.NOTES,
+for cid, ex in M.SIMPLE_EXTRA.items():
+    assert cid in M.SIMPLE_CODES, cid
+    for code in ex.get("alt", []):
+        assert code in master, f"unknown alternate code {code}"
+model["commonItems"] = [{"code": c["code"], "name": c["name"], "uom": c["uom"], "tag": c["tag"], "hlCustomers": c["hl_customers"]} for c in SRC.common]
+model["mapback"] = {"builder": M.BUILDER_CODES, "simple": M.SIMPLE_CODES, "simpleExtra": M.SIMPLE_EXTRA, "newItems": M.NEW_ITEM_NAMES, "notes": M.NOTES,
                     "conds": M.COND_SYSTEM, "drivers": M.DRIVER_SYSTEM, "chargeCondOverride": M.CHARGE_COND_OVERRIDE}
 model["systemCodes"] = system_codes
 import standard_template
@@ -89,8 +98,7 @@ model["standardTemplate"] = standard_template.build()
 assert all(k in charges for k in model["standardTemplate"]["selections"]), "standard template references unknown charges"
 
 # privacy guard: the catalog is published publicly - fail the build if any price-list customer name / code leaks in
-_customers = {x.strip() for r in src["All the customers price list"].iter_rows(min_row=2, values_only=True)
-              for x in (r[0], r[1]) if isinstance(x, str) and len(x.strip()) >= 6}
+_customers = {x.strip() for r in SRC.price_rows for x in (r["customer"], r["customer_name"]) if isinstance(x, str) and len(x.strip()) >= 6}
 _blob = json.dumps(model, ensure_ascii=False)
 _leaks = sorted(n for n in _customers if n in _blob) + _re.findall(r"Special\s+Customer[^\"]{0,40}", _blob)
 assert not _leaks, f"customer names would be published: {_leaks[:10]}"
@@ -264,10 +272,10 @@ for i, code in enumerate(sorted(master, key=lambda x: (code_map[x] == "INTERNAL"
     nm, catn, tier = name_of(cid)
     if code in usage:
         u = usage[code]
-        vals = [code, u[3], u[5], u[16], cid, nm, catn, tier, u[13], "In use" if (u[13] or 0) > 0 else "Configured - not invoiced"]
+        vals = [code, u["name"], u["uom"], u["trigger"], cid, nm, catn, tier, u["freq"], "In use" if u["freq"] > 0 else "Configured - not invoiced"]
     else:
         m = master[code]
-        vals = [code, m[2], m[3], m[8], cid, nm, catn, tier, None, "Master list only"]
+        vals = [code, m["name"], m["uom"], m["trigger"], cid, nm, catn, tier, None, "Master list only"]
     put(ws, i, vals, fill=ADV if tier == "Advanced" else None)
 ws.auto_filter.ref = f"A1:J{len(master) + 1}"
 

@@ -11,7 +11,9 @@ export interface SysCondition { key: string; value: string; supported: boolean }
 export interface LineMapping {
   lineKey: string; chargeId: string; unitId: string | null; col: QuoteLine["col"]; minBasis?: string;
   price: number | null; status: MapStatus;
+  unitKey?: string;
   code: string | null; initialCode: string | null;   // storage: recurring code + initial (at receipt) code
+  altCodes: string[];      // other system codes that bill the same service (configure the same rate there)
   systemName: string; systemUom: string;
   conditions: SysCondition[];
   suggestedName?: string;  // new-item: proposed system item name
@@ -45,22 +47,31 @@ function pickDriverCode(dc: DriverCode | undefined, calc: string | undefined): {
 export function mapLine(cat: Catalog, data: QuoteData, l: QuoteLine): LineMapping {
   const mb = cat.mapback;
   const sys = (code: string | null) => (code ? cat.systemCodes[code] : undefined);
-  const base: LineMapping = { lineKey: l.key, chargeId: l.chargeId, unitId: l.unitId, col: l.col, minBasis: l.minBasis, price: l.price, status: "mapped",
-    code: null, initialCode: null, systemName: "", systemUom: "", conditions: [], notes: [] };
+  const base: LineMapping = { lineKey: l.key, chargeId: l.chargeId, unitId: l.unitId, unitKey: l.unitKey, col: l.col, minBasis: l.minBasis, price: l.price,
+    status: "mapped", code: null, initialCode: null, altCodes: [], systemName: "", systemUom: "", conditions: [], notes: [] };
+  // system conditions fixed by the mapping itself (e.g. Material Type for pallets), unless the line already sets that key
+  const addFixed = (code: string, conds: SysCondition[], fixed?: Record<string, string>) => {
+    const keys = new Set(cat.systemCodes[code]?.keys ?? []);
+    for (const [k, v] of Object.entries(fixed ?? {})) if (!conds.some(c => c.key === k)) conds.push({ key: k, value: v, supported: keys.has(k) });
+  };
   if (mb.notes[l.chargeId]) base.notes.push(mb.notes[l.chargeId]);
 
   // ---- simple charges
   if (!l.unitId) {
     const code = mb.simple[l.chargeId] ?? null;
     if (!code) return { ...base, status: "new-item", suggestedName: mb.newItems[l.chargeId] };
-    return { ...base, code, systemName: sys(code)?.name ?? "", systemUom: sys(code)?.uom ?? "" };
+    const ex = mb.simpleExtra?.[l.chargeId];
+    const conditions: SysCondition[] = [];
+    addFixed(code, conditions, ex?.fixed);
+    return { ...base, code, altCodes: ex?.alt ?? [], systemName: sys(code)?.name ?? "", systemUom: sys(code)?.uom ?? "", conditions,
+             status: conditions.every(c => c.supported) ? "mapped" : "new-condition" };
   }
 
   // ---- builder charges
   const entry = mb.builder[l.chargeId]?.[l.unitId];
   if (!entry) return { ...base, status: "new-item", suggestedName: mb.newItems[l.chargeId] };
   const sel = data.selections[l.chargeId];
-  const us = sel?.units[l.unitId];
+  const us = sel?.units[l.unitKey ?? l.unitId];
   // the price driver decides the code (a minimum row has no dims: use the unit's chosen driver)
   const dId = l.dims.find(d => d.kind === "driver" && d.value !== "")?.id ?? (l.col === "min" ? us?.driver ?? us?.drivers?.[0] : undefined);
   let { code, initial } = dId
@@ -96,8 +107,9 @@ export function mapLine(cat: Catalog, data: QuoteData, l: QuoteLine): LineMappin
     }
   }
   if (l.col === "min") conditions.push({ key: "Minimum charge", value: `per ${l.minBasis}`, supported: true });
+  addFixed(code, conditions, entry.fixed);
   const status: MapStatus = conditions.every(c => c.supported) ? "mapped" : "new-condition";
-  return { ...base, status, code, initialCode: initial, systemName: sys(code)?.name ?? "", systemUom: sys(code)?.uom ?? "", conditions };
+  return { ...base, status, code, initialCode: initial, altCodes: entry.alt ?? [], systemName: sys(code)?.name ?? "", systemUom: sys(code)?.uom ?? "", conditions };
 }
 
 export function mapQuote(cat: Catalog, data: QuoteData): LineMapping[] {
@@ -114,7 +126,7 @@ export function setupList(cat: Catalog, ms: LineMapping[]): SetupItem[] {
   const out = new Map<string, SetupItem>();
   for (const m of ms) {
     if (m.status === "new-item") {
-      const k = `item|${m.chargeId}|${m.unitId ?? ""}`;
+      const k = `item|${m.chargeId}|${m.unitKey ?? m.unitId ?? ""}`;
       const it = out.get(k) ?? { kind: "new-item" as const, chargeId: m.chargeId, code: null, systemName: "", suggestedName: m.suggestedName, values: [], lineCount: 0 };
       it.lineCount++;
       out.set(k, it);

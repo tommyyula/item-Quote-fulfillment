@@ -43,8 +43,10 @@ describe("mapback", () => {
     expect(m.status).toBe("new-condition");
     expect(m.conditions.find(c => !c.supported)?.key).toBe("Receipt Type");
   });
-  it("pallets have no code yet", () => {
-    expect(find("OT-PALLET-A", null)).toMatchObject({ status: "new-item", suggestedName: "PALLET CHARGE - GRADE A" });
+  it("pallets bill through the Material charge with a Material Type", () => {
+    const m = find("OT-PALLET-A", null);
+    expect(m).toMatchObject({ status: "mapped", code: "ACCESSORIAL-0038" });
+    expect(m.conditions).toEqual([{ key: "Material Type", value: "Grade A Pallet (40 x 48)", supported: true }]);
   });
   it("setup list is de-duplicated", () => {
     const list = setupList(cat, ms);
@@ -71,7 +73,8 @@ describe("helpers", () => {
   });
   it("catalog gaps list only real gaps", () => {
     const gaps = catalogGaps(cat);
-    expect(gaps.some(g => g.chargeId === "OT-PALLET-A" && g.kind === "new-item")).toBe(true);
+    expect(gaps.some(g => g.chargeId === "VA-BRANDED" && g.kind === "new-item")).toBe(true);
+    expect(gaps.some(g => g.chargeId === "OT-PALLET-A")).toBe(false);
     expect(gaps.some(g => g.code === "HANDLING-0129" && g.detail === "Case Qty")).toBe(false);
   });
 });
@@ -79,9 +82,15 @@ describe("helpers", () => {
 describe("standard charge template", async () => {
   const { buildProposal } = await import("./proposal");
   const data = (): QuoteData => ({ header, selections: JSON.parse(JSON.stringify(cat.standardTemplate.selections)) });
-  it("renders the standard rate sheet: 43 priced rows, all mapped to existing codes", () => {
+  it("covers all 44 Final Common Billing Items (primary, initial-storage or alternate code)", () => {
+    expect(cat.commonItems).toHaveLength(44);
+    const ms = mapQuote(cat, data());
+    const used = new Set(ms.flatMap(m => [m.code, m.initialCode, ...m.altCodes]).filter(Boolean));
+    expect(cat.commonItems.filter(c => !used.has(c.code)).map(c => c.code)).toEqual([]);
+  });
+  it("renders the standard rate sheet with every line mapped to existing codes", () => {
     const rows = buildProposal(cat, data()).flatMap(s => s.rows).filter(r => r.rate);
-    expect(rows).toHaveLength(43);
+    expect(rows.length).toBeGreaterThan(43);
     const sum = summarize(mapQuote(cat, data()));
     expect(sum.mapped).toBe(sum.total);
   });

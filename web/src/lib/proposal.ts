@@ -13,6 +13,7 @@ export interface PRow {
   type: "item" | "group" | "sub" | "min";
   service: string;            // catalog string (charge name / merge-group label) - empty on sub rows
   unitSuffix?: string;        // unit label when a charge has several units
+  bySuffix?: string;          // driver label when one unit is priced more than one way ("by case weight")
   desc?: string;
   descs?: string[];           // merged synonym rows: member descriptions, translated one by one
   qualifiers?: Qualifier[];
@@ -90,10 +91,12 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
     const b = c as BuilderCharge;
     const sel = data.selections[chargeId];
     b.settings.forEach(st => sec.settings.push({ label: st.label, value: sel.settings[st.id] || st.options[0] }));
-    const unitIds = [...new Set(ls.map(l => l.unitId!))];
-    for (const unitId of unitIds) {
+    const unitKeys = [...new Set(ls.map(l => l.unitKey ?? l.unitId!))];
+    for (const unitKey of unitKeys) {
+      const unitId = unitKey.split("#")[0];
       const u = b.units.find(x => x.id === unitId)!;
-      const ul = ls.filter(l => l.unitId === unitId);
+      const ul = ls.filter(l => (l.unitKey ?? l.unitId) === unitKey);
+      const siblings = unitKeys.filter(k => k.split("#")[0] === unitId).length;
       const priced = ul.filter(l => l.col !== "min");
       const mins = ul.filter(l => l.col === "min");
       const dims = priced[0]?.dims.map(d => ({ id: d.id, label: d.label })) ?? [];
@@ -114,15 +117,18 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
       const same = (x: string[], y: string[]) => x.length === y.length && x.every((v, i) => v === y[i]);
       const keep = dims.map((_, i) => !merged.every(r => same(r.sets[i], merged[0].sets[i])));
       const lifted = dims.map((d, i) => ({ label: d.label, values: merged[0]?.sets[i] ?? [] })).filter((q, i) => !keep[i] && q.values.some(Boolean));
-      const suffix = unitIds.length > 1 ? u.label : undefined;
+      const suffix = unitKeys.length > 1 ? u.label : undefined;
+      // a unit priced more than one way: name each method by its price driver
+      const dId = sel.units[unitKey]?.driver ?? sel.units[unitKey]?.drivers?.[0];
+      const bySuffix = siblings > 1 && dId ? u.drivers.find(d => d.id === dId)?.label : undefined;
       if (merged.length === 1) {
         // one price: show it on the service line itself; a minimum follows as its own row
-        sec.rows.push({ type: "item", service: b.name, unitSuffix: suffix, desc: b.desc, rate: merged[0].rate, unit: u.label,
+        sec.rows.push({ type: "item", service: b.name, unitSuffix: suffix, bySuffix, desc: b.desc, rate: merged[0].rate, unit: u.label,
                         qualifiers: lifted });
         for (const m of mins) sec.rows.push({ type: "min", service: "", rate: { kind: "single", p: m.price }, unit: m.minBasis, isMinBasis: true });
         continue;
       }
-      sec.rows.push({ type: "group", service: b.name, unitSuffix: suffix, desc: b.desc, qualifiers: lifted });
+      sec.rows.push({ type: "group", service: b.name, unitSuffix: suffix, bySuffix, desc: b.desc, qualifiers: lifted });
       merged = merged.filter(Boolean);
       for (const m of merged) sec.rows.push({ type: "sub", service: "", qualifiers: qual(dims, m.sets, keep), rate: m.rate, unit: u.label });
       for (const m of mins) sec.rows.push({ type: "min", service: "", rate: { kind: "single", p: m.price }, unit: m.minBasis, isMinBasis: true });

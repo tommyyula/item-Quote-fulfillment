@@ -2536,6 +2536,10 @@
           "second": {
             "type": "boolean",
             "description": "Different rate for additional units."
+          },
+          "flatOtherwise": {
+            "type": "boolean",
+            "description": "Rows the price driver does not apply to are priced flat instead of left out (e.g. palletized containers when pricing by case count)."
           }
         }
       },
@@ -2564,6 +2568,7 @@
           },
           "units": {
             "type": "object",
+            "description": "Keyed by unit ID; a unit priced a second way uses `unitId#2`, `unitId#3`, ... (e.g. `case` flat and `case#2` by case weight).",
             "additionalProperties": {
               "$ref": "#/components/schemas/UnitSelection"
             }
@@ -2889,6 +2894,10 @@
               "null"
             ]
           },
+          "unitKey": {
+            "type": "string",
+            "description": "Instance key when a unit is priced more than one way (e.g. `case#2`); otherwise equals unitId."
+          },
           "unitLabel": {
             "type": "string"
           },
@@ -3017,6 +3026,9 @@
               "null"
             ]
           },
+          "unitKey": {
+            "type": "string"
+          },
           "col": {
             "type": "string",
             "enum": [
@@ -3042,6 +3054,13 @@
               "new-condition",
               "new-item"
             ]
+          },
+          "altCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other system codes that bill the same service (another trigger or direction); configure the same rate there."
           },
           "code": {
             "type": [

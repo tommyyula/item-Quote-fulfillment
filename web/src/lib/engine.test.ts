@@ -34,7 +34,7 @@ describe("offload show/hide rules", () => {
     const s = emptySel();
     s.conds.offloadType = { on: true, values: [] };
     s.units.case = { on: true };
-    expect(activeUnits(off, s, false).map(u => u.id)).toEqual(["case"]);
+    expect(activeUnits(off, s, false).map(u => u.key)).toEqual(["case"]);
   });
 });
 

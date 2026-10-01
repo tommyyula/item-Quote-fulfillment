@@ -904,6 +904,7 @@ components:
         calc: { type: object, additionalProperties: { type: string, enum: [range, incremental] }, description: Tier calculation per volume driver. }
         min: { type: [string, "null"], enum: [receipt, container, load, order, month, null] }
         second: { type: boolean, description: Different rate for additional units. }
+        flatOtherwise: { type: boolean, description: "Rows the price driver does not apply to are priced flat instead of left out (e.g. palletized containers when pricing by case count)." }
     ChargeSelection:
       type: object
       required: [on]
@@ -911,7 +912,10 @@ components:
         on: { type: boolean, description: Charge included in the quote. }
         price: { type: [number, "null"], description: Simple charges only; omitted = benchmark default. }
         conds: { type: object, additionalProperties: { $ref: "#/components/schemas/CondSelection" } }
-        units: { type: object, additionalProperties: { $ref: "#/components/schemas/UnitSelection" } }
+        units:
+          type: object
+          description: "Keyed by unit ID; a unit priced a second way uses `unitId#2`, `unitId#3`, ... (e.g. `case` flat and `case#2` by case weight)."
+          additionalProperties: { $ref: "#/components/schemas/UnitSelection" }
         prices:
           type: object
           description: "Builder rate cells: key `unitId|value|value...|col` (col = p, first, add) or `unitId|MIN|basis`; omitted cells use the benchmark."
@@ -1007,6 +1011,7 @@ components:
         chargeId: { type: string }
         categoryId: { type: string }
         unitId: { type: [string, "null"] }
+        unitKey: { type: string, description: "Instance key when a unit is priced more than one way (e.g. `case#2`); otherwise equals unitId." }
         unitLabel: { type: string }
         dims: { type: array, items: { $ref: "#/components/schemas/DimCell" } }
         col: { type: string, enum: [p, first, add, min], description: "p = rate, first / add = first and additional unit, min = minimum charge." }
@@ -1041,10 +1046,15 @@ components:
         lineKey: { type: string }
         chargeId: { type: string }
         unitId: { type: [string, "null"] }
+        unitKey: { type: string }
         col: { type: string, enum: [p, first, add, min] }
         minBasis: { type: string }
         price: { type: [number, "null"] }
         status: { type: string, enum: [mapped, new-condition, new-item] }
+        altCodes:
+          type: array
+          items: { type: string }
+          description: Other system codes that bill the same service (another trigger or direction); configure the same rate there.
         code: { type: [string, "null"], examples: [HANDLING-0129] }
         initialCode: { type: [string, "null"], description: "Storage only: initial (at receipt) storage code next to the recurring code." }
         systemName: { type: string }

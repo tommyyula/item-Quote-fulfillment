@@ -95,7 +95,7 @@ category("setup", "Setup & Systems", "One-time onboarding and ongoing system acc
     simple("SU-EDI", "EDI setup - per trading partner", "Map, test and certify the standard EDI document set for one partner.", "Trading partner", 2500, 1500, 5000, "Industry midpoint", channel="B2B"),
     simple("SU-ECOM", "E-commerce platform connection", "Connect a store / marketplace (Shopify, Amazon, Walmart ...).", "Connection", 250, 0, 500, "Industry midpoint", channel="D2C", new=True),
     simple("SU-EDITX", "EDI / FTP transaction", "Each 940 / 945 / 856 / 850 document or FTP file processed.", "Document", 0.50, 0.25, 1.00, "UNIS median (n=1,385)", tier="advanced"),
-    simple("SU-VAN", "EDI VAN charges", "VAN provider cost re-billed plus markup.", "% on cost", 0.20, 0, 0.20, "UNIS template", tier="advanced", pct=True),
+    simple("SU-VAN", "EDI VAN charge", "VAN transmission charge per EDI order.", "Order", 0.50, 0.25, 1.00, "UNIS median (n=40)", tier="advanced"),
     simple("SU-RETAILER", "Retailer label & document setup", "Configure retailer-specific carton labels, packing slips and routing docs.", "Retailer", 625, 250, 1000, "Industry midpoint", channel="B2B", tier="advanced"),
     simple("SU-IT", "IT support / development", "Custom reports, workflow or integration changes; 15-min increments.", "Hour", 150, 125, 200, "UNIS template", tier="advanced"),
     simple("SU-ENT", "Enterprise WMS subscription", "Unlimited users, dedicated environment.", "Entity / year", 18000, 10000, 25000, "UNIS price list (n=2)", tier="advanced"),
@@ -188,10 +188,13 @@ category("outbound", "Outbound", "Order processing, picking, packing and shippin
                    drv("caseCount", "Cases per order", "volume", [v("1 - 50 cases", 1.05), v("Over 50 cases", 0.90)], calc=True)],
                   mins=["order"], second=True, min_default={"order": 20}),
              unit("each", "Each / unit", 0.50, 0.25, 1.25, "UNIS median D2C (n=156)",
-                  [drv("unitWeight", "Unit weight", "attr", [v("0 - 5 lbs", 0.50), v("5 - 30 lbs", 0.75), v("Over 30 lbs", 1.50)]),
+                  [drv("unitWeight", "Unit weight", "attr", [v("0 - 30 lbs", 0.75), v("31 - 90 lbs", 1.25), v("Over 90 lbs", 2.00)]),
                    drv("orderWeight", "Order weight", "attr", [v("0 - 30 lbs", 0.50), v("30 - 90 lbs", 1.00), v("Over 90 lbs", 2.00)])],
                   mins=["order"], second=True, by={"businessType": {"B2B": 1.05, "D2C": 0.50}},
                   note="First / additional split = industry 'pick & pack' style (first $3.00 incl. order, additional $0.75)."),
+             unit("line", "Pick line", 0.50, 0.25, 1.25, "UNIS median (n=79)",
+                  [drv("unitWeight", "Unit weight", "attr", [v("0 - 30 lbs", 0.50), v("31 - 90 lbs", 1.00), v("Over 90 lbs", 1.50)])],
+                  common=False, by={"businessType": {"B2B": 1.00, "D2C": 0.50}}, note="Per pick line (one SKU location visit), any quantity."),
              unit("inner", "Inner pack", 0.60, 0.40, 1.00, "UNIS median (n=27)", common=False),
              unit("order", "Order (flat)", 6.50, 2, 25, "UNIS median (n=7)", common=False),
              unit("weight", "Weight / volume (bulk)", 0.20, 0.10, 0.40, "UNIS median cu ft (n=40)", common=False)],
@@ -267,7 +270,7 @@ category("vas", "Value-Added Services", "Kitting, labeling, packaging and market
     simple("VA-INSERT", "Insert / flier / sticker", "Add marketing inserts or stickers.", "Item", 0.15, 0.10, 0.25, "UNIS D2C template", channel="D2C", new=True),
     simple("VA-FRAGILE", "Fragile / tissue wrap", "Wrap items in tissue or bubble wrap.", "Item", 0.50, 0.35, 1.00, "UNIS D2C template", channel="D2C", new=True),
     simple("VA-PHOTO", "Photo on request", "Photograph product / cartons on request.", "Photo", 1.00, 0.50, 2.00, "UNIS median (n=74)", tier="advanced", codes=["ACCESSORIAL-0027", "RMS-005"]),
-    simple("VA-OVERBOX", "Overbox", "Place the product carton inside a plain shipping box.", "Box", 0.50, 0.50, 1.50, "UNIS D2C template", channel="D2C", tier="advanced", codes=["ACC-0003", "OVERBOX"]),
+    simple("VA-OVERBOX", "Overbox", "Place the product carton inside a plain shipping box.", "Box", 0.50, 0.50, 1.50, "UNIS D2C template", channel="D2C", tier="advanced", codes=["ACC-0003"]),
     simple("VA-DUNNAGE", "Void fill / dunnage", "Extra void fill beyond standard crinkle paper.", "Order", 0.50, 0.15, 0.50, "UNIS D2C template", channel="D2C", tier="advanced", codes=["DUNNAGE"]),
     simple("VA-GIFT", "Gift wrap / gift message", "Gift wrap and printed gift note.", "Order", 2.00, 1, 3, "Industry midpoint", channel="D2C", tier="advanced", new=True),
     simple("VA-POLYBAG", "Poly bag + suffocation label", "Marketplace prep poly-bagging.", "Unit", 0.55, 0.35, 0.75, "Industry midpoint", tier="advanced", new=True),
@@ -338,7 +341,7 @@ EXTRA_CODES = {
     "SU-ITEM": ["HANDLING-0200"], "SU-SKU": ["ACCESSORIAL-0014"], "SU-WMS": ["SYSTEM & MANAGEMENT FEE-0005", "SYSTEM & MANAGEMENT FEE-0003"],
     "SU-ENT": ["SYSTEM & MANAGEMENT FEE-0004"], "SU-EDI": ["HANDLING-0194", "HANDLING-0193"], "SU-RETAILER": ["HANDLING-0244"], "SU-IT": ["HANDLING-0217"],
     "OT-CANCEL": ["ACCESSORIAL-0002"], "OT-CANCELPRE": ["ACCESSORIAL-0001"], "OB-ROUTING": ["HANDLING-0239"],
-    "IN-OFFLOAD": ["HANDLING-0195"], "OB-LOAD": ["HANDLING-0197"],
+    "OB-LOAD": ["HANDLING-0197"],
 }
 INTERNAL = ["ACCESSORIAL-0004", "HANDLING-0198", "STORAGE INCOME-0029", "Small Parcel-0006", "DRAYAGE-0002", "DISCOUNT-0001", "Gift-0001",
             "LATE CHARGE-0001", "SECURITY DEPOSIT-0001", "MISCELLANEOUS REVENUE-0001", "ACCESSORIAL-0003", "HANDLING-0254"]
@@ -427,6 +430,7 @@ BUILDER_CODES = {
         "pallet": {"flat": H(67), "drivers": {"palletCount": H(75)}},
         "case": {"flat": H(63), "drivers": {"caseWeight": H(72), "caseCount": H(63)}, "second": H(57)},
         "each": {"flat": H(69), "drivers": {"unitWeight": H(74), "orderWeight": H(56)}, "second": H(62)},
+        "line": {"flat": H(68), "drivers": {"unitWeight": H(73)}},
         "inner": {"flat": H(64)}, "order": {"flat": H(66)}, "weight": {"flat": H(78)},
     },
     "OB-PACK": {"order": {"flat": H(84)}, "case": {"flat": H(85)}},
@@ -439,7 +443,7 @@ BUILDER_CODES = {
         "sqft": {"flat": S(8), "initial": S(21)}, "cubic": {"flat": S(2), "initial": S(15)},
         "case": {"flat": S(5), "initial": S(18)}, "weight": {"flat": S(1), "initial": S(14)},
     },
-    "RT-RETURN": {"package": {"flat": "RMS-001"}, "each": {"flat": H(39)}, "case": {"flat": H(36)}, "pallet": {"flat": H(38)}, "hour": {"flat": H(37)}},
+    "RT-RETURN": {"package": {"flat": H(125), "fixed": {"Receipt Type": "RETURN_FROM_END_USER"}, "alt": ["RMS-001"]}, "each": {"flat": H(39)}, "case": {"flat": H(36)}, "pallet": {"flat": H(38)}, "hour": {"flat": H(37)}},
 }
 SIMPLE_CODES = {
     "SU-ITEM": H(200), "SU-SKU": "ACCESSORIAL-0014", "SU-WMS": "SYSTEM & MANAGEMENT FEE-0005", "SU-EDI": H(194),
@@ -451,9 +455,9 @@ SIMPLE_CODES = {
     "VA-PHOTO": "ACCESSORIAL-0027", "VA-OVERBOX": "ACC-0003", "VA-DUNNAGE": "DUNNAGE", "VA-SKUCONV": "ACC-0004",
     "OT-LABOR": H(199), "OT-OT": H(225), "OT-COUNT": "ACCESSORIAL-0010", "OT-MANUALORDER": H(96), "OT-RUSH": H(88),
     "OT-CANCEL": "ACCESSORIAL-0002", "OT-NOASN": "ACCESSORIAL-0018", "OT-MANUALRCPT": H(51), "OT-OSD": H(219),
-    "OT-ADDRESS": "ACCESSORIAL-0037", "OT-DOCS": "ACCESSORIAL-0009", "OT-WRAP": "ACCESSORIAL-0033", "OT-SUPPLIES": "Freight-0001",
-    "OT-FREIGHT": "TRANSPORTATION-0002", "OT-3PPOSTAGE": H(182), "OT-RUSHRCPT": H(40), "OT-CANCELPRE": "ACCESSORIAL-0001",
-    "OT-MISSEDAPPT": H(95), "OT-COPIES": "ACCESSORIAL-0026", "OT-MANIFEST": "ACCESSORIAL-0013", "OT-STRAP": "OTHERS-0004",
+    "OT-ADDRESS": "ACCESSORIAL-0037", "OT-DOCS": "ACCESSORIAL-0009", "OT-WRAP": "ACCESSORIAL-0038", "OT-SUPPLIES": "Freight-0001",
+    "OT-FREIGHT": "Small Parcel-0005", "OT-3PPOSTAGE": H(182), "OT-RUSHRCPT": H(40), "OT-CANCELPRE": "ACCESSORIAL-0001",
+    "OT-MISSEDAPPT": H(95), "OT-COPIES": "ACCESSORIAL-0026", "OT-MANIFEST": "ACCESSORIAL-0013", "OT-STRAP": "ACCESSORIAL-0038", "OT-PALLET-A": "ACCESSORIAL-0038", "OT-PALLET-B": "ACCESSORIAL-0038", "OT-CORNER": "ACCESSORIAL-0038",
     "OT-SLIP": "SLIPSHEET", "OT-YARD": "YARD-0001", "OT-HOSTLER": H(250), "OT-OUTSIDECARRIER": "OTHERS-0003",
     "OT-ACCOUNT": "ACCESSORIAL-0005", "OT-PASSTHRU": "ACCESSORIAL-0028",
 }
@@ -463,15 +467,30 @@ NEW_ITEM_NAMES = {
     "IN-LOT": "LOT / EXPIRY CAPTURE", "OB-PALLETBUILD": "OUTBOUND PALLET BUILD & WRAP",
     "VA-BRANDED": "BRANDED PACKAGING", "VA-INSERT": "INSERT / FLIER / STICKER", "VA-FRAGILE": "FRAGILE / TISSUE WRAP",
     "VA-GIFT": "GIFT WRAP / GIFT MESSAGE", "VA-POLYBAG": "POLY BAG + SUFFOCATION LABEL",
-    "OT-PALLET-A": "PALLET CHARGE - GRADE A", "OT-PALLET-B": "PALLET CHARGE - GRADE B", "OT-CORNER": "CORNER BOARDS",
     "OT-PEAK": "PEAK SEASON SURCHARGE", "OT-MINIMUM": "MONTHLY MINIMUM BILLING",
+}
+# simple charges: fixed system conditions and alternate codes that bill the same service (other trigger / direction)
+SIMPLE_EXTRA = {
+    "OT-PALLET-A": {"fixed": {"Material Type": "Grade A Pallet (40 x 48)"}},
+    "OT-PALLET-B": {"fixed": {"Material Type": "Grade B Pallet (40 x 48)"}},
+    "OT-CORNER": {"fixed": {"Material Type": "Corner Board"}},
+    "OT-WRAP": {"fixed": {"Material Type": "Stretch Wrap"}, "alt": ["ACCESSORIAL-0033"]},
+    "OT-STRAP": {"fixed": {"Material Type": "Plastic Strapping"}, "alt": ["OTHERS-0004"]},
+    "OT-LABOR": {"alt": ["HOURLY LABOR"]},
+    "OT-CANCEL": {"alt": ["ACCESSORIAL-0007"]},
+    "OT-MISSEDAPPT": {"alt": ["HANDLING-0044", "HANDLING-0043"]},
+    "SU-EDITX": {"alt": ["HANDLING-0049", "HANDLING-0001", "HANDLING-0099", "HANDLING-0048"]},
+    "OT-FREIGHT": {"alt": ["TRANSPORTATION-0002"]},
 }
 NOTES = {
     "IN-EXCESSCASE": "Configure HANDLING-0127 with Case Qty: over 2500 and CalculationOption: Incremental.",
     "SU-EDITX": "EDI document type decides the code: 940 HANDLING-0102, 945 HANDLING-0099, 856 HANDLING-0048, 850 HANDLING-0049, FTP HANDLING-0001.",
-    "OT-MISSEDAPPT": "Outbound HANDLING-0095; inbound receipt HANDLING-0044 / load HANDLING-0043.",
+    "OT-MISSEDAPPT": "Outbound order HANDLING-0095; inbound receipt HANDLING-0044; inbound load HANDLING-0043 (same rate).",
+    "OT-LABOR": "HANDLING-0199 when entered as an accessorial; HOURLY LABOR when billed from a closed general task.",
+    "OT-CANCEL": "ACCESSORIAL-0002 from the cancelled order; ACCESSORIAL-0007 when billed from a closed task.",
+    "OT-WRAP": "Material charge (ACCESSORIAL-0038, Material Type: Stretch Wrap); ACCESSORIAL-0033 = application labor billing.",
     "OT-PASSTHRU": "Pick per item: rental ACCESSORIAL-0028, waste ACCESSORIAL-0036, utility ACCESSORIAL-0034, security HANDLING-0241.",
-    "OT-FREIGHT": "Small parcel postage: Small Parcel-0005; FTL/LTL: TRANSPORTATION-0002.",
+    "OT-FREIGHT": "Small parcel: Small Parcel-0005 (markup on carrier cost, by carrier); FTL / LTL: TRANSPORTATION-0002.",
 }
 # our factor -> system condition name (+ value translation). facility = separate price list per facility, not a condition.
 COND_SYSTEM = {

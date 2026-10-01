@@ -44,12 +44,25 @@ export function chosenDriverIds(us: UnitSel | undefined, showAll: boolean): stri
   return us.driver ? [us.driver] : [];
 }
 
-export function activeUnits(c: BuilderCharge, s: ChargeSel, showAll: boolean): Unit[] {
-  return c.units.filter(u => s.units[u.id]?.on && passes(c, s, u.when, showAll));
+/** A unit can be priced more than one way ("case" flat + "case#2" by weight): each selection key is one instance. */
+export interface UnitInst { key: string; unit: Unit; n: number }
+export const baseUnitId = (key: string) => key.split("#")[0];
+export function unitKeys(u: Unit, s: ChargeSel): string[] {
+  const extra = Object.keys(s.units).filter(k => k.startsWith(`${u.id}#`)).sort((a, b) => +a.split("#")[1] - +b.split("#")[1]);
+  return [u.id, ...extra];
+}
+export function nextUnitKey(u: Unit, s: ChargeSel): string {
+  const ns = unitKeys(u, s).map(k => +(k.split("#")[1] ?? 1));
+  return `${u.id}#${Math.max(...ns) + 1}`;
 }
 
-export function activeDrivers(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boolean): Driver[] {
-  const ids = chosenDriverIds(s.units[u.id], showAll);
+export function activeUnits(c: BuilderCharge, s: ChargeSel, showAll: boolean): UnitInst[] {
+  return c.units.filter(u => passes(c, s, u.when, showAll))
+    .flatMap(u => unitKeys(u, s).filter(k => s.units[k]?.on).map(key => ({ key, unit: u, n: +(key.split("#")[1] ?? 1) })));
+}
+
+export function activeDrivers(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boolean, key = u.id): Driver[] {
+  const ids = chosenDriverIds(s.units[key], showAll);
   return u.drivers.filter(d => ids.includes(d.id) && passes(c, s, d.when, showAll));
 }
 
@@ -57,9 +70,9 @@ export interface Dim { id: string; label: string; kind: "cond" | "driver"; vals:
 export interface Row { cells: string[]; cond: Record<string, string>; d: number | null }
 
 /** Cartesian product of factor values x driver values, minus impossible combinations. */
-export function unitRows(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boolean): { dims: Dim[]; rows: Row[]; truncated: boolean } {
+export function unitRows(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boolean, key = u.id): { dims: Dim[]; rows: Row[]; truncated: boolean } {
   const conds = activeConds(c, s);
-  const drivers = activeDrivers(c, s, u, showAll);
+  const drivers = activeDrivers(c, s, u, showAll, key);
   const dims: Dim[] = [
     ...conds.map(x => ({ id: x.cond.id, label: x.cond.label, kind: "cond" as const, vals: x.values.map(v => ({ v, d: u.by?.[x.cond.id]?.[v] ?? null })) })),
     ...drivers.map(d => ({ id: d.id, label: d.label, kind: "driver" as const, vals: d.values })),
@@ -84,7 +97,7 @@ export function unitRows(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boole
   }
   // 2. driver values. Rows a driver does not apply to (case-count tiers on a palletized row) are dropped,
   //    or kept at a flat rate with an empty driver cell when the unit asks for it (flatOtherwise)
-  const flatOtherwise = !!s.units[u.id]?.flatOtherwise;
+  const flatOtherwise = !!s.units[key]?.flatOtherwise;
   for (const d of drivers) {
     const next: Row[] = [];
     for (const r of rows) {
@@ -119,25 +132,25 @@ export function quoteLines(cat: Catalog, data: QuoteData, globalShowAll = false)
         continue;
       }
       const showAll = globalShowAll || !!s.showAll;
-      for (const u of activeUnits(c, s, showAll)) {
-        const us = s.units[u.id];
-        const { dims, rows } = unitRows(c, s, u, showAll);
+      for (const { key: uk, unit: u } of activeUnits(c, s, showAll)) {
+        const us = s.units[uk];
+        const { dims, rows } = unitRows(c, s, u, showAll, uk);
         const cols = us.second ? (["first", "add"] as const) : (["p"] as const);
         for (const r of rows)
           for (const col of cols) {
-            const key = cellKey(u.id, r.cells, col);
+            const key = cellKey(uk, r.cells, col);
             const bench = benchmarkFor(r.d, col);
             const cells: DimCell[] = dims.map((dm, i) => ({ id: dm.id, label: dm.label, value: r.cells[i], kind: dm.kind }));
             out.push({
-              key: `${c.id}|${key}`, chargeId: c.id, categoryId: category.id, unitId: u.id, unitLabel: u.label, dims: cells, col,
+              key: `${c.id}|${key}`, chargeId: c.id, categoryId: category.id, unitId: u.id, unitKey: uk, unitLabel: u.label, dims: cells, col,
               price: key in s.prices ? s.prices[key] : bench, benchmark: bench, pct: false, lo: u.lo, hi: u.hi,
             });
           }
         if (us.min) {
-          const k = minKey(u.id, us.min);
+          const k = minKey(uk, us.min);
           const bench = u.minDefault?.[us.min] ?? null;
           out.push({
-            key: `${c.id}|${k}`, chargeId: c.id, categoryId: category.id, unitId: u.id, unitLabel: u.label, dims: [], col: "min",
+            key: `${c.id}|${k}`, chargeId: c.id, categoryId: category.id, unitId: u.id, unitKey: uk, unitLabel: u.label, dims: [], col: "min",
             minBasis: us.min, price: k in s.prices ? s.prices[k] : bench, benchmark: bench, pct: false,
           });
         }

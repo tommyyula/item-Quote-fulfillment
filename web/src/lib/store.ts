@@ -82,16 +82,34 @@ export function createStore(repo: Repo = localRepo) {
   /** The "Standard Charge Template" customer + its quote (saved as v1) exist in every browser; never overwritten once present. */
   function ensureStandardTemplate() {
     const t = catalog.standardTemplate;
-    if (state.customers.some(c => c.code === t.customer.code)) return;
+    const snapshot = (data: QuoteData, note: string, v: number) => {
+      const lines = mapQuote(catalog, data);
+      return { v, savedAt: now(), note, data: clone(data), lineCount: lines.length, mapping: { summary: summarize(lines), lines: clone(lines) } };
+    };
+    const existing = state.customers.find(c => c.code === t.customer.code);
+    if (existing) {
+      // upgrade an untouched older template in place as a new version (history kept); never touch a template someone edited
+      const q = state.quotes.find(x => x.customerId === existing.id && x.number === "Q-STANDARD");
+      const last = q?.versions.at(-1);
+      if (q && last && q.templateVersion !== t.version && JSON.stringify(q.draft) === JSON.stringify(last.data)) {
+        const data = clone(last.data);
+        data.selections = clone(t.selections);
+        data.header.notes = t.note;
+        q.versions.push(snapshot(data, `${t.note} Updated template: ${t.version}.`, last.v + 1));
+        q.draft = data;
+        q.templateVersion = t.version;
+        q.updatedAt = now();
+      }
+      return;
+    }
     const cu: Customer = { id: uid(), code: t.customer.code, company: t.customer.company, contact: "", phone: "", email: "",
       address: "", city: "", state: "", zip: "", channel: t.customer.channel, createdAt: now() };
     const data = newQuoteData("", true);
     data.header.title = t.title;
     data.header.notes = t.note;
     data.selections = clone(t.selections);
-    const lines = mapQuote(catalog, data);
     const q: Quote = { id: uid(), number: "Q-STANDARD", customerId: cu.id, createdAt: now(), updatedAt: now(), status: "draft", draft: data,
-      versions: [{ v: 1, savedAt: now(), note: t.note, data: clone(data), lineCount: lines.length, mapping: { summary: summarize(lines), lines: clone(lines) } }] };
+      versions: [snapshot(data, t.note, 1)], templateVersion: t.version };
     state.customers.unshift(cu);
     state.quotes.push(q);
   }

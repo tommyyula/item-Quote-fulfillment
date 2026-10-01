@@ -30,9 +30,9 @@ const rateCount = computed(() => {
   const c = props.charge;
   if (c.kind !== "builder" || !s.value.on) return 0;
   const all = store.state.prefs.showAll || !!s.value.showAll;
-  return activeUnits(c, s.value, all).reduce((n, u) => {
-    const us = s.value.units[u.id];
-    return n + unitRows(c, s.value, u, all).rows.length * (us.second ? 2 : 1) + (us.min ? 1 : 0);
+  return activeUnits(c, s.value, all).reduce((n, { key, unit: u }) => {
+    const us = s.value.units[key];
+    return n + unitRows(c, s.value, u, all, key).rows.length * (us.second ? 2 : 1) + (us.min ? 1 : 0);
   }, 0);
 });
 const unitLabel = computed(() => {

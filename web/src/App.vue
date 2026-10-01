@@ -38,6 +38,9 @@ if (LANGS.some(l => l.id === qs.get("lang"))) st.prefs.lang = qs.get("lang") as 
 if (qs.get("theme") === "dark" || qs.get("theme") === "light") st.prefs.theme = qs.get("theme") as "dark" | "light";
 if (LANGS.some(l => l.id === qs.get("plang"))) st.prefs.proposalLang = qs.get("plang") as Lang;
 const proposalOnly = ref(qs.get("view") === "proposal");
+// ?quote=Q-STANDARD opens a quote by number (e.g. a link straight to the standard rate sheet)
+const byNumber = qs.get("quote") && store.state.quotes.find(q => q.number === qs.get("quote"));
+if (byNumber) store.openQuote(byNumber.id);
 onMounted(() => { if (location.hash) nextTick(() => document.querySelector(location.hash)?.scrollIntoView()); });
 
 const facilities = (catalog.categories[1].charges[0] as { conds: { id: string; values: string[] }[] }).conds.find(c => c.id === "facility")!.values;

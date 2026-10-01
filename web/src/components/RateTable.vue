@@ -6,10 +6,11 @@ import { money, softLower } from "../lib/format";
 import type { BuilderCharge, ChargeSel, Unit } from "../lib/types";
 import PriceInput from "./PriceInput.vue";
 
-const props = defineProps<{ charge: BuilderCharge; unit: Unit; s: ChargeSel; showAll: boolean; readOnly: boolean }>();
+const props = defineProps<{ charge: BuilderCharge; unit: Unit; unitKey?: string; s: ChargeSel; showAll: boolean; readOnly: boolean }>();
+const uk = computed(() => props.unitKey ?? props.unit.id);
 const { store, T } = useApp();
-const us = computed(() => props.s.units[props.unit.id]);
-const table = computed(() => unitRows(props.charge, props.s, props.unit, props.showAll));
+const us = computed(() => props.s.units[uk.value]);
+const table = computed(() => unitRows(props.charge, props.s, props.unit, props.showAll, uk.value));
 const cols = computed(() => (us.value?.second ? (["first", "add"] as const) : (["p"] as const)));
 const colLabel = (c: string) => (c === "first" ? T.value.t("e.colFirst") : c === "add" ? T.value.t("e.colAdd") : T.value.t("e.colRate"));
 
@@ -22,13 +23,13 @@ function set(key: string, v: number | null, bench: number | null) {
   else s.prices[key] = v;
   store.touch();
 }
-const hasEdits = computed(() => Object.keys(props.s.prices).some(k => k.startsWith(`${props.unit.id}|`)));
+const hasEdits = computed(() => Object.keys(props.s.prices).some(k => k.startsWith(`${uk.value}|`)));
 function reset() {
   const s = store.sel(props.charge.id);
-  for (const k of Object.keys(s.prices)) if (k.startsWith(`${props.unit.id}|`)) delete s.prices[k];
+  for (const k of Object.keys(s.prices)) if (k.startsWith(`${uk.value}|`)) delete s.prices[k];
   store.touch();
 }
-const mk = computed(() => (us.value?.min ? minKey(props.unit.id, us.value.min) : ""));
+const mk = computed(() => (us.value?.min ? minKey(uk.value, us.value.min) : ""));
 const minBench = computed(() => (us.value?.min ? props.unit.minDefault?.[us.value.min] ?? null : null));
 </script>
 
@@ -45,9 +46,9 @@ const minBench = computed(() => (us.value?.min ? props.unit.minDefault?.[us.valu
         <tr v-for="r in table.rows" :key="r.cells.join('|')">
           <td v-for="(cell, i) in r.cells" :key="i"><span v-if="cell">{{ T.tc(cell) }}</span><span v-else class="muted">{{ T.t("e.flat") }}</span></td>
           <td v-for="c in cols" :key="c" class="num">
-            <PriceInput :model-value="value(cellKey(unit.id, r.cells, c), benchmarkFor(r.d, c))" :benchmark="benchmarkFor(r.d, c)"
+            <PriceInput :model-value="value(cellKey(uk, r.cells, c), benchmarkFor(r.d, c))" :benchmark="benchmarkFor(r.d, c)"
                         :lo="c === 'add' ? undefined : unit.lo" :hi="c === 'add' ? undefined : unit.hi" :readonly="readOnly"
-                        @update:model-value="v => set(cellKey(unit.id, r.cells, c), v, benchmarkFor(r.d, c))" />
+                        @update:model-value="v => set(cellKey(uk, r.cells, c), v, benchmarkFor(r.d, c))" />
           </td>
         </tr>
         <tr v-if="us?.min" class="min">

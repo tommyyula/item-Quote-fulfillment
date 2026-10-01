@@ -2,7 +2,7 @@
 // Progressive questions for a builder charge: factors -> units -> price driver / minimum / additional-unit rate -> rate table.
 import { computed, ref } from "vue";
 import { useApp } from "../lib/context";
-import { activeConds, chosenDriverIds, passes } from "../lib/engine";
+import { activeConds, activeUnits, chosenDriverIds, nextUnitKey, passes } from "../lib/engine";
 import { softLower } from "../lib/format";
 import type { BuilderCharge, ChargeSel, Cond, Unit } from "../lib/types";
 import RateTable from "./RateTable.vue";
@@ -40,31 +40,41 @@ function toggleUnit(u: Unit) {
   s.units[u.id] = s.units[u.id] ?? { on: false };
   s.units[u.id].on = !s.units[u.id].on;
 }
-const activeU = computed(() => props.charge.units.filter(u => props.s.units[u.id]?.on && passes(props.charge, props.s, u.when, showAll.value)));
+const activeU = computed(() => activeUnits(props.charge, props.s, showAll.value));
+const methodsOf = (u: Unit) => activeU.value.filter(x => x.unit.id === u.id).length;
+function addMethod(u: Unit) {
+  const s = edit();
+  s.units[nextUnitKey(u, s)] = { on: true };
+}
+function removeMethod(k: string) {
+  const s = edit();
+  delete s.units[k];
+  for (const key of Object.keys(s.prices)) if (key.startsWith(`${k}|`)) delete s.prices[key];
+}
 
 // ---- step 3
 const drivers = (u: Unit) => u.drivers.filter(d => passes(props.charge, props.s, d.when, showAll.value));
 const hiddenDrivers = (u: Unit) => u.drivers.filter(d => !passes(props.charge, props.s, d.when, showAll.value));
-const chosen = (u: Unit) => new Set(chosenDriverIds(props.s.units[u.id], showAll.value));
-function pickDriver(u: Unit, id: string | null) {
-  const us = edit().units[u.id];
+const chosen = (k: string) => new Set(chosenDriverIds(props.s.units[k], showAll.value));
+function pickDriver(k: string, id: string | null) {
+  const us = edit().units[k];
   if (showAll.value) {
     const set = new Set(chosenDriverIds(us, true));
     if (id) set.has(id) ? set.delete(id) : set.add(id);
     us.drivers = [...set];
   } else us.driver = id;
 }
-const setCalc = (u: Unit, d: string, v: string) => { const us = edit().units[u.id]; us.calc = { ...(us.calc ?? {}), [d]: v }; };
-const setMin = (u: Unit, m: string | null) => (edit().units[u.id].min = m);
-const setSecond = (u: Unit, v: boolean) => (edit().units[u.id].second = v);
+const setCalc = (k: string, d: string, v: string) => { const us = edit().units[k]; us.calc = { ...(us.calc ?? {}), [d]: v }; };
+const setMin = (k: string, m: string | null) => (edit().units[k].min = m);
+const setSecond = (k: string, v: boolean) => (edit().units[k].second = v);
 // factor values the chosen driver does not apply to (e.g. Palletized when pricing by case count)
-const outside = (u: Unit) => {
+const outside = (u: Unit, k: string) => {
   if (showAll.value) return [];
   const act = activeConds(props.charge, props.s);
-  return drivers(u).filter(d => chosen(u).has(d.id)).flatMap(d => Object.entries(d.when).flatMap(([k, allowed]) =>
+  return drivers(u).filter(d => chosen(k).has(d.id)).flatMap(d => Object.entries(d.when).flatMap(([k, allowed]) =>
     (act.find(x => x.cond.id === k)?.values ?? []).filter(v => !allowed.includes(v))));
 };
-const setFlatOtherwise = (u: Unit, v: boolean) => (edit().units[u.id].flatOtherwise = v);
+const setFlatOtherwise = (k: string, v: boolean) => (edit().units[k].flatOtherwise = v);
 const setSetting = (id: string, v: string) => (edit().settings[id] = v);
 const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
 </script>
@@ -122,47 +132,53 @@ const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
     <!-- 3. pricing per unit -->
     <section v-if="activeU.length" class="step">
       <div class="q"><span class="num">3</span>{{ T.t("e.step3") }}</div>
-      <div v-for="u in activeU" :key="u.id" class="unit">
-        <h4>{{ T.t("e.perUnit", { unit: softLower(T.tc(u.label)) }) }}</h4>
+      <div v-for="{ key: k, unit: u, n } in activeU" :key="k" class="unit">
+        <div class="uhead">
+          <h4>{{ T.t("e.perUnit", { unit: softLower(T.tc(u.label)) }) }}<span v-if="methodsOf(u) > 1" class="muted"> · {{ T.t("e.method", { n }) }}</span></h4>
+          <template v-if="!readOnly">
+            <button v-if="n > 1" class="btn ghost sm" @click="removeMethod(k)">{{ T.t("e.remove") }}</button>
+            <button v-else-if="u.drivers.length" class="btn ghost sm" @click="addMethod(u)">+ {{ T.t("e.addMethod") }}</button>
+          </template>
+        </div>
         <div v-if="u.drivers.length" class="row">
           <span class="k">{{ T.t("e.varies") }}</span>
           <div class="chips">
-            <button v-if="!showAll" class="chip sm" :class="{ sel: !s.units[u.id].driver }" :disabled="readOnly" @click="pickDriver(u, null)">{{ T.t("e.flat") }}</button>
-            <button v-for="d in drivers(u)" :key="d.id" class="chip sm" :class="{ sel: chosen(u).has(d.id) }" :title="T.tc(d.help)" :disabled="readOnly"
-                    @click="pickDriver(u, d.id)">{{ T.tc(d.label) }}<span v-if="d.kind === 'volume'" class="muted"> · {{ T.t("e.volume") }}</span></button>
+            <button v-if="!showAll" class="chip sm" :class="{ sel: !s.units[k].driver }" :disabled="readOnly" @click="pickDriver(k, null)">{{ T.t("e.flat") }}</button>
+            <button v-for="d in drivers(u)" :key="d.id" class="chip sm" :class="{ sel: chosen(k).has(d.id) }" :title="T.tc(d.help)" :disabled="readOnly"
+                    @click="pickDriver(k, d.id)">{{ T.tc(d.label) }}<span v-if="d.kind === 'volume'" class="muted"> · {{ T.t("e.volume") }}</span></button>
           </div>
         </div>
         <div v-if="hiddenDrivers(u).length" class="note info">{{ T.t("e.notApplicable", { list: hiddenDrivers(u).map(d => T.tc(d.label)).join(", ") }) }}</div>
-        <div v-if="outside(u).length" class="row">
-          <span class="k">{{ T.t("e.flatOtherwise", { values: [...new Set(outside(u))].map(v => T.tc(v)).join(", ") }) }}</span>
+        <div v-if="outside(u, k).length" class="row">
+          <span class="k">{{ T.t("e.flatOtherwise", { values: [...new Set(outside(u, k))].map(v => T.tc(v)).join(", ") }) }}</span>
           <div class="chips">
-            <button class="chip sm" :class="{ sel: !s.units[u.id].flatOtherwise }" :disabled="readOnly" @click="setFlatOtherwise(u, false)">{{ T.t("e.notPriced") }}</button>
-            <button class="chip sm" :class="{ sel: !!s.units[u.id].flatOtherwise }" :disabled="readOnly" @click="setFlatOtherwise(u, true)">{{ T.t("e.flat") }}</button>
+            <button class="chip sm" :class="{ sel: !s.units[k].flatOtherwise }" :disabled="readOnly" @click="setFlatOtherwise(k, false)">{{ T.t("e.notPriced") }}</button>
+            <button class="chip sm" :class="{ sel: !!s.units[k].flatOtherwise }" :disabled="readOnly" @click="setFlatOtherwise(k, true)">{{ T.t("e.flat") }}</button>
           </div>
         </div>
-        <div v-for="d in u.drivers.filter(x => x.calc && chosen(u).has(x.id))" :key="'c' + d.id" class="row">
+        <div v-for="d in u.drivers.filter(x => x.calc && chosen(k).has(x.id))" :key="'c' + d.id" class="row">
           <span class="k">{{ T.t("e.tiers", { label: T.tc(d.label) }) }}</span>
           <div class="chips">
-            <button v-for="o in ['range', 'incremental']" :key="o" class="chip sm" :class="{ sel: (s.units[u.id].calc?.[d.id] ?? 'range') === o }"
-                    :disabled="readOnly" @click="setCalc(u, d.id, o)">{{ T.t(`e.calc.${o}`) }}</button>
+            <button v-for="o in ['range', 'incremental']" :key="o" class="chip sm" :class="{ sel: (s.units[k].calc?.[d.id] ?? 'range') === o }"
+                    :disabled="readOnly" @click="setCalc(k, d.id, o)">{{ T.t(`e.calc.${o}`) }}</button>
           </div>
         </div>
         <div v-if="u.mins.length" class="row">
           <span class="k">{{ T.t("e.minimum") }}</span>
           <div class="chips">
-            <button class="chip sm" :class="{ sel: !s.units[u.id].min }" :disabled="readOnly" @click="setMin(u, null)">{{ T.t("e.none") }}</button>
-            <button v-for="m in u.mins" :key="m" class="chip sm" :class="{ sel: s.units[u.id].min === m }" :disabled="readOnly"
-                    @click="setMin(u, m)">{{ T.t("e.minPer", { basis: T.t(`basis.${m}`) }) }}</button>
+            <button class="chip sm" :class="{ sel: !s.units[k].min }" :disabled="readOnly" @click="setMin(k, null)">{{ T.t("e.none") }}</button>
+            <button v-for="m in u.mins" :key="m" class="chip sm" :class="{ sel: s.units[k].min === m }" :disabled="readOnly"
+                    @click="setMin(k, m)">{{ T.t("e.minPer", { basis: T.t(`basis.${m}`) }) }}</button>
           </div>
         </div>
         <div v-if="u.second" class="row">
           <span class="k">{{ T.t("e.second") }}</span>
           <div class="chips">
-            <button class="chip sm" :class="{ sel: !s.units[u.id].second }" :disabled="readOnly" @click="setSecond(u, false)">{{ T.t("c.no") }}</button>
-            <button class="chip sm" :class="{ sel: !!s.units[u.id].second }" :disabled="readOnly" @click="setSecond(u, true)">{{ T.t("c.yes") }}</button>
+            <button class="chip sm" :class="{ sel: !s.units[k].second }" :disabled="readOnly" @click="setSecond(k, false)">{{ T.t("c.no") }}</button>
+            <button class="chip sm" :class="{ sel: !!s.units[k].second }" :disabled="readOnly" @click="setSecond(k, true)">{{ T.t("c.yes") }}</button>
           </div>
         </div>
-        <RateTable :charge="charge" :unit="u" :s="s" :show-all="showAll" :read-only="readOnly" />
+        <RateTable :charge="charge" :unit="u" :unit-key="k" :s="s" :show-all="showAll" :read-only="readOnly" />
         <div v-if="u.note" class="hint">{{ T.tc(u.note) }}</div>
       </div>
     </section>
@@ -180,7 +196,8 @@ const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
 .vals .lbl { font-size: 13px; color: var(--muted-fg); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .free { width: min(360px, 100%); }
 .unit { border-left: 2px solid var(--border); padding: 2px 0 6px 16px; margin: 14px 0 14px 22px; }
-.unit h4 { margin: 0 0 8px; font-size: 14px; }
+.unit h4 { margin: 0; font-size: 14px; }
+.uhead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
 .k { font-size: 13px; color: var(--muted-fg); min-width: 160px; }
 @media (max-width: 700px) { .bb { padding-left: 16px; } .k { min-width: 0; width: 100%; } .vals, .unit { margin-left: 0; } }
