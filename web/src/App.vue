@@ -79,6 +79,7 @@ const setLang = (l: Lang) => (st.prefs.lang = l);
 const h = computed(() => store.quote.value!.draft.header);
 const touch = () => store.touch();
 const toggleTheme = () => (st.prefs.theme = st.prefs.theme === "light" ? "dark" : "light");
+const themeLabel = computed(() => (st.prefs.theme === "light" ? T.value.t("h.nightView") : T.value.t("h.dayView")));
 const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : itemLogoDark));
 </script>
 
@@ -120,7 +121,10 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
     <div class="seg" role="group" aria-label="Language">
       <button v-for="l in LANGS" :key="l.id" :class="{ on: st.prefs.lang === l.id }" :aria-pressed="st.prefs.lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
     </div>
-    <button class="btn ghost sm" @click="toggleTheme">{{ st.prefs.theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}</button>
+    <button class="btn sm icon" :aria-label="themeLabel" :title="themeLabel" @click="toggleTheme">
+      <svg v-if="st.prefs.theme === 'light'" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+      <svg v-else viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" /><path d="M12 1.5v2.5M12 20v2.5M1.5 12H4M20 12h2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" /></svg>
+    </button>
   </header>
 
   <div v-if="store.readOnly.value" class="banner no-print" role="status">

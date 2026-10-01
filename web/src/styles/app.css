@@ -46,6 +46,8 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.005em; }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--primary-text); padding: 4px 6px; }
 .btn.ghost:hover:not(:disabled) { text-decoration: underline; border-color: transparent; }
 .btn.sm { padding: 4px 10px; font-size: 12.5px; }
+.btn.icon { padding: 5px; }
+.btn.icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .input, select.input, textarea.input { border: 1px solid var(--border); background: var(--input); color: var(--fg); border-radius: var(--radius-sm); padding: 6px 9px; min-width: 0; }
 .muted { color: var(--muted-fg); }
 .hint { color: var(--muted-fg); font-size: 12.5px; }
