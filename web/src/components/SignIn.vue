@@ -11,8 +11,13 @@ defineProps<{ loadError?: boolean }>();
 const prefs = localRepo.load<Partial<Prefs>>("prefs", {});
 const nav = (navigator.language || "en").slice(0, 2);
 const lang = ref<Lang>(prefs.lang ?? ((["en", "zh", "ja", "es"].includes(nav) ? nav : "en") as Lang));
-const theme = prefs.theme ?? "dark";
-document.documentElement.dataset.theme = theme;
+const theme = ref<"light" | "dark">(prefs.theme ?? "dark");
+document.documentElement.dataset.theme = theme.value;
+function toggleTheme() {
+  theme.value = theme.value === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = theme.value;
+  localRepo.save("prefs", { ...localRepo.load<Partial<Prefs>>("prefs", {}), theme: theme.value });   // same preference the app uses
+}
 const T = computed(() => translator(lang.value));
 const cfg = ref<AuthConfig | null>(null);
 const email = ref("");
@@ -27,6 +32,10 @@ onMounted(async () => {
   }
 });
 const reload = () => location.reload();
+function setLang(l: Lang) {
+  lang.value = l;
+  localRepo.save("prefs", { ...localRepo.load<Partial<Prefs>>("prefs", {}), lang: l });
+}
 async function devLogin() {
   try {
     await api("POST", "/auth/dev-login", { email: email.value.trim() });
@@ -60,8 +69,11 @@ async function devLogin() {
       </template>
       <p v-else class="muted">{{ T.t("s.loading") }}</p>
       <p v-if="error" class="err" role="alert">{{ error }}</p>
-      <div class="seg" role="group" aria-label="Language">
-        <button v-for="l in LANGS" :key="l.id" :class="{ on: lang === l.id }" :aria-pressed="lang === l.id" @click="lang = l.id">{{ l.label }}</button>
+      <div class="prefs">
+        <div class="seg" role="group" aria-label="Language">
+          <button v-for="l in LANGS" :key="l.id" :class="{ on: lang === l.id }" :aria-pressed="lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
+        </div>
+        <button class="btn ghost sm" @click="toggleTheme">{{ theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}</button>
       </div>
     </div>
     <a class="item" href="https://item.com" target="_blank" rel="noopener">
@@ -84,6 +96,6 @@ p { margin: 0; }
 .dev .field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .lbl { font-size: 12px; color: var(--muted-fg); }
 .err { color: var(--destructive); font-size: 13px; }
-.seg { align-self: flex-start; }
+.prefs { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .item { display: inline-flex; align-items: center; gap: 10px; color: var(--muted-fg); font-size: 12px; text-decoration: none; }
 </style>
