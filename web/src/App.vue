@@ -8,6 +8,7 @@ import Drawer from "./components/Drawer.vue";
 import CustomersDrawer from "./components/CustomersDrawer.vue";
 import HistoryDrawer from "./components/HistoryDrawer.vue";
 import ProposalView from "./components/ProposalView.vue";
+import ThemeToggle from "./components/ThemeToggle.vue";
 import VersionsDrawer from "./components/VersionsDrawer.vue";
 import { LANGS, type Lang } from "./i18n";
 import { provideApp } from "./lib/context";
@@ -128,7 +129,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
     <div class="seg" role="group" aria-label="Language">
       <button v-for="l in LANGS" :key="l.id" :class="{ on: st.prefs.lang === l.id }" :aria-pressed="st.prefs.lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
     </div>
-    <button class="btn ghost sm" @click="toggleTheme">{{ st.prefs.theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}</button>
+    <ThemeToggle :theme="st.prefs.theme" :label="st.prefs.theme === 'light' ? T.t('h.nightView') : T.t('h.dayView')" @toggle="toggleTheme" />
   </header>
 
   <div v-if="store.readOnly.value" class="banner no-print" role="status">
@@ -268,9 +269,6 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
 .vstate.warn::before { content: "● "; }
 .vstate.ok { color: var(--muted-fg); }
 .sp { flex: 1; }
-.seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-.seg button { background: transparent; border: 0; color: var(--muted-fg); padding: 5px 10px; cursor: pointer; font-size: 12.5px; }
-.seg button.on { background: var(--fg); color: var(--bg); font-weight: 600; }
 .banner { background: var(--orange-soft); color: var(--fg); padding: 8px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid var(--border); }
 .empty { text-align: center; padding: 80px 20px; }
 .layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; max-width: 1320px; margin: 0 auto; padding: 24px 20px; }

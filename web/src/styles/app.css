@@ -79,3 +79,8 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.005em; }
   .proposal-doc { box-shadow: none !important; border: 0 !important; padding: 0 !important; max-width: none !important; }
   .proposal-doc tr { page-break-inside: avoid; }
 }
+
+/* language switch (header and sign-in page) */
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.seg button { background: transparent; border: 0; color: var(--muted-fg); padding: 5px 10px; cursor: pointer; font-size: 12.5px; }
+.seg button.on { background: var(--fg); color: var(--bg); font-weight: 600; }
