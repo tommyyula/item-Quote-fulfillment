@@ -1,0 +1,3999 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UNIS Fulfillment Quotation API",
+    "version": "1.0.0",
+    "summary": "Customers, quotes, versions, rate sheets and charge-code mapback for UNIS warehouse services.",
+    "description": "Integration API for the UNIS Fulfillment quotation tool.\n\n**Main objects** (full CRUD): `Customer`, `Quote`, the quote `Draft` and its per-charge `Selection`s,\ncatalog `Charge`s, `ChargeCodeMapRule`s and `Webhook`s.\n**Versions** are immutable snapshots: create, read, restore. **History** is append-only.\n**Computed resources** are read-only: rate lines, the customer rate sheet (proposal), the charge-code mapback,\nsetup gaps and version diffs.\n\n### Charge-code mapback\nEvery rate line of a quote resolves to an existing billing-system charge code plus the system conditions to configure\n(for example `HANDLING-0129` with `OFFLoad Type: Floor Loaded`, `Case Qty: 0-500`). Each line has a status:\n\n| Status | Meaning |\n| --- | --- |\n| `mapped` | The code exists and already uses every condition the line needs |\n| `new-condition` | The code exists, but a condition the line needs is not configured on it today |\n| `new-item` | No code exists yet; create the item in the billing system first (`suggestedName`) |\n\n`POST /quotes/{quoteId}/versions` stores the mapback with the version. Pass `requireMapped=true`\nto refuse a version that still has `new-condition` or `new-item` lines.\n\n### Conventions\n- JSON, UTF-8. Money is a decimal number in USD (`10.5` = $10.50). Percent rates are fractions (`0.2` = 20%).\n- Timestamps are ISO 8601 UTC. IDs are opaque strings.\n- Lists are paginated with `page` / `pageSize` and return a `Page` envelope.\n- Updates support optimistic concurrency: send the `ETag` you read as `If-Match`; a stale value returns `412`.\n- `POST` endpoints accept an `Idempotency-Key` header; a retried request with the same key returns the original result.\n- Errors use RFC 9457 `application/problem+json`.\n- Catalog strings are English; pass `lang` (`en`, `zh`, `ja`, `es`) where a localized rendering is offered.\n\nStatus: the reference implementation is the web app (browser storage). This contract is the target for the shared backend;\nthe server URL below is a placeholder until it is deployed.\n",
+    "contact": {
+      "name": "UNIS Fulfillment"
+    },
+    "license": {
+      "name": "Proprietary - UNIS internal integration use",
+      "identifier": "LicenseRef-Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://{host}/quote/v1",
+      "description": "Shared backend (to be deployed)",
+      "variables": {
+        "host": {
+          "default": "api.example.com"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "apiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Companies a quote is prepared for."
+    },
+    {
+      "name": "Quotes",
+      "description": "A quote per customer, with status and its draft and versions."
+    },
+    {
+      "name": "Drafts",
+      "description": "The editable working copy of a quote (header + charge selections)."
+    },
+    {
+      "name": "Versions",
+      "description": "Immutable snapshots of a draft, each with its charge-code mapback."
+    },
+    {
+      "name": "Rate sheet",
+      "description": "Computed rate lines and the customer proposal."
+    },
+    {
+      "name": "Charge-code mapback",
+      "description": "Resolution of rate lines to existing billing-system charge codes, and what must be set up first."
+    },
+    {
+      "name": "Catalog",
+      "description": "Service catalog (categories, charges, builder questions, benchmark rates) and the default template."
+    },
+    {
+      "name": "System charge codes",
+      "description": "Read-only view of the billing system's charge items."
+    },
+    {
+      "name": "History",
+      "description": "Append-only activity log (views, versions, exports, status changes)."
+    },
+    {
+      "name": "Webhooks",
+      "description": "Event subscriptions for other systems."
+    }
+  ],
+  "paths": {
+    "/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "listCustomers",
+        "summary": "List customers",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search company, contact, code, email or city.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "company",
+                "-company",
+                "createdAt",
+                "-createdAt"
+              ],
+              "default": "company"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Page"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Customer"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "createCustomer",
+        "summary": "Create a customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              },
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "default": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/customers/{customerId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/customerId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "getCustomer",
+        "summary": "Get a customer",
+        "responses": {
+          "200": {
+            "description": "Customer",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "replaceCustomer",
+        "summary": "Replace a customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "updateCustomer",
+        "summary": "Update some customer fields",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/merge-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "deleteCustomer",
+        "summary": "Delete a customer",
+        "description": "Refused with `409` while the customer has quotes that are not archived.",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "get": {
+        "tags": [
+          "Quotes"
+        ],
+        "operationId": "listQuotes",
+        "summary": "List quotes",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/QuoteStatus"
+            }
+          },
+          {
+            "name": "updatedSince",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search quote number or title.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quotes (without draft selections; fetch the draft separately)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Page"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/QuoteSummary"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Quotes"
+        ],
+        "operationId": "createQuote",
+        "summary": "Create a quote",
+        "description": "A new quote starts from the default template (the most common charges) unless `template` is `blank`.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              },
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Customer not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Quotes"
+        ],
+        "operationId": "getQuote",
+        "summary": "Get a quote (header, status, draft and version list)",
+        "responses": {
+          "200": {
+            "description": "Quote",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Quotes"
+        ],
+        "operationId": "updateQuote",
+        "summary": "Update quote status or draft header",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/merge-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuotePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Quotes"
+        ],
+        "operationId": "deleteQuote",
+        "summary": "Delete a quote",
+        "description": "Quotes with saved versions are archived (status `archived`) instead of removed; drafts without versions are deleted.",
+        "responses": {
+          "204": {
+            "description": "Deleted or archived"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/draft": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Drafts"
+        ],
+        "operationId": "getDraft",
+        "summary": "Get the draft (header + all charge selections)",
+        "responses": {
+          "200": {
+            "description": "Draft",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteData"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Drafts"
+        ],
+        "operationId": "replaceDraft",
+        "summary": "Replace the draft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          },
+          {
+            "name": "template",
+            "in": "query",
+            "description": "Reset to a template instead of using the body: `default` or `blank`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "default",
+                "blank"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteData"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteData"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "description": "Unknown charge, unit, factor value or driver",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/draft/selections": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Drafts"
+        ],
+        "operationId": "listSelections",
+        "summary": "List charge selections in the draft",
+        "parameters": [
+          {
+            "name": "onlyOn",
+            "in": "query",
+            "description": "Only charges included in the quote.",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selections keyed by charge ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ChargeSelection"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/draft/selections/{chargeId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        },
+        {
+          "$ref": "#/components/parameters/chargeId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Drafts"
+        ],
+        "operationId": "getSelection",
+        "summary": "Get one charge selection",
+        "responses": {
+          "200": {
+            "description": "Selection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeSelection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Drafts"
+        ],
+        "operationId": "putSelection",
+        "summary": "Create or replace one charge selection",
+        "description": "Validated against the catalog (unit, driver and factor values must exist; units hidden by the show/hide rules are rejected unless `showAll` is true).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChargeSelection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeSelection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Drafts"
+        ],
+        "operationId": "deleteSelection",
+        "summary": "Remove a charge from the draft",
+        "responses": {
+          "204": {
+            "description": "Removed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/versions": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Versions"
+        ],
+        "operationId": "listVersions",
+        "summary": "List saved versions",
+        "responses": {
+          "200": {
+            "description": "Versions, oldest first (without snapshot data)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VersionSummary"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Versions"
+        ],
+        "operationId": "saveVersion",
+        "summary": "Save the current draft as a new version",
+        "description": "Snapshots the draft and its charge-code mapback. With `requireMapped=true` the request fails with `409`\n(body lists the setup items) while any rate line is `new-condition` or `new-item`.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKey"
+          },
+          {
+            "name": "requireMapped",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "description": "What changed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Version saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "Setup required before the version can be saved (only with requireMapped=true)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "setup": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SetupItem"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/versions/{version}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        },
+        {
+          "$ref": "#/components/parameters/version"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Versions"
+        ],
+        "operationId": "getVersion",
+        "summary": "Get a version (snapshot + mapback)",
+        "responses": {
+          "200": {
+            "description": "Version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/versions/{version}/restore": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        },
+        {
+          "$ref": "#/components/parameters/version"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Versions"
+        ],
+        "operationId": "restoreVersion",
+        "summary": "Copy a version back into the draft",
+        "responses": {
+          "200": {
+            "description": "Draft after restore",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteData"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/compare": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Versions"
+        ],
+        "operationId": "compareVersions",
+        "summary": "Compare two versions, or a version with the draft",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "description": "Version number or `draft`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "description": "Version number or `draft`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rate-line differences",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RateLineDiff"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/rate-lines": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        },
+        {
+          "$ref": "#/components/parameters/versionQuery"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Rate sheet"
+        ],
+        "operationId": "listRateLines",
+        "summary": "Every priced cell of the quote, with its charge-code mapping",
+        "responses": {
+          "200": {
+            "description": "Rate lines in catalog order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RateLine"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/proposal": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        },
+        {
+          "$ref": "#/components/parameters/versionQuery"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Rate sheet"
+        ],
+        "operationId": "getProposal",
+        "summary": "Customer rate sheet (Warehouse Services Proposal)",
+        "description": "Laid out like the UNIS Business Proposal template: sections in template order, same-price variants merged into one row,\nfactors shared by every row lifted into the service heading. Use `Accept` to choose the format.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/lang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Proposal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}/charge-code-mapping": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/quoteId"
+        },
+        {
+          "$ref": "#/components/parameters/versionQuery"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "getQuoteMapping",
+        "summary": "Mapback of every rate line to a system charge code, with the setup list",
+        "responses": {
+          "200": {
+            "description": "Mapback",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MappingReport"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/charge-code-gaps": {
+      "get": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "listCatalogGaps",
+        "summary": "Catalog options not yet supported by the billing system",
+        "description": "Static check of every option a user can pick. Use it to configure the billing system ahead of time.",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "new-item",
+                "new-condition"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gaps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogGap"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/charge-code-maps": {
+      "get": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "listChargeCodeMapRules",
+        "summary": "List mapback rules (catalog option -> system charge code)",
+        "parameters": [
+          {
+            "name": "chargeId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeCodeMapRule"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "createChargeCodeMapRule",
+        "summary": "Add a mapback rule (e.g. once a new item exists in the billing system)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChargeCodeMapRuleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeCodeMapRule"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "A rule for this option already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unknown charge, unit, driver or system code",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/charge-code-maps/{ruleId}": {
+      "parameters": [
+        {
+          "name": "ruleId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "getChargeCodeMapRule",
+        "summary": "Get a mapback rule",
+        "responses": {
+          "200": {
+            "description": "Rule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeCodeMapRule"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "replaceChargeCodeMapRule",
+        "summary": "Replace a mapback rule",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChargeCodeMapRuleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeCodeMapRule"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Charge-code mapback"
+        ],
+        "operationId": "deleteChargeCodeMapRule",
+        "summary": "Delete a mapback rule",
+        "description": "Lines that used the rule become `new-item` until another rule covers them.",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/catalog": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "getCatalog",
+        "summary": "Full catalog (categories, charges, builder questions, benchmark rates, proposal layout)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/lang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Catalog",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/catalog/charges": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "listCharges",
+        "summary": "List charges",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "setup",
+                "inbound",
+                "outbound",
+                "storage",
+                "returns",
+                "vas",
+                "other"
+              ]
+            }
+          },
+          {
+            "name": "tier",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "main",
+                "advanced"
+              ]
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/lang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Charges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Charge"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "createCharge",
+        "summary": "Add a charge to the catalog (admin)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Charge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Charge"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/catalog/charges/{chargeId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/chargeId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "getCharge",
+        "summary": "Get a charge",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/lang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Charge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Charge"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "replaceCharge",
+        "summary": "Replace a charge (admin)",
+        "description": "Existing quotes keep working; selections that reference removed units or drivers are reported by `PUT /quotes/{id}/draft` validation.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Charge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Charge"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "deleteCharge",
+        "summary": "Retire a charge (admin)",
+        "description": "Retired charges stay readable for saved versions but can no longer be added to drafts.",
+        "responses": {
+          "204": {
+            "description": "Retired"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/catalog/default-template": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "getDefaultTemplate",
+        "summary": "Default template (most common charges, pre-configured)",
+        "responses": {
+          "200": {
+            "description": "Selections keyed by charge ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ChargeSelection"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "replaceDefaultTemplate",
+        "summary": "Replace the default template (admin)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ifMatch"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChargeSelection"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "412": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/system-charge-codes": {
+      "get": {
+        "tags": [
+          "System charge codes"
+        ],
+        "operationId": "listSystemChargeCodes",
+        "summary": "List billing-system charge items",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search code, name or description.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "inUse",
+            "in": "query",
+            "description": "Only codes invoiced in the current usage period.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Charge codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemChargeCode"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/system-charge-codes/{code}": {
+      "parameters": [
+        {
+          "name": "code",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "example": "HANDLING-0129"
+        }
+      ],
+      "get": {
+        "tags": [
+          "System charge codes"
+        ],
+        "operationId": "getSystemChargeCode",
+        "summary": "Get a billing-system charge item",
+        "responses": {
+          "200": {
+            "description": "Charge code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemChargeCode"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/history": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "operationId": "listHistory",
+        "summary": "Activity log (append-only)",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/HistoryType"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/pageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Page"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/HistoryEvent"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/history/{eventId}": {
+      "parameters": [
+        {
+          "name": "eventId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "operationId": "getHistoryEvent",
+        "summary": "Get one event",
+        "responses": {
+          "200": {
+            "description": "Event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "listWebhooks",
+        "summary": "List webhook subscriptions",
+        "responses": {
+          "200": {
+            "description": "Subscriptions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Webhook"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "createWebhook",
+        "summary": "Subscribe to events",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created (the signing secret is returned once)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/webhooks/{webhookId}": {
+      "parameters": [
+        {
+          "name": "webhookId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "getWebhook",
+        "summary": "Get a subscription",
+        "responses": {
+          "200": {
+            "description": "Subscription",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "replaceWebhook",
+        "summary": "Replace a subscription",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "deleteWebhook",
+        "summary": "Unsubscribe",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "quoteEvent": {
+      "post": {
+        "operationId": "onQuoteEvent",
+        "summary": "Quote, version and customer events",
+        "description": "Sent as `POST` to the subscription URL with header `X-Signature: sha256=<hex HMAC of the body with the subscription secret>`.\nRetried with backoff for 24 hours until a 2xx response. `version.saved` carries the mapback summary so billing can act on setup items.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "2XX": {
+            "description": "Accepted"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "SSO access token for users of the quotation tool."
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Key for system-to-system integrations."
+      }
+    },
+    "parameters": {
+      "customerId": {
+        "name": "customerId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "quoteId": {
+        "name": "quoteId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "chargeId": {
+        "name": "chargeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "example": "IN-OFFLOAD"
+      },
+      "version": {
+        "name": "version",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "versionQuery": {
+        "name": "version",
+        "in": "query",
+        "description": "Version number; omit for the current draft.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "lang": {
+        "name": "lang",
+        "in": "query",
+        "schema": {
+          "$ref": "#/components/schemas/Lang"
+        }
+      },
+      "page": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "pageSize": {
+        "name": "pageSize",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 50
+        }
+      },
+      "ifMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "description": "ETag from the last read; required for updates.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "description": "Unique key per logical request (UUID).",
+        "schema": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "headers": {
+      "ETag": {
+        "description": "Version tag of the resource for If-Match.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Missing or invalid credentials",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "Problem": {
+        "description": "Error",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Problem": {
+        "type": "object",
+        "description": "RFC 9457 problem details.",
+        "required": [
+          "title",
+          "status"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "required": [
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "Lang": {
+        "type": "string",
+        "enum": [
+          "en",
+          "zh",
+          "ja",
+          "es"
+        ]
+      },
+      "Channel": {
+        "type": "string",
+        "enum": [
+          "B2B",
+          "D2C",
+          "Both"
+        ]
+      },
+      "QuoteStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "sent",
+          "accepted",
+          "archived"
+        ]
+      },
+      "Money": {
+        "type": "number",
+        "description": "USD amount",
+        "examples": [
+          10.5
+        ]
+      },
+      "CustomerInput": {
+        "type": "object",
+        "required": [
+          "company"
+        ],
+        "properties": {
+          "company": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "description": "Customer code in the billing system."
+          },
+          "contact": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "address": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/Channel"
+          }
+        }
+      },
+      "CustomerPatch": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CustomerInput"
+          }
+        ],
+        "required": []
+      },
+      "Customer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CustomerInput"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "createdAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "quoteCount": {
+                "type": "integer",
+                "readOnly": true
+              }
+            }
+          }
+        ]
+      },
+      "QuoteHeader": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "facility": {
+            "type": "string",
+            "description": "UNIS facility, empty = all facilities.",
+            "examples": [
+              "Buena Park, CA"
+            ]
+          },
+          "effectiveDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "validDays": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 90
+          },
+          "preparedBy": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "CondSelection": {
+        "type": "object",
+        "description": "A rate factor (\"Does the rate differ by ...?\").",
+        "required": [
+          "on",
+          "values"
+        ],
+        "properties": {
+          "on": {
+            "type": "boolean"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Catalog values that get their own rate."
+          },
+          "text": {
+            "type": "string",
+            "description": "Free-text factors (e.g. title / brand), comma separated."
+          }
+        }
+      },
+      "UnitSelection": {
+        "type": "object",
+        "description": "A billing unit (\"Charge per ...\") and how it is priced.",
+        "required": [
+          "on"
+        ],
+        "properties": {
+          "on": {
+            "type": "boolean"
+          },
+          "driver": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Price driver in guided mode (null = flat rate)."
+          },
+          "drivers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Several drivers (show-all mode)."
+          },
+          "calc": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "range",
+                "incremental"
+              ]
+            },
+            "description": "Tier calculation per volume driver."
+          },
+          "min": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "receipt",
+              "container",
+              "load",
+              "order",
+              "month",
+              null
+            ]
+          },
+          "second": {
+            "type": "boolean",
+            "description": "Different rate for additional units."
+          },
+          "flatOtherwise": {
+            "type": "boolean",
+            "description": "Rows the price driver does not apply to are priced flat instead of left out (e.g. palletized containers when pricing by case count)."
+          }
+        }
+      },
+      "ChargeSelection": {
+        "type": "object",
+        "required": [
+          "on"
+        ],
+        "properties": {
+          "on": {
+            "type": "boolean",
+            "description": "Charge included in the quote."
+          },
+          "price": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Simple charges only; omitted = benchmark default."
+          },
+          "conds": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CondSelection"
+            }
+          },
+          "units": {
+            "type": "object",
+            "description": "Keyed by unit ID; a unit priced a second way uses `unitId#2`, `unitId#3`, ... (e.g. `case` flat and `case#2` by case weight).",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/UnitSelection"
+            }
+          },
+          "prices": {
+            "type": "object",
+            "description": "Builder rate cells: key `unitId|value|value...|col` (col = p, first, add) or `unitId|MIN|basis`; omitted cells use the benchmark.",
+            "additionalProperties": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "settings": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Billing settings, e.g. initial storage."
+          },
+          "showAll": {
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "on": true,
+          "conds": {
+            "offloadType": {
+              "on": true,
+              "values": [
+                "Floor loaded",
+                "Palletized"
+              ]
+            }
+          },
+          "units": {
+            "container": {
+              "on": true,
+              "driver": "caseCount"
+            },
+            "pallet": {
+              "on": true,
+              "min": "load"
+            }
+          },
+          "prices": {
+            "container|Floor loaded|0 - 500 cases|p": 495
+          }
+        }
+      },
+      "QuoteData": {
+        "type": "object",
+        "required": [
+          "header",
+          "selections"
+        ],
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/QuoteHeader"
+          },
+          "selections": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ChargeSelection"
+            }
+          }
+        }
+      },
+      "QuoteCreate": {
+        "type": "object",
+        "required": [
+          "customerId"
+        ],
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string",
+            "enum": [
+              "default",
+              "blank"
+            ],
+            "default": "default"
+          },
+          "header": {
+            "$ref": "#/components/schemas/QuoteHeader"
+          }
+        }
+      },
+      "QuotePatch": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "header": {
+            "$ref": "#/components/schemas/QuoteHeader"
+          }
+        }
+      },
+      "QuoteSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "customerId",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "examples": [
+              "Q-2026-0001"
+            ]
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestVersion": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "draftChanged": {
+            "type": "boolean",
+            "description": "Draft differs from the latest version."
+          }
+        }
+      },
+      "Quote": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/QuoteSummary"
+          },
+          {
+            "type": "object",
+            "required": [
+              "draft",
+              "versions"
+            ],
+            "properties": {
+              "draft": {
+                "$ref": "#/components/schemas/QuoteData"
+              },
+              "versions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/VersionSummary"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MappingSummary": {
+        "type": "object",
+        "required": [
+          "total",
+          "mapped",
+          "newCondition",
+          "newItem"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "mapped": {
+            "type": "integer"
+          },
+          "newCondition": {
+            "type": "integer"
+          },
+          "newItem": {
+            "type": "integer"
+          }
+        }
+      },
+      "VersionSummary": {
+        "type": "object",
+        "required": [
+          "v",
+          "savedAt",
+          "lineCount"
+        ],
+        "properties": {
+          "v": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "savedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "savedBy": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "lineCount": {
+            "type": "integer"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/MappingSummary"
+          }
+        }
+      },
+      "Version": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VersionSummary"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data",
+              "mappingLines"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/QuoteData"
+              },
+              "mappingLines": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LineMapping"
+                }
+              },
+              "setup": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SetupItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DimCell": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "examples": [
+              "offloadType"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "examples": [
+              "Offload type"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "examples": [
+              "Floor loaded"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cond",
+              "driver"
+            ]
+          }
+        }
+      },
+      "RateLine": {
+        "type": "object",
+        "required": [
+          "key",
+          "chargeId",
+          "categoryId",
+          "col",
+          "price",
+          "benchmark"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "examples": [
+              "IN-OFFLOAD|container|Floor loaded|0 - 500 cases|p"
+            ]
+          },
+          "chargeId": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "unitId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unitKey": {
+            "type": "string",
+            "description": "Instance key when a unit is priced more than one way (e.g. `case#2`); otherwise equals unitId."
+          },
+          "unitLabel": {
+            "type": "string"
+          },
+          "dims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimCell"
+            }
+          },
+          "col": {
+            "type": "string",
+            "enum": [
+              "p",
+              "first",
+              "add",
+              "min"
+            ],
+            "description": "p = rate, first / add = first and additional unit, min = minimum charge."
+          },
+          "minBasis": {
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "benchmark": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "pct": {
+            "type": "boolean",
+            "description": "Price is a markup fraction."
+          },
+          "lo": {
+            "type": "number"
+          },
+          "hi": {
+            "type": "number"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/LineMapping"
+          }
+        }
+      },
+      "RateLineDiff": {
+        "type": "object",
+        "required": [
+          "kind",
+          "key"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "added",
+              "removed",
+              "changed"
+            ]
+          },
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "from": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "to": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "SystemCondition": {
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "supported"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "examples": [
+              "Case Qty"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "examples": [
+              "0-500"
+            ]
+          },
+          "supported": {
+            "type": "boolean",
+            "description": "The code already uses this condition today."
+          }
+        }
+      },
+      "LineMapping": {
+        "type": "object",
+        "required": [
+          "lineKey",
+          "chargeId",
+          "status",
+          "conditions"
+        ],
+        "properties": {
+          "lineKey": {
+            "type": "string"
+          },
+          "chargeId": {
+            "type": "string"
+          },
+          "unitId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unitKey": {
+            "type": "string"
+          },
+          "col": {
+            "type": "string",
+            "enum": [
+              "p",
+              "first",
+              "add",
+              "min"
+            ]
+          },
+          "minBasis": {
+            "type": "string"
+          },
+          "price": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "mapped",
+              "new-condition",
+              "new-item"
+            ]
+          },
+          "altCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other system codes that bill the same service (another trigger or direction); configure the same rate there."
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "examples": [
+              "HANDLING-0129"
+            ]
+          },
+          "initialCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Storage only: initial (at receipt) storage code next to the recurring code."
+          },
+          "systemName": {
+            "type": "string"
+          },
+          "systemUom": {
+            "type": "string"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SystemCondition"
+            }
+          },
+          "suggestedName": {
+            "type": "string",
+            "description": "new-item: proposed billing-system item name."
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SetupItem": {
+        "type": "object",
+        "required": [
+          "kind",
+          "chargeId",
+          "lineCount"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "new-item",
+              "new-condition"
+            ]
+          },
+          "chargeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "systemName": {
+            "type": "string"
+          },
+          "suggestedName": {
+            "type": "string"
+          },
+          "conditionKey": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lineCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "MappingReport": {
+        "type": "object",
+        "required": [
+          "summary",
+          "lines",
+          "setup"
+        ],
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/MappingSummary"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LineMapping"
+            }
+          },
+          "setup": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SetupItem"
+            }
+          }
+        }
+      },
+      "CatalogGap": {
+        "type": "object",
+        "required": [
+          "chargeId",
+          "option",
+          "kind"
+        ],
+        "properties": {
+          "chargeId": {
+            "type": "string"
+          },
+          "option": {
+            "type": "string",
+            "examples": [
+              "Item · rate by Return type"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "new-item",
+              "new-condition"
+            ]
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Condition to add, or suggested item name."
+          }
+        }
+      },
+      "ChargeCodeMapRuleInput": {
+        "type": "object",
+        "required": [
+          "chargeId",
+          "code"
+        ],
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "examples": [
+              "IN-OFFLOAD"
+            ]
+          },
+          "unitId": {
+            "type": "string",
+            "description": "Omit for simple charges.",
+            "examples": [
+              "container"
+            ]
+          },
+          "driverId": {
+            "type": "string",
+            "description": "Omit for the flat rate.",
+            "examples": [
+              "caseCount"
+            ]
+          },
+          "calc": {
+            "type": "string",
+            "enum": [
+              "range",
+              "incremental"
+            ],
+            "description": "Only when range and incremental tiers use different codes."
+          },
+          "column": {
+            "type": "string",
+            "enum": [
+              "p",
+              "first",
+              "add"
+            ],
+            "default": "p",
+            "description": "first / add = split-rate (Unit Sequence) code."
+          },
+          "code": {
+            "type": "string",
+            "examples": [
+              "HANDLING-0129"
+            ]
+          },
+          "initialCode": {
+            "type": "string",
+            "description": "Storage initial (at receipt) code."
+          }
+        }
+      },
+      "ChargeCodeMapRule": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChargeCodeMapRuleInput"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ]
+      },
+      "SystemChargeCode": {
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "uom"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "examples": [
+              "HANDLING-0129"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "Offload(Rate by Case qty)-Range Rate"
+            ]
+          },
+          "uom": {
+            "type": "string",
+            "examples": [
+              "CNTR"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "examples": [
+              "HANDLING"
+            ]
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Condition names configured on this code today."
+          },
+          "invoiceLines": {
+            "type": "integer",
+            "description": "Invoice lines in the current usage period."
+          }
+        }
+      },
+      "Proposal": {
+        "type": "object",
+        "required": [
+          "quoteNumber",
+          "version",
+          "lang",
+          "sections"
+        ],
+        "properties": {
+          "quoteNumber": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "examples": [
+              "v3",
+              "Draft"
+            ]
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "header": {
+            "$ref": "#/components/schemas/QuoteHeader"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalSection"
+            }
+          },
+          "terms": {
+            "type": "string"
+          }
+        }
+      },
+      "ProposalSection": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "rows"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound",
+              "storage",
+              "returns",
+              "vas",
+              "accessorial",
+              "it",
+              "materials"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "examples": [
+              "Inbound Handling"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalRow"
+            }
+          }
+        }
+      },
+      "ProposalRow": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "item",
+              "group",
+              "sub",
+              "min"
+            ],
+            "description": "group = service heading with sub rows below; min = minimum charge row."
+          },
+          "service": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "qualifiers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "rate": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "single",
+                  "split",
+                  "pct"
+                ]
+              },
+              "p": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "first": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "add": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "rateText": {
+            "type": "string",
+            "examples": [
+              "$490.00"
+            ]
+          },
+          "unitText": {
+            "type": "string",
+            "examples": [
+              "per container"
+            ]
+          }
+        }
+      },
+      "Catalog": {
+        "type": "object",
+        "required": [
+          "version",
+          "categories"
+        ],
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "desc": {
+                  "type": "string"
+                },
+                "charges": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Charge"
+                  }
+                }
+              }
+            }
+          },
+          "defaultPreset": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ChargeSelection"
+            }
+          }
+        }
+      },
+      "Charge": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SimpleCharge"
+          },
+          {
+            "$ref": "#/components/schemas/BuilderCharge"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "simple": "#/components/schemas/SimpleCharge",
+            "builder": "#/components/schemas/BuilderCharge"
+          }
+        }
+      },
+      "ChargeBase": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "tier",
+          "channel"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "examples": [
+              "OT-RUSH"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "simple",
+              "builder"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "main",
+              "advanced"
+            ]
+          },
+          "channel": {
+            "$ref": "#/components/schemas/Channel"
+          },
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "System codes that bill this charge."
+          }
+        }
+      },
+      "SimpleCharge": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChargeBase"
+          },
+          {
+            "type": "object",
+            "required": [
+              "unit",
+              "default",
+              "lo",
+              "hi"
+            ],
+            "properties": {
+              "kind": {
+                "const": "simple"
+              },
+              "unit": {
+                "type": "string",
+                "examples": [
+                  "Order"
+                ]
+              },
+              "default": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Benchmark default rate."
+              },
+              "lo": {
+                "type": "number",
+                "description": "Typical range low."
+              },
+              "hi": {
+                "type": "number",
+                "description": "Typical range high."
+              },
+              "basis": {
+                "type": "string",
+                "description": "Source of the benchmark."
+              },
+              "pct": {
+                "type": "boolean"
+              },
+              "new": {
+                "type": "boolean",
+                "description": "No billing-system code yet."
+              }
+            }
+          }
+        ]
+      },
+      "BuilderCharge": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChargeBase"
+          },
+          {
+            "type": "object",
+            "required": [
+              "conds",
+              "units"
+            ],
+            "properties": {
+              "kind": {
+                "const": "builder"
+              },
+              "conds": {
+                "type": "array",
+                "description": "Step 1 rate factors.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "common": {
+                      "type": "boolean"
+                    },
+                    "free": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "units": {
+                "type": "array",
+                "description": "Step 2 billing units with their step 3 drivers.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "flat": {
+                      "type": "number"
+                    },
+                    "lo": {
+                      "type": "number"
+                    },
+                    "hi": {
+                      "type": "number"
+                    },
+                    "common": {
+                      "type": "boolean"
+                    },
+                    "when": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "description": "Shown only for these factor values."
+                    },
+                    "mins": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "second": {
+                      "type": "boolean"
+                    },
+                    "drivers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "attr",
+                              "volume"
+                            ]
+                          },
+                          "calc": {
+                            "type": "boolean"
+                          },
+                          "values": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "v": {
+                                  "type": "string"
+                                },
+                                "d": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "settings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "invalid": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Impossible factor combinations."
+              }
+            }
+          }
+        ]
+      },
+      "HistoryType": {
+        "type": "string",
+        "enum": [
+          "view",
+          "create",
+          "save-version",
+          "restore",
+          "export",
+          "print",
+          "customer-create",
+          "customer-edit",
+          "status"
+        ]
+      },
+      "HistoryEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "ts",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "$ref": "#/components/schemas/HistoryType"
+          },
+          "quoteId": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookEventType": {
+        "type": "string",
+        "enum": [
+          "quote.created",
+          "quote.updated",
+          "quote.status_changed",
+          "version.saved",
+          "customer.created",
+          "customer.updated"
+        ]
+      },
+      "WebhookInput": {
+        "type": "object",
+        "required": [
+          "url",
+          "events"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookEventType"
+            },
+            "minItems": 1
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Webhook": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WebhookInput"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "createdAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "secret": {
+                "type": "string",
+                "writeOnly": true,
+                "description": "HMAC signing secret, returned only on create."
+              }
+            }
+          }
+        ]
+      },
+      "WebhookEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "occurredAt",
+          "data"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WebhookEventType"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "quoteId": {
+                "type": "string"
+              },
+              "customerId": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer"
+              },
+              "status": {
+                "$ref": "#/components/schemas/QuoteStatus"
+              },
+              "mapping": {
+                "$ref": "#/components/schemas/MappingSummary"
+              },
+              "setup": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SetupItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+/* ITEM design system (design.item.com): dark-first, Satoshi, purple #763abf for brand / action / selection only.
+   Default (no attribute) = dark theme; [data-theme="light"] = light theme. */
+@font-face {
+  font-family: "Satoshi";
+  src: url("../assets/fonts/Satoshi-Variable.ttf") format("truetype-variations"), url("../assets/fonts/Satoshi-Variable.ttf") format("truetype");
+  font-weight: 300 900; /* the variable file defaults to 900: always declare the range */
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: #000000; --fg: #ffffff; --card: #0d0d0d; --card-fg: #fcfcfc; --sidebar: #141414;
+  --muted: #202122; --muted-fg: #999999; --border: #292929; --input: #1b1a1f; --accent: #202222; --secondary: #2b2e31;
+  --primary: #763abf; --primary-fg: #ffffff; --primary-soft: rgba(118, 58, 191, .22); --primary-text: #b28be6;
+  --ring: #828282; --destructive: #f0283c; --orange: #f97316; --orange-soft: rgba(249, 115, 22, .14); --ok: #3fb68b;
+  --radius: 10px; --radius-sm: 6px;
+  --font: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+          "PingFang SC", "Hiragino Sans", "Noto Sans SC", "Noto Sans JP", sans-serif;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #fafafa; --fg: #181818; --card: #ffffff; --card-fg: #181818; --sidebar: #f2f2f2;
+  --muted: #e6e6e6; --muted-fg: #666666; --border: #e0e0e0; --input: #e4e4e7; --accent: #f2f2f2; --secondary: #dbdbdb;
+  --primary: #763abf; --primary-fg: #ffffff; --primary-soft: #efe7fa; --primary-text: #763abf;
+  --ring: #763abf; --destructive: #e01529; --orange: #c2410c; --orange-soft: #fff1e6; --ok: #247b69;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 400 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--primary-text); }
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.005em; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; top: 8px; z-index: 100; background: var(--card); color: var(--fg); padding: 8px 12px; border-radius: var(--radius-sm); }
+.skip:focus { left: 8px; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--card); color: var(--fg);
+  border-radius: var(--radius-sm); padding: 6px 12px; cursor: pointer; white-space: nowrap; font-weight: 500; letter-spacing: .01em; }
+.btn:hover:not(:disabled) { border-color: var(--muted-fg); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-fg); }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.1); border-color: var(--primary); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--primary-text); padding: 4px 6px; }
+.btn.ghost:hover:not(:disabled) { text-decoration: underline; border-color: transparent; }
+.btn.sm { padding: 4px 10px; font-size: 12.5px; }
+.input, select.input, textarea.input { border: 1px solid var(--border); background: var(--input); color: var(--fg); border-radius: var(--radius-sm); padding: 6px 9px; min-width: 0; }
+.muted { color: var(--muted-fg); }
+.hint { color: var(--muted-fg); font-size: 12.5px; }
+
+/* inline labels instead of pills: text with meaning, colour only when it carries state */
+.tag { font-size: 12px; font-weight: 500; color: var(--muted-fg); margin-left: 8px; white-space: nowrap; }
+.tag.new { color: var(--orange); }
+.tag.ok { color: var(--ok); }
+.tag.warn { color: var(--orange); }
+
+/* choice chips = selection controls (interactive, so they earn a border) */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--border); background: transparent; border-radius: var(--radius-sm); padding: 5px 12px; cursor: pointer; user-select: none; font-size: 13px; color: var(--fg); }
+.chip:hover:not(:disabled) { border-color: var(--muted-fg); }
+.chip.sel { background: var(--primary-soft); border-color: var(--primary); color: var(--fg); font-weight: 600; }
+.chip.sel::before { content: "✓ "; color: var(--primary-text); }
+.chip.sm { font-size: 12.5px; padding: 3px 10px; }
+.chip:disabled { cursor: default; opacity: .8; }
+.note { font-size: 12.5px; margin-top: 6px; display: block; }
+.note.warn { color: var(--orange); }
+.note.warn::before { content: "! "; font-weight: 700; }
+.note.info { color: var(--muted-fg); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- print: only the rate sheet ---------- */
+@media print {
+  @page { margin: 12mm; }
+  body { background: #fff !important; color: #000 !important; }
+  .no-print { display: none !important; }
+  .proposal-doc { box-shadow: none !important; border: 0 !important; padding: 0 !important; max-width: none !important; }
+  .proposal-doc tr { page-break-inside: avoid; }
+}
