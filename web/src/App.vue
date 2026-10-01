@@ -229,9 +229,6 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
     </a>
     <span class="sp"></span>
     <span v-if="st.lastSaved && !st.user" class="hint">{{ T.t("v.autosaved") }}</span>
-    <button class="btn ghost sm" @click="toggleTheme">
-      {{ st.prefs.theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}
-    </button>
   </footer>
 
   <CustomersDrawer v-if="drawer === 'customers'" @close="drawer = ''" />
