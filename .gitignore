@@ -6,3 +6,6 @@ __pycache__/
 # business data (real customers / prices) - keep local, never push to this public repo
 workingfolder-input/
 workingfolder-output/
+.vercel
+.data/
+.env*.local

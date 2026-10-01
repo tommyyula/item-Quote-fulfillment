@@ -11,10 +11,13 @@ import ProposalView from "./components/ProposalView.vue";
 import VersionsDrawer from "./components/VersionsDrawer.vue";
 import { LANGS, type Lang } from "./i18n";
 import { provideApp } from "./lib/context";
-import { catalog, createStore } from "./lib/store";
+import { signOut } from "./lib/remote";
+import { catalog, createStore, type Store } from "./lib/store";
 import type { Charge, QuoteStatus } from "./lib/types";
 
-const store = createStore();
+// server mode passes a store built from the API bootstrap (main.ts); otherwise the browser-only store
+const props = defineProps<{ store?: Store }>();
+const store = props.store ?? createStore();
 const { T } = provideApp(store);
 const st = store.state;
 const drawer = ref<"" | "customers" | "versions" | "history" | "mapping">("");
@@ -116,6 +119,11 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
       <button class="btn sm" @click="drawer = 'mapping'">{{ T.t("m.button") }}</button>
     </template>
     <button class="btn sm" @click="drawer = 'history'">{{ T.t("h.history") }}</button>
+    <span v-if="st.user" class="user">
+      <span class="sync" :class="st.sync" role="status">{{ T.t(`s.${st.sync}`) }}</span>
+      <span class="who" :title="st.user.email">{{ st.user.name || st.user.email }}</span>
+      <button class="btn ghost sm" @click="signOut">{{ T.t("s.signOut") }}</button>
+    </span>
     <div class="seg" role="group" aria-label="Language">
       <button v-for="l in LANGS" :key="l.id" :class="{ on: st.prefs.lang === l.id }" :aria-pressed="st.prefs.lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
     </div>
@@ -218,7 +226,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
       <img :src="itemLogo" :alt="T.t('f.itemAlt')" width="120" height="47" />
     </a>
     <span class="sp"></span>
-    <span v-if="st.lastSaved" class="hint">{{ T.t("v.autosaved") }}</span>
+    <span v-if="st.lastSaved && !st.user" class="hint">{{ T.t("v.autosaved") }}</span>
     <button class="btn ghost sm" @click="st.prefs.theme = st.prefs.theme === 'light' ? 'dark' : 'light'">
       {{ st.prefs.theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}
     </button>
@@ -253,6 +261,10 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
 .field { display: flex; flex-direction: column; }
 .qsel { max-width: 300px; }
 .vstate { font-size: 12.5px; align-self: center; }
+.user { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.user .who { color: var(--muted-fg); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sync { color: var(--muted-fg); }
+.sync.error, .sync.conflict { color: var(--orange); }
 .vstate.warn { color: var(--orange); }
 .vstate.warn::before { content: "● "; }
 .vstate.ok { color: var(--muted-fg); }
