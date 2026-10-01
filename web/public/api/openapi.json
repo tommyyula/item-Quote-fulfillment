@@ -2,9 +2,9 @@
   "openapi": "3.1.0",
   "info": {
     "title": "UNIS Fulfillment Quotation API",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "summary": "Customers, quotes, versions, rate sheets and charge-code mapback for UNIS warehouse services.",
-    "description": "Integration API for the UNIS Fulfillment quotation tool.\n\n**Main objects** (full CRUD): `Customer`, `Quote`, the quote `Draft` and its per-charge `Selection`s,\ncatalog `Charge`s, `ChargeCodeMapRule`s and `Webhook`s.\n**Versions** are immutable snapshots: create, read, restore. **History** is append-only.\n**Computed resources** are read-only: rate lines, the customer rate sheet (proposal), the charge-code mapback,\nsetup gaps and version diffs.\n\n### Charge-code mapback\nEvery rate line of a quote resolves to an existing billing-system charge code plus the system conditions to configure\n(for example `HANDLING-0129` with `OFFLoad Type: Floor Loaded`, `Case Qty: 0-500`). Each line has a status:\n\n| Status | Meaning |\n| --- | --- |\n| `mapped` | The code exists and already uses every condition the line needs |\n| `new-condition` | The code exists, but a condition the line needs is not configured on it today |\n| `new-item` | No code exists yet; create the item in the billing system first (`suggestedName`) |\n\n`POST /quotes/{quoteId}/versions` stores the mapback with the version. Pass `requireMapped=true`\nto refuse a version that still has `new-condition` or `new-item` lines.\n\n### Conventions\n- JSON, UTF-8. Money is a decimal number in USD (`10.5` = $10.50). Percent rates are fractions (`0.2` = 20%).\n- Timestamps are ISO 8601 UTC. IDs are opaque strings.\n- Lists are paginated with `page` / `pageSize` and return a `Page` envelope.\n- Updates support optimistic concurrency: send the `ETag` you read as `If-Match`; a stale value returns `412`.\n- `POST` endpoints accept an `Idempotency-Key` header; a retried request with the same key returns the original result.\n- Errors use RFC 9457 `application/problem+json`.\n- Catalog strings are English; pass `lang` (`en`, `zh`, `ja`, `es`) where a localized rendering is offered.\n\nStatus: the reference implementation is the web app (browser storage). This contract is the target for the shared backend;\nthe server URL below is a placeholder until it is deployed.\n",
+    "description": "Integration API for the UNIS Fulfillment quotation tool.\n\n**Main objects** (full CRUD): `Customer`, `Quote`, the quote `Draft` and its per-charge `Selection`s,\ncatalog `Charge`s, `ChargeCodeMapRule`s and `Webhook`s.\n**Versions** are immutable snapshots: create, read, restore. **History** is append-only.\n**Computed resources** are read-only: rate lines, the customer rate sheet (proposal), the charge-code mapback,\nsetup gaps and version diffs.\n\n### Charge-code mapback\nEvery rate line of a quote resolves to an existing billing-system charge code plus the system conditions to configure\n(for example `HANDLING-0129` with `OFFLoad Type: Floor Loaded`, `Case Qty: 0-500`). Each line has a status:\n\n| Status | Meaning |\n| --- | --- |\n| `mapped` | The code exists and already uses every condition the line needs |\n| `new-condition` | The code exists, but a condition the line needs is not configured on it today |\n| `new-item` | No code exists yet; create the item in the billing system first (`suggestedName`) |\n\n`POST /quotes/{quoteId}/versions` stores the mapback with the version. Pass `requireMapped=true`\nto refuse a version that still has `new-condition` or `new-item` lines.\n\n### Conventions\n- JSON, UTF-8. Money is a decimal number in USD (`10.5` = $10.50). Percent rates are fractions (`0.2` = 20%).\n- Timestamps are ISO 8601 UTC. IDs are opaque strings.\n- Lists are paginated with `page` / `pageSize` and return a `Page` envelope.\n- Updates support optimistic concurrency: send the `ETag` you read as `If-Match`; a stale value returns `412`.\n- `POST` endpoints accept an `Idempotency-Key` header; a retried request with the same key returns the original result.\n- Errors use RFC 9457 `application/problem+json`.\n- Catalog strings are English; pass `lang` (`en`, `zh`, `ja`, `es`) where a localized rendering is offered.\n\n### Authentication\n- **People** sign in with their company Microsoft account (Microsoft Entra ID, `@unisco.com`) at `/api/auth/login`;\n  the browser then holds an HttpOnly session cookie (`cookieAuth`).\n- **Systems** send `X-API-Key: uqk_...` (`apiKey`). Keys are issued by an administrator (`POST /admin/api-keys`) and shown once.\n\n### Implementation status\nServed by the shared backend (Postgres). Everything here is live except catalog editing: `POST/PUT/DELETE /catalog/charges`,\n`PUT /catalog/default-template` and `POST/PUT/DELETE /charge-code-maps` answer `501` (the catalog is maintained in the\nrate-catalog build). `GET /quotes/{id}/proposal` serves JSON (PDF and Excel are exported from the web app; other types get `406`).\nWebhooks are delivered once, right after the event (no retries yet); `lastStatus` on the subscription shows the result.\n",
     "contact": {
       "name": "UNIS Fulfillment"
     },
@@ -15,18 +15,13 @@
   },
   "servers": [
     {
-      "url": "https://{host}/quote/v1",
-      "description": "Shared backend (to be deployed)",
-      "variables": {
-        "host": {
-          "default": "api.example.com"
-        }
-      }
+      "url": "https://unis-quote.vercel.app/api/v1",
+      "description": "Production"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "cookieAuth": []
     },
     {
       "apiKey": []
@@ -72,6 +67,10 @@
     {
       "name": "Webhooks",
       "description": "Event subscriptions for other systems."
+    },
+    {
+      "name": "Admin",
+      "description": "API keys for system-to-system access (administrators only)."
     }
   ],
   "paths": {
@@ -338,7 +337,7 @@
         ],
         "operationId": "deleteCustomer",
         "summary": "Delete a customer",
-        "description": "Refused with `409` while the customer has quotes that are not archived.",
+        "description": "Refused with `409` while the customer has quotes (archived ones included, they keep the history).",
         "responses": {
           "204": {
             "description": "Deleted"
@@ -1906,6 +1905,65 @@
             "$ref": "#/components/responses/Unauthorized"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "History"
+        ],
+        "operationId": "logClientEvent",
+        "summary": "Record a client-side event (view, export, print)",
+        "description": "Server actions (create, save-version, restore, status, customer changes) are recorded automatically.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "view",
+                      "export",
+                      "print"
+                    ]
+                  },
+                  "quoteId": {
+                    "type": "string"
+                  },
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
       }
     },
     "/history/{eventId}": {
@@ -2096,6 +2154,127 @@
           }
         }
       }
+    },
+    "/admin/api-keys": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "listApiKeys",
+        "summary": "List API keys (administrators)",
+        "responses": {
+          "200": {
+            "description": "Keys (without the secret)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiKey"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "createApiKey",
+        "summary": "Issue an API key for a system (administrators)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Which system uses the key."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Issued. `key` is returned only here; store it in the calling system.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "prefix": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/admin/api-keys/{keyId}": {
+      "parameters": [
+        {
+          "name": "keyId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "revokeApiKey",
+        "summary": "Revoke an API key (administrators)",
+        "responses": {
+          "204": {
+            "description": "Revoked"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
     }
   },
   "webhooks": {
@@ -2126,11 +2305,11 @@
   },
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "SSO access token for users of the quotation tool."
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "uq_session",
+        "description": "Session of a person signed in with Microsoft Entra ID (/api/auth/login)."
       },
       "apiKey": {
         "type": "apiKey",
@@ -3878,6 +4057,42 @@
           },
           "detail": {
             "type": "string"
+          }
+        }
+      },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Visible part of the key (uqk_<prefix>_...)."
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUsedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "revokedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         }
       },

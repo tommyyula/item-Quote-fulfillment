@@ -1,0 +1,8 @@
+# never upload business data (customer names / real prices) or local state
+workingfolder-input
+workingfolder-output
+.data
+node_modules
+web/node_modules
+web/dist
+**/__pycache__

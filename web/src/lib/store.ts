@@ -1,10 +1,12 @@
 // App state: customers, quotes (draft + immutable versions), browsing history and preferences.
-// Persisted through a small repository so localStorage can later be swapped for an API.
+// Browser mode keeps everything in localStorage. Server mode (a Bootstrap from the API) keeps the same reactive state,
+// and every change is written to the API in order (drafts debounced, with If-Match so concurrent editors never overwrite each other).
 import { computed, reactive, watch } from "vue";
 import catalogJson from "../data/catalog.json";
 import { mapQuote, summarize } from "./codemap";
 import { emptySel, quoteLines } from "./engine";
 import type { Lang } from "../i18n";
+import { api, ApiError, type Bootstrap, type User } from "./remote";
 import type { Catalog, ChargeSel, Customer, HistoryEvent, HistoryType, Quote, QuoteData, QuoteStatus } from "./types";
 
 export const catalog = catalogJson as unknown as Catalog;
@@ -61,12 +63,20 @@ function initialLang(): Lang {
   return (["en", "zh", "ja", "es"].includes(n) ? n : "en") as Lang;
 }
 
-export function createStore(repo: Repo = localRepo) {
-  const seeded = repo.load<Quote[] | null>("quotes", null) === null ? seed() : null;
+export type SyncState = "saved" | "saving" | "error" | "conflict";
+const fromBoot = (b: Bootstrap) => ({
+  customers: b.customers,
+  quotes: b.quotes.map(({ etag: _e, ...q }) => q as unknown as Quote),
+  history: b.history,
+});
+
+export function createStore(repo: Repo = localRepo, boot?: Bootstrap) {
+  const seeded = !boot && repo.load<Quote[] | null>("quotes", null) === null ? seed() : null;
+  const initial = boot ? fromBoot(boot) : null;
   const state = reactive({
-    customers: repo.load<Customer[]>("customers", seeded?.customers ?? []),
-    quotes: repo.load<Quote[]>("quotes", seeded?.quotes ?? []),
-    history: repo.load<HistoryEvent[]>("history", []),
+    customers: initial?.customers ?? repo.load<Customer[]>("customers", seeded?.customers ?? []),
+    quotes: initial?.quotes ?? repo.load<Quote[]>("quotes", seeded?.quotes ?? []),
+    history: initial?.history ?? repo.load<HistoryEvent[]>("history", []),
     prefs: repo.load<Prefs>("prefs", {
       lang: initialLang(),
       theme: "dark", // ITEM web properties are dark by default
@@ -75,9 +85,12 @@ export function createStore(repo: Repo = localRepo) {
     currentQuoteId: repo.load<string | null>("current", null) as string | null,
     viewingVersion: null as number | null,
     lastSaved: "" as string,
+    user: (boot?.user ?? null) as User | null,
+    sync: "saved" as SyncState,
   });
-  ensureStandardTemplate();
-  if (!state.currentQuoteId && state.quotes[0]) state.currentQuoteId = state.quotes[0].id;
+  if (!boot) ensureStandardTemplate();   // the server seeds it in server mode
+  if (!state.quotes.some(q => q.id === state.currentQuoteId)) state.currentQuoteId = state.quotes[0]?.id ?? null;
+  const remote = boot ? createSync() : null;
 
   /** The "Standard Charge Template" customer + its quote (saved as v1) exist in every browser; never overwritten once present. */
   function ensureStandardTemplate() {
@@ -116,9 +129,11 @@ export function createStore(repo: Repo = localRepo) {
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   const persist = () => {
-    repo.save("customers", state.customers);
-    repo.save("quotes", state.quotes);
-    repo.save("history", state.history.slice(0, 500));
+    if (!remote) {
+      repo.save("customers", state.customers);
+      repo.save("quotes", state.quotes);
+      repo.save("history", state.history.slice(0, 500));
+    }
     repo.save("prefs", state.prefs);
     repo.save("current", state.currentQuoteId);
     state.lastSaved = now();
@@ -146,7 +161,87 @@ export function createStore(repo: Repo = localRepo) {
   });
 
   function log(type: HistoryType, extra: Partial<HistoryEvent> = {}) {
-    state.history.unshift({ id: uid(), ts: now(), type, quoteId: quote.value?.id, customerId: quote.value?.customerId, ...extra });
+    const e: HistoryEvent = { id: uid(), ts: now(), type, quoteId: quote.value?.id, customerId: quote.value?.customerId, ...extra };
+    state.history.unshift(e);
+    // the server records its own actions (create, save-version, restore, status, customers); only client-side events are sent
+    if (remote && (type === "view" || type === "export" || type === "print"))
+      remote.enqueue(() => api("POST", "/v1/history", { id: e.id, type, quoteId: e.quoteId, customerId: e.customerId, detail: e.detail }));
+  }
+
+  /** Server sync: one ordered queue of writes; drafts are saved 700 ms after the last edit. */
+  function createSync() {
+    const etags = new Map<string, string>();
+    const synced = new Map<string, string>();   // quote id -> draft JSON the server has
+    const remember = (b: Bootstrap) => {
+      etags.clear(); synced.clear();
+      for (const q of b.quotes) { etags.set(q.id, q.etag); synced.set(q.id, JSON.stringify(q.draft)); }
+    };
+    remember(boot!);
+    let chain: Promise<unknown> = Promise.resolve();
+    let pending = 0;
+    let retry: ReturnType<typeof setTimeout> | undefined;
+
+    async function reload() {
+      const b = (await api<Bootstrap>("GET", "/v1/app/bootstrap")).data;
+      const next = fromBoot(b);
+      state.customers = next.customers;
+      state.quotes = next.quotes;
+      state.history = next.history;
+      remember(b);
+      if (!state.quotes.some(q => q.id === state.currentQuoteId)) state.currentQuoteId = state.quotes[0]?.id ?? null;
+    }
+    function enqueue(job: () => Promise<unknown>) {
+      pending++;
+      state.sync = "saving";
+      chain = chain.then(job).then(
+        () => { if (--pending === 0 && state.sync === "saving") state.sync = "saved"; },
+        async (e: unknown) => {
+          pending--;
+          console.error("sync failed", e);
+          if (e instanceof ApiError && e.status === 412) {
+            state.sync = "conflict";
+            await reload().catch(() => (state.sync = "error"));
+          } else if (e instanceof ApiError && e.status === 401) {
+            location.reload();   // session expired: sign in again (drafts not yet saved are kept by the retry below until then)
+          } else {
+            state.sync = "error";
+            clearTimeout(retry);
+            retry = setTimeout(saveDrafts, 5000);
+          }
+        });
+      return chain;
+    }
+    function saveDraft(id: string, keepalive = false) {
+      return enqueue(async () => {
+        const q = state.quotes.find(x => x.id === id);
+        if (!q) return;
+        const json = JSON.stringify(q.draft);
+        if (json === synced.get(id)) return;
+        const r = await api("PUT", `/v1/quotes/${id}/draft`, JSON.parse(json), etags.has(id) ? { "if-match": etags.get(id)! } : {}, keepalive);
+        if (r.etag) etags.set(id, r.etag);
+        synced.set(id, json);
+      });
+    }
+    function saveDrafts(keepalive = false) {
+      for (const q of state.quotes) if (JSON.stringify(q.draft) !== synced.get(q.id)) saveDraft(q.id, keepalive);
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    watch(() => state.quotes.map(q => JSON.stringify(q.draft)), () => {
+      clearTimeout(timer);
+      timer = setTimeout(saveDrafts, 700);
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") { clearTimeout(timer); saveDrafts(true); }
+    });
+    const tagged = (id: string): Record<string, string> => (etags.has(id) ? { "if-match": etags.get(id)! } : {});
+    return {
+      enqueue, saveDraft, reload,
+      afterWrite(id: string, etag: string | null, draftJson?: string) {
+        if (etag) etags.set(id, etag);
+        if (draftJson !== undefined) synced.set(id, draftJson);
+      },
+      tagged,
+    };
   }
 
   /** Selection for editing: created on first interaction so merely rendering never marks the draft dirty. */
@@ -180,6 +275,12 @@ export function createStore(repo: Repo = localRepo) {
       state.currentQuoteId = q.id;
       state.viewingVersion = null;
       log("create", { quoteId: q.id, customerId });
+      remote?.enqueue(async () => {
+        const r = await api<Quote>("POST", "/v1/quotes", { id: q.id, customerId, header: q.draft.header });
+        const local = state.quotes.find(x => x.id === q.id);
+        if (local) { local.number = r.data.number; local.createdAt = r.data.createdAt; }
+        remote.afterWrite(q.id, r.etag, JSON.stringify(r.data.draft));
+      });
       return q;
     },
     saveCustomer(c: Partial<Customer> & { company: string }) {
@@ -187,12 +288,19 @@ export function createStore(repo: Repo = localRepo) {
       if (existing) {
         Object.assign(existing, c);
         log("customer-edit", { customerId: existing.id, detail: existing.company, quoteId: undefined });
+        const { id, createdAt: _c, ...fields } = existing as Customer & { updatedAt?: string };
+        delete (fields as { updatedAt?: string }).updatedAt;
+        remote?.enqueue(() => api("PATCH", `/v1/customers/${id}`, fields));
         return existing;
       }
       const created: Customer = { id: uid(), code: "", contact: "", phone: "", email: "", address: "", city: "", state: "", zip: "",
         channel: "Both", createdAt: now(), ...c } as Customer;
       state.customers.unshift(created);
       log("customer-create", { customerId: created.id, detail: created.company, quoteId: undefined });
+      if (remote) {
+        const { createdAt: _c, ...fields } = created;
+        remote.enqueue(() => api("POST", "/v1/customers", fields));
+      }
       return created;
     },
     saveVersion(note: string) {
@@ -204,6 +312,16 @@ export function createStore(repo: Repo = localRepo) {
       q.versions.push({ v, savedAt: now(), note, data: clone(q.draft), lineCount: quoteLines(catalog, q.draft).length,
                         mapping: { summary, lines: clone(lines) } });
       log("save-version", { detail: `v${v} (${summary.mapped}/${summary.total})` });
+      if (remote) {
+        remote.saveDraft(q.id);   // the server snapshots its draft, so it must be current first
+        remote.enqueue(async () => {
+          const r = await api<{ v: number; savedAt: string; savedBy?: string; lineCount: number; mapping: typeof summary }>(
+            "POST", `/v1/quotes/${q.id}/versions`, { note });
+          const local = q.versions.find(x => x.v === v);
+          if (local) Object.assign(local, { v: r.data.v, savedAt: r.data.savedAt, lineCount: r.data.lineCount,
+                                            mapping: { summary: r.data.mapping, lines: local.mapping?.lines ?? [] } });
+        });
+      }
       return v;
     },
     viewVersion(v: number | null) {
@@ -217,6 +335,11 @@ export function createStore(repo: Repo = localRepo) {
       state.viewingVersion = null;
       touch();
       log("restore", { detail: `v${v}` });
+      if (remote) {
+        const json = JSON.stringify(q.draft);
+        remote.saveDraft(q.id);   // flush edits made before the restore, so the server's draft matches what is restored over
+        remote.enqueue(async () => remote.afterWrite(q.id, (await api("POST", `/v1/quotes/${q.id}/versions/${v}/restore`, undefined, {})).etag, json));
+      }
     },
     /** Replace the draft's selections with the default template (header kept). */
     applyDefaultTemplate() {
@@ -225,8 +348,10 @@ export function createStore(repo: Repo = localRepo) {
       touch();
     },
     setStatus(s: QuoteStatus) {
-      quote.value!.status = s;
+      const q = quote.value!;
+      q.status = s;
       log("status", { detail: s });
+      remote?.enqueue(async () => remote.afterWrite(q.id, (await api("PATCH", `/v1/quotes/${q.id}`, { status: s }, remote.tagged(q.id))).etag));
     },
   };
 }

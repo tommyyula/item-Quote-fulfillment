@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: UNIS Fulfillment Quotation API
-  version: 1.0.0
+  version: 1.1.0
   summary: Customers, quotes, versions, rate sheets and charge-code mapback for UNIS warehouse services.
   description: |
     Integration API for the UNIS Fulfillment quotation tool.
@@ -34,21 +34,26 @@ info:
     - Errors use RFC 9457 `application/problem+json`.
     - Catalog strings are English; pass `lang` (`en`, `zh`, `ja`, `es`) where a localized rendering is offered.
 
-    Status: the reference implementation is the web app (browser storage). This contract is the target for the shared backend;
-    the server URL below is a placeholder until it is deployed.
+    ### Authentication
+    - **People** sign in with their company Microsoft account (Microsoft Entra ID, `@unisco.com`) at `/api/auth/login`;
+      the browser then holds an HttpOnly session cookie (`cookieAuth`).
+    - **Systems** send `X-API-Key: uqk_...` (`apiKey`). Keys are issued by an administrator (`POST /admin/api-keys`) and shown once.
+
+    ### Implementation status
+    Served by the shared backend (Postgres). Everything here is live except catalog editing: `POST/PUT/DELETE /catalog/charges`,
+    `PUT /catalog/default-template` and `POST/PUT/DELETE /charge-code-maps` answer `501` (the catalog is maintained in the
+    rate-catalog build). `GET /quotes/{id}/proposal` serves JSON (PDF and Excel are exported from the web app; other types get `406`).
+    Webhooks are delivered once, right after the event (no retries yet); `lastStatus` on the subscription shows the result.
   contact:
     name: UNIS Fulfillment
   license:
     name: Proprietary - UNIS internal integration use
     identifier: LicenseRef-Proprietary
 servers:
-  - url: https://{host}/quote/v1
-    description: Shared backend (to be deployed)
-    variables:
-      host:
-        default: api.example.com
+  - url: https://unis-quote.vercel.app/api/v1
+    description: Production
 security:
-  - bearerAuth: []
+  - cookieAuth: []
   - apiKey: []
 tags:
   - name: Customers
@@ -71,6 +76,8 @@ tags:
     description: Append-only activity log (views, versions, exports, status changes).
   - name: Webhooks
     description: Event subscriptions for other systems.
+  - name: Admin
+    description: API keys for system-to-system access (administrators only).
 paths:
   /customers:
     get:
@@ -166,7 +173,7 @@ paths:
       tags: [Customers]
       operationId: deleteCustomer
       summary: Delete a customer
-      description: Refused with `409` while the customer has quotes that are not archived.
+      description: Refused with `409` while the customer has quotes (archived ones included, they keep the history).
       responses:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "204": { description: Deleted }
@@ -714,6 +721,27 @@ paths:
                   - type: object
                     properties:
                       items: { type: array, items: { $ref: "#/components/schemas/HistoryEvent" } }
+    post:
+      tags: [History]
+      operationId: logClientEvent
+      summary: Record a client-side event (view, export, print)
+      description: Server actions (create, save-version, restore, status, customer changes) are recorded automatically.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type]
+              properties:
+                type: { type: string, enum: [view, export, print] }
+                quoteId: { type: string }
+                customerId: { type: string }
+                detail: { type: string, maxLength: 500 }
+      responses:
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "201": { description: Recorded, content: { application/json: { schema: { $ref: "#/components/schemas/HistoryEvent" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
   /history/{eventId}:
     parameters: [{ name: eventId, in: path, required: true, schema: { type: string } }]
     get:
@@ -778,6 +806,44 @@ paths:
         "204": { description: Deleted }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /admin/api-keys:
+    get:
+      tags: [Admin]
+      operationId: listApiKeys
+      summary: List API keys (administrators)
+      responses:
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "200": { description: Keys (without the secret), content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ApiKey" } } } } }
+    post:
+      tags: [Admin]
+      operationId: createApiKey
+      summary: Issue an API key for a system (administrators)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string, description: Which system uses the key. } } }
+      responses:
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "201":
+          description: Issued. `key` is returned only here; store it in the calling system.
+          content:
+            application/json:
+              schema: { type: object, properties: { id: { type: string }, name: { type: string }, prefix: { type: string }, key: { type: string } } }
+  /admin/api-keys/{keyId}:
+    parameters: [{ name: keyId, in: path, required: true, schema: { type: string } }]
+    delete:
+      tags: [Admin]
+      operationId: revokeApiKey
+      summary: Revoke an API key (administrators)
+      responses:
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "204": { description: Revoked }
+        "404": { $ref: "#/components/responses/Problem" }
+
 webhooks:
   quoteEvent:
     post:
@@ -796,7 +862,7 @@ webhooks:
 
 components:
   securitySchemes:
-    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT, description: SSO access token for users of the quotation tool. }
+    cookieAuth: { type: apiKey, in: cookie, name: uq_session, description: "Session of a person signed in with Microsoft Entra ID (/api/auth/login)." }
     apiKey: { type: apiKey, in: header, name: X-API-Key, description: Key for system-to-system integrations. }
   parameters:
     customerId: { name: customerId, in: path, required: true, schema: { type: string } }
@@ -1267,6 +1333,16 @@ components:
         user: { type: string }
         detail: { type: string }
 
+    ApiKey:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        prefix: { type: string, description: "Visible part of the key (uqk_<prefix>_...)." }
+        createdBy: { type: string }
+        createdAt: { type: string, format: date-time }
+        lastUsedAt: { type: [string, "null"], format: date-time }
+        revokedAt: { type: [string, "null"], format: date-time }
     WebhookEventType: { type: string, enum: [quote.created, quote.updated, quote.status_changed, version.saved, customer.created, customer.updated] }
     WebhookInput:
       type: object

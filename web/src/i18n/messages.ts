@@ -61,6 +61,10 @@ const en: Dict = {
   "hi.empty": "No activity yet.", "hi.view": "Viewed {q}", "hi.create": "Created {q}", "hi.save-version": "Saved {q} {detail}",
   "hi.restore": "Restored {q} from {detail}", "hi.export": "Exported {q} ({detail})", "hi.print": "Printed {q}",
   "hi.customer-create": "Added customer {c}", "hi.customer-edit": "Updated customer {c}", "hi.status": "{q} status → {detail}",
+  "s.saving": "Saving…", "s.saved": "Saved", "s.error": "Not saved, retrying", "s.conflict": "Changed by someone else, reloaded", "s.signOut": "Sign out",
+  "s.signIn": "Sign in with Microsoft", "s.signInTitle": "Sign in to continue", "s.signInBody": "Use your company Microsoft account ({domains}).",
+  "s.devLogin": "Development sign-in", "s.email": "Company e-mail", "s.notConfigured": "Company sign-in is not set up yet.", "s.loading": "Loading…",
+  "s.loadError": "Could not reach the server.", "s.retry": "Retry",
 };
 
 const zh: Dict = {
@@ -123,6 +127,10 @@ const zh: Dict = {
   "hi.empty": "暂无记录。", "hi.view": "查看了 {q}", "hi.create": "创建了 {q}", "hi.save-version": "保存了 {q} {detail}",
   "hi.restore": "从 {detail} 恢复了 {q}", "hi.export": "导出了 {q}（{detail}）", "hi.print": "打印了 {q}",
   "hi.customer-create": "新增客户 {c}", "hi.customer-edit": "更新客户 {c}", "hi.status": "{q} 状态 → {detail}",
+  "s.saving": "保存中…", "s.saved": "已保存", "s.error": "未保存，正在重试", "s.conflict": "已被他人修改，已重新载入", "s.signOut": "退出登录",
+  "s.signIn": "使用 Microsoft 账号登录", "s.signInTitle": "请先登录", "s.signInBody": "请使用公司 Microsoft 账号（{domains}）。",
+  "s.devLogin": "开发环境登录", "s.email": "公司邮箱", "s.notConfigured": "公司单点登录尚未配置。", "s.loading": "载入中…",
+  "s.loadError": "无法连接服务器。", "s.retry": "重试",
 };
 
 const ja: Dict = {
@@ -185,6 +193,10 @@ const ja: Dict = {
   "hi.empty": "履歴はまだありません。", "hi.view": "{q} を表示", "hi.create": "{q} を作成", "hi.save-version": "{q} {detail} を保存",
   "hi.restore": "{q} を {detail} から復元", "hi.export": "{q} を出力（{detail}）", "hi.print": "{q} を印刷",
   "hi.customer-create": "顧客 {c} を追加", "hi.customer-edit": "顧客 {c} を更新", "hi.status": "{q} のステータス → {detail}",
+  "s.saving": "保存中…", "s.saved": "保存済み", "s.error": "未保存、再試行中", "s.conflict": "他のユーザーが変更したため再読み込みしました", "s.signOut": "サインアウト",
+  "s.signIn": "Microsoft でサインイン", "s.signInTitle": "サインインしてください", "s.signInBody": "会社の Microsoft アカウント（{domains}）を使用してください。",
+  "s.devLogin": "開発用サインイン", "s.email": "会社のメール", "s.notConfigured": "会社のシングルサインオンはまだ設定されていません。", "s.loading": "読み込み中…",
+  "s.loadError": "サーバーに接続できません。", "s.retry": "再試行",
 };
 
 const es: Dict = {
@@ -247,6 +259,10 @@ const es: Dict = {
   "hi.empty": "Aún no hay actividad.", "hi.view": "Vio {q}", "hi.create": "Creó {q}", "hi.save-version": "Guardó {q} {detail}",
   "hi.restore": "Restauró {q} desde {detail}", "hi.export": "Exportó {q} ({detail})", "hi.print": "Imprimió {q}",
   "hi.customer-create": "Añadió el cliente {c}", "hi.customer-edit": "Actualizó el cliente {c}", "hi.status": "{q} estado → {detail}",
+  "s.saving": "Guardando…", "s.saved": "Guardado", "s.error": "Sin guardar, reintentando", "s.conflict": "Otra persona lo cambió; se recargó", "s.signOut": "Cerrar sesión",
+  "s.signIn": "Iniciar sesión con Microsoft", "s.signInTitle": "Inicie sesión para continuar", "s.signInBody": "Use su cuenta Microsoft de la empresa ({domains}).",
+  "s.devLogin": "Inicio de sesión de desarrollo", "s.email": "Correo de la empresa", "s.notConfigured": "El inicio de sesión de la empresa aún no está configurado.", "s.loading": "Cargando…",
+  "s.loadError": "No se pudo conectar con el servidor.", "s.retry": "Reintentar",
 };
 
 export const MESSAGES: Record<string, Dict> = { en, zh, ja, es };
