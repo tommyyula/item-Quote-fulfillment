@@ -32,7 +32,14 @@ function secret(): Uint8Array {
 const b64url = (b: Buffer) => b.toString("base64url");
 export const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
-const secureCookie = (c: Context) => new URL(c.req.url).protocol === "https:";
+/** Public origin as the browser sees it (Vercel terminates TLS, so the function itself receives http). */
+function publicOrigin(c: Context) {
+  const u = new URL(c.req.url);
+  const proto = c.req.header("x-forwarded-proto")?.split(",")[0].trim() || u.protocol.replace(":", "");
+  const host = c.req.header("x-forwarded-host")?.split(",")[0].trim() || u.host;
+  return `${proto}://${host}`;
+}
+const secureCookie = (c: Context) => publicOrigin(c).startsWith("https:");
 async function sign(claims: Record<string, unknown>, ttl: string) {
   return new SignJWT(claims).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime(ttl).sign(secret());
 }
@@ -47,7 +54,7 @@ async function verify<T>(token: string | undefined): Promise<T | null> {
 
 /** Only same-site relative paths, so the sign-in redirect cannot be turned into an open redirect. */
 const safeReturn = (p: string | undefined) => (p && p.startsWith("/") && !p.startsWith("//") && !p.includes("\\") ? p : "/");
-const origin = (c: Context) => env("APP_URL") || new URL(c.req.url).origin;
+const origin = (c: Context) => env("APP_URL") || publicOrigin(c);
 const redirectUri = (c: Context) => `${origin(c)}/api/auth/callback`;
 
 async function upsertUser(db: Db, email: string, name: string): Promise<Principal> {
