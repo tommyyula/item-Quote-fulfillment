@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import itemLogoDark from "../assets/brand/item-white-logo.svg";
 import itemLogoLight from "../assets/brand/item-logo-fullcolor-blacktxt.svg";
 import { LANGS, translator, type Lang } from "../i18n";
+import ThemeToggle from "./ThemeToggle.vue";
 import { api, authConfig, signInUrl, type AuthConfig } from "../lib/remote";
 import { localRepo, type Prefs } from "../lib/store";
 
@@ -73,7 +74,7 @@ async function devLogin() {
         <div class="seg" role="group" aria-label="Language">
           <button v-for="l in LANGS" :key="l.id" :class="{ on: lang === l.id }" :aria-pressed="lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
         </div>
-        <button class="btn ghost sm" @click="toggleTheme">{{ theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}</button>
+        <ThemeToggle :theme="theme" :label="theme === 'light' ? T.t('h.nightView') : T.t('h.dayView')" @toggle="toggleTheme" />
       </div>
     </div>
     <a class="item" href="https://item.com" target="_blank" rel="noopener">
