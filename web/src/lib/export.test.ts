@@ -28,6 +28,10 @@ describe("excel export", () => {
     expect(texts).toContain("Inbound Handling");
     expect(texts.some(t => t.includes("Case count in container: 0 - 500 cases"))).toBe(true);
     expect(texts).toContain("$490.00");
-    expect(wb.getWorksheet("Rate lines")!.rowCount).toBe(1 + 5 + 1);
+    const map = wb.getWorksheet("Charge code mapping")!;
+    expect(map.rowCount).toBe(1 + 5 + 1);
+    expect(map.getRow(2).getCell(7).value).toBe("HANDLING-0129");
+    expect(map.getRow(2).getCell(12).value).toBe("mapped");
+    expect(wb.getWorksheet("Setup needed")!.getRow(2).getCell(2).value).toBe("All rate lines map to existing charge codes.");
   });
 });

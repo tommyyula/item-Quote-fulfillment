@@ -2,6 +2,7 @@
 // Persisted through a small repository so localStorage can later be swapped for an API.
 import { computed, reactive, watch } from "vue";
 import catalogJson from "../data/catalog.json";
+import { mapQuote, summarize } from "./codemap";
 import { emptySel, quoteLines } from "./engine";
 import type { Lang } from "../i18n";
 import type { Catalog, ChargeSel, Customer, HistoryEvent, HistoryType, Quote, QuoteData, QuoteStatus } from "./types";
@@ -161,8 +162,12 @@ export function createStore(repo: Repo = localRepo) {
     saveVersion(note: string) {
       const q = quote.value!;
       const v = (q.versions.at(-1)?.v ?? 0) + 1;
-      q.versions.push({ v, savedAt: now(), note, data: clone(q.draft), lineCount: quoteLines(catalog, q.draft).length });
-      log("save-version", { detail: `v${v}` });
+      // snapshot the charge-code mapback with the version, so billing can be configured from exactly what was saved
+      const lines = mapQuote(catalog, q.draft);
+      const summary = summarize(lines);
+      q.versions.push({ v, savedAt: now(), note, data: clone(q.draft), lineCount: quoteLines(catalog, q.draft).length,
+                        mapping: { summary, lines: clone(lines) } });
+      log("save-version", { detail: `v${v} (${summary.mapped}/${summary.total})` });
       return v;
     },
     viewVersion(v: number | null) {

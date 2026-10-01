@@ -112,7 +112,7 @@ category("inbound", "Inbound", "Receiving freight into the warehouse.", [
                        help="Range: whole container priced at its band. Incremental: base + per-case over the top band."),
                    drv("skuCount", "SKU count in container", "volume", SKU_BANDS, when={"offloadType": FLOOR}, calc=True),
                    drv("palletCount", "Pallet count in container", "volume", PALLET_BANDS_CNTR, when={"offloadType": PALLET}, calc=True)],
-                  second=True, by={"offloadType": {"Palletized": 400, "Slip sheet": 450, "Shotgun": 650}}),
+                  by={"offloadType": {"Palletized": 400, "Slip sheet": 450, "Shotgun": 650}}),
              unit("pallet", "Pallet", 10.50, 8, 15, "UNIS median (n=779)",
                   [drv("palletSize", "Pallet size", "attr", [v("Standard (48x40)", 10.5), v("Oversize", 16)]),
                    drv("palletMix", "Full / partial / mixed pallet", "attr", [v("Full pallet, single SKU", 10.5), v("Partial pallet", 10.5), v("Mixed-SKU pallet", 14)]),
@@ -130,13 +130,12 @@ category("inbound", "Inbound", "Receiving freight into the warehouse.", [
                    drv("eachCount", "Units per receipt", "volume", [v("1 - 1,000 units", 0.30), v("Over 1,000 units", 0.25)], calc=True)],
                   mins=MINS_RCV, second=True, when={"offloadType": FLOOR}, min_default={"receipt": 50}),
              unit("hour", "Labor hour", 50, 40, 60, "UNIS median (n=412)",
-                  [drv("hours", "Hours per receipt", "volume", [v("First hour", 50), v("Each additional hour", 45)])],
                   mins=MINS_RCV, min_default={"receipt": 45}, note="D2C template: inbound & stow $45/hr."),
              unit("receipt", "Receipt (flat)", 50, 25, 150, "Industry midpoint", common=False, second=True),
              unit("cubic", "Cubic foot", 0.23, 0.15, 0.40, "UNIS median (n=62)",
                   [drv("cubicVol", "Cubic feet per receipt", "volume", [v("0 - 1,000 cu ft", 0.23), v("Over 1,000 cu ft", 0.18)], calc=True)], mins=MINS_RCV, common=False),
-             unit("weight", "Weight (per 100 lb)", 1.00, 0.50, 2.00, "Industry midpoint",
-                  [drv("weightVol", "Weight per receipt", "volume", [v("0 - 10,000 lb", 1.00), v("Over 10,000 lb", 0.80)], calc=True)], mins=MINS_RCV, common=False)],
+             unit("weight", "Pound", 0.01, 0.005, 0.02, "Industry midpoint ($1.00 per 100 lb)",
+                  [drv("weightVol", "Weight per receipt", "volume", [v("0 - 10,000 lb", 0.01), v("Over 10,000 lb", 0.008)], calc=True)], mins=MINS_RCV, common=False)],
             triggers=["Offload", "Billed Upon Receipt"], codes=["HANDLING-0252", "HANDLING-0188"]),
     builder("IN-PUTAWAY", "Put away",
             "Move received freight from the dock to its storage location and confirm in the WMS.",
@@ -242,7 +241,7 @@ category("returns", "Returns", "Receiving and dispositioning returned goods.", [
             "Receive the return, minor inspection, photo, report to client, hold for disposition.",
             [cond("returnType", "Return type", ["Consumer return (D2C)", "Retailer return (B2B)"], common=True), C_FACILITY, C_TITLE],
             [unit("package", "Package / tracking #", 2.50, 2, 4, "UNIS D2C template", when={"returnType": ["Consumer return (D2C)"]}),
-             unit("each", "Item", 0.85, 0.50, 1.50, "UNIS median (n=181)", second=True),
+             unit("each", "Item", 0.85, 0.50, 1.50, "UNIS median (n=181)"),
              unit("case", "Carton", 2.50, 1.50, 4, "UNIS median (n=141)", when={"returnType": ["Retailer return (B2B)"]}),
              unit("pallet", "Pallet", 14, 8, 20, "Industry midpoint", when={"returnType": ["Retailer return (B2B)"]}, common=False),
              unit("hour", "Labor hour", 42, 38, 55, "UNIS median (n=11)", common=False)],
@@ -395,3 +394,104 @@ DEFAULT_PRESET = {
     "OT-LABOR": _on(), "OT-OT": _on(), "OT-COUNT": _on(), "OT-DOCS": _on(), "OT-COPIES": _on(),
     "OT-WRAP": _on(), "OT-PALLET-A": _on(), "OT-PALLET-B": _on(), "OT-SUPPLIES": _on(),
 }
+
+
+# ------------------------------------------------------------------ mapback to existing system charge codes
+# Every quote line must resolve to one system charge code (+ the system condition names / values to configure).
+# BUILDER_CODES[charge][unit] = {"flat": code, "drivers": {driverId: code | {"range": code, "incremental": code}},
+#                                "second": split-rate code, "initial": initial-storage code (storage only)}
+# A missing entry = no code yet -> reported as "new charge item" to set up in the billing system first.
+H = lambda n: f"HANDLING-{n:04d}"
+S = lambda n: f"STORAGE INCOME-{n:04d}"
+BUILDER_CODES = {
+    "IN-OFFLOAD": {
+        "container": {"flat": H(126), "drivers": {"containerSize": H(126), "caseCount": H(129), "skuCount": H(129), "palletCount": H(120)}},
+        "pallet": {"flat": H(113), "drivers": {"palletSize": H(118), "palletMix": H(113), "containerSize": H(113),
+                                               "palletCount": {"range": H(121), "incremental": H(119)}}, "second": H(105)},
+        "case": {"flat": H(107), "drivers": {"caseWeight": H(128), "containerSize": H(128), "caseCount": {"range": H(128), "incremental": H(127)},
+                                             "skuCount": H(107)}, "second": H(104)},
+        "each": {"flat": H(114), "drivers": {"itemSize": H(123), "eachCount": H(114)}, "second": H(106)},
+        "hour": {"flat": H(124)}, "receipt": {"flat": H(125)},
+        "cubic": {"flat": H(108), "drivers": {"cubicVol": H(108)}}, "weight": {"flat": H(115), "drivers": {"weightVol": H(115)}},
+    },
+    "IN-PUTAWAY": {"pallet": {"flat": H(53)}, "case": {"flat": H(54)}, "each": {"flat": H(55)}},
+    "IN-TRANSLOAD": {
+        "container": {"flat": H(23), "drivers": {"containerSize": H(23), "caseCount": {"range": H(26), "incremental": H(24)}, "palletCount": H(17)}},
+        "pallet": {"flat": H(11)}, "case": {"flat": H(6)}, "hour": {"flat": H(21)},
+    },
+    "OB-ORDER": {"order": {"flat": H(93), "drivers": {"orderWeight": H(93), "orderVolume": H(93)}},
+                 "load": {"flat": H(92)}, "line": {"flat": H(91)}, "case": {"flat": H(90)}},
+    "OB-PICK": {
+        "pallet": {"flat": H(67), "drivers": {"palletCount": H(75)}},
+        "case": {"flat": H(63), "drivers": {"caseWeight": H(72), "caseCount": H(63)}, "second": H(57)},
+        "each": {"flat": H(69), "drivers": {"unitWeight": H(74), "orderWeight": H(56)}, "second": H(62)},
+        "inner": {"flat": H(64)}, "order": {"flat": H(66)}, "weight": {"flat": H(78)},
+    },
+    "OB-PACK": {"order": {"flat": H(84)}, "case": {"flat": H(85)}},
+    "OB-LOAD": {"container": {"flat": H(151), "drivers": {"containerSize": H(151), "caseCount": H(153)}},
+                "pallet": {"flat": H(142)}, "case": {"flat": H(138)}},
+    "ST-STORAGE": {
+        "pallet": {"flat": S(4), "initial": S(17), "drivers": {"stack": [S(11), S(24)], "palletSize": [S(9), S(22)], "aging": [S(4), S(17)]}},
+        "bin": {"flat": S(13), "initial": S(26), "drivers": {"binSize": [S(13), S(26)]}},
+        "each": {"flat": S(10), "initial": S(23), "drivers": {"itemSize": [S(10), S(23)]}},
+        "sqft": {"flat": S(8), "initial": S(21)}, "cubic": {"flat": S(2), "initial": S(15)},
+        "case": {"flat": S(5), "initial": S(18)}, "weight": {"flat": S(1), "initial": S(14)},
+    },
+    "RT-RETURN": {"package": {"flat": "RMS-001"}, "each": {"flat": H(39)}, "case": {"flat": H(36)}, "pallet": {"flat": H(38)}, "hour": {"flat": H(37)}},
+}
+SIMPLE_CODES = {
+    "SU-ITEM": H(200), "SU-SKU": "ACCESSORIAL-0014", "SU-WMS": "SYSTEM & MANAGEMENT FEE-0005", "SU-EDI": H(194),
+    "SU-EDITX": H(102), "SU-VAN": H(100), "SU-RETAILER": H(244), "SU-IT": H(217), "SU-ENT": "SYSTEM & MANAGEMENT FEE-0004",
+    "IN-XDOCK": H(157), "IN-SORT": H(29), "IN-SHOTGUN": H(34), "IN-PALLETIZE": H(81),
+    "OB-LABEL": H(155), "OB-ROUTING": H(239),
+    "RT-INSPECT": "RMS-002", "RT-RESTOCK": "RMS-006", "RT-DISPOSAL": "ACCESSORIAL-0011", "RT-RESHIP": H(192),
+    "VA-KIT": H(208), "VA-RELABEL": "RELABELING", "VA-FNSKU": H(184), "VA-SERIAL": H(243), "VA-PACKSLIP": "ACCESSORIAL-0023",
+    "VA-PHOTO": "ACCESSORIAL-0027", "VA-OVERBOX": "ACC-0003", "VA-DUNNAGE": "DUNNAGE", "VA-SKUCONV": "ACC-0004",
+    "OT-LABOR": H(199), "OT-OT": H(225), "OT-COUNT": "ACCESSORIAL-0010", "OT-MANUALORDER": H(96), "OT-RUSH": H(88),
+    "OT-CANCEL": "ACCESSORIAL-0002", "OT-NOASN": "ACCESSORIAL-0018", "OT-MANUALRCPT": H(51), "OT-OSD": H(219),
+    "OT-ADDRESS": "ACCESSORIAL-0037", "OT-DOCS": "ACCESSORIAL-0009", "OT-WRAP": "ACCESSORIAL-0033", "OT-SUPPLIES": "Freight-0001",
+    "OT-FREIGHT": "TRANSPORTATION-0002", "OT-3PPOSTAGE": H(182), "OT-RUSHRCPT": H(40), "OT-CANCELPRE": "ACCESSORIAL-0001",
+    "OT-MISSEDAPPT": H(95), "OT-COPIES": "ACCESSORIAL-0026", "OT-MANIFEST": "ACCESSORIAL-0013", "OT-STRAP": "OTHERS-0004",
+    "OT-SLIP": "SLIPSHEET", "OT-YARD": "YARD-0001", "OT-HOSTLER": H(250), "OT-OUTSIDECARRIER": "OTHERS-0003",
+    "OT-ACCOUNT": "ACCESSORIAL-0005", "OT-PASSTHRU": "ACCESSORIAL-0028",
+}
+# Suggested system item names for charges that have no code yet (to create in the billing system)
+NEW_ITEM_NAMES = {
+    "SU-SETUP": "ACCOUNT SETUP & IMPLEMENTATION (one-time)", "SU-ECOM": "E-COMMERCE PLATFORM CONNECTION",
+    "IN-LOT": "LOT / EXPIRY CAPTURE", "OB-PALLETBUILD": "OUTBOUND PALLET BUILD & WRAP",
+    "VA-BRANDED": "BRANDED PACKAGING", "VA-INSERT": "INSERT / FLIER / STICKER", "VA-FRAGILE": "FRAGILE / TISSUE WRAP",
+    "VA-GIFT": "GIFT WRAP / GIFT MESSAGE", "VA-POLYBAG": "POLY BAG + SUFFOCATION LABEL",
+    "OT-PALLET-A": "PALLET CHARGE - GRADE A", "OT-PALLET-B": "PALLET CHARGE - GRADE B", "OT-CORNER": "CORNER BOARDS",
+    "OT-PEAK": "PEAK SEASON SURCHARGE", "OT-MINIMUM": "MONTHLY MINIMUM BILLING",
+}
+NOTES = {
+    "SU-EDITX": "EDI document type decides the code: 940 HANDLING-0102, 945 HANDLING-0099, 856 HANDLING-0048, 850 HANDLING-0049, FTP HANDLING-0001.",
+    "OT-MISSEDAPPT": "Outbound HANDLING-0095; inbound receipt HANDLING-0044 / load HANDLING-0043.",
+    "OT-PASSTHRU": "Pick per item: rental ACCESSORIAL-0028, waste ACCESSORIAL-0036, utility ACCESSORIAL-0034, security HANDLING-0241.",
+    "OT-FREIGHT": "Small parcel postage: Small Parcel-0005; FTL/LTL: TRANSPORTATION-0002.",
+}
+# our factor -> system condition name (+ value translation). facility = separate price list per facility, not a condition.
+COND_SYSTEM = {
+    "offloadType": {"key": "OFFLoad Type", "values": {"Floor loaded": "Floor Loaded", "Palletized": "Palletized", "Shotgun": "Shotgun", "Slip sheet": "Slip Sheet"}},
+    "shipMethod": {"key": "Ship Method", "values": {"Truckload / container": "TRUCKLOAD", "Truckload": "TL", "LTL": "LTL", "LCL": "LCL",
+                                                    "Small parcel": "SP", "Will call": "WILL_CALL"}},
+    "receiptType": {"key": "Receipt Type", "values": {"Regular": "RG", "Customer return": "RETURN_FROM_END_USER",
+                                                      "Retailer return": "RETURN_FROM_RETAILER_OR_CHANNEL", "Transload": "TRANSLOAD", "Cross-dock": "CD"}},
+    "returnType": {"key": "Receipt Type", "values": {"Consumer return (D2C)": "RETURN_FROM_END_USER", "Retailer return (B2B)": "RETURN_FROM_RETAILER_OR_CHANNEL"}},
+    "businessType": {"key": "Business Type", "values": {"B2B": "B2B", "D2C": "B2C"}},
+    "orderType": {"key": "Order Type", "values": {"Regular": "RG", "Drop-ship": "DS", "Transload": "TRANSLOAD", "Cross-dock": "CD"}},
+    "retailer": {"key": "Retailer", "values": {}}, "carrier": {"key": "Carrier", "values": {"FedEx": "Fedex"}},
+    "temperature": {"key": "Temperature", "values": {"Dry / ambient": "DRY", "Cooler": "COOLER"}},
+    "title": {"key": "Title", "values": {}},
+    "facility": {"key": "", "values": {}, "note": "Facility pricing = a separate price list per facility (no condition)."},
+}
+DRIVER_SYSTEM = {
+    "containerSize": {"key": "Container Size", "values": {"40' HC": "40'H", "48' trailer": "48'", "53' trailer": "53'"}},
+    "caseCount": {"key": "Case Qty", "byCharge": {"OB-PICK": "Case Qty Range"}}, "skuCount": {"key": "SKU Qty Range"}, "palletCount": {"key": "Pallet Qty Range"},
+    "palletSize": {"key": "Pallet Size"}, "eachCount": {"key": "Unit Qty Range"}, "cubicVol": {"key": "Volume Range"}, "weightVol": {"key": "Weight Range"},
+    "palletMix": {"key": "Mixed Mode", "values": {"Full pallet, single SKU": "Full_Pallet", "Partial pallet": "Partial_Pallet", "Mixed-SKU pallet": "MultipleSKU"}},
+    "caseWeight": {"key": "Weight Range Per Case", "byCharge": {"OB-PICK": "Weight Range"}},
+    "itemSize": {"key": "TV Size"}, "orderWeight": {"key": "Weight Range Per Order"}, "orderVolume": {"key": "Order Qty Range"},
+    "unitWeight": {"key": "Weight Range"}, "stack": {"key": "Stack High"}, "aging": {"key": "Days Range"}, "binSize": {"key": "Capacity Type", "values": {"Shelf / rack": "Rack"}},
+}
+CHARGE_COND_OVERRIDE = {"OB-PICK": {"offloadType": "OffloadType"}}

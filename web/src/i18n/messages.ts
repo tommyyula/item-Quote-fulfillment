@@ -3,6 +3,12 @@ type Dict = Record<string, string>;
 
 const en: Dict = {
   "app.brand": "UNIS Fulfillment", "app.title": "Quotation",
+  "m.title": "Charge code mapping", "m.button": "Charge codes", "m.summary": "{mapped} of {total} rate lines map to existing charge codes.",
+  "m.mapped": "Mapped", "m.new-condition": "New condition", "m.new-item": "New charge item", "m.setupTitle": "Set up in the billing system first",
+  "m.setupHint": "Create these before the quote is billed. Everything else maps to existing charge codes.", "m.allMapped": "All rate lines map to existing charge codes. Nothing to set up.",
+  "m.code": "Charge code", "m.sysItem": "System item", "m.uom": "UOM", "m.conds": "System conditions", "m.status": "Status", "m.rate": "Rate",
+  "m.line": "Rate line", "m.suggested": "Create item: {name}", "m.addCond": "Add condition \"{key}\" to {code}", "m.values": "values: {v}",
+  "m.initial": "initial: {code}", "m.check": "Charge code check", "m.filterAll": "All", "m.filterSetup": "Needs setup", "m.savedMapped": "{mapped}/{total} mapped",
   "f.supported": "Supported by", "f.itemAlt": "ITEM", "h.dayView": "Day view", "h.nightView": "Night view", "a.skip": "Skip to content",
   "e.template": "Default template", "e.applyTemplate": "Load default template", "e.templateHint": "The most common charges, pre-configured with benchmark rates.",
   "e.templateConfirm": "Replace the current selections with the default template?", "e.templateDone": "Default template loaded.", "e.blank": "Clear all",
@@ -59,6 +65,12 @@ const en: Dict = {
 
 const zh: Dict = {
   "app.brand": "UNIS Fulfillment", "app.title": "报价单",
+  "m.title": "收费代码映射", "m.button": "收费代码", "m.summary": "{total} 个价格行中有 {mapped} 个已对应到现有收费代码。",
+  "m.mapped": "已对应", "m.new-condition": "需新增条件", "m.new-item": "需新增收费项", "m.setupTitle": "需先在计费系统中设置",
+  "m.setupHint": "请在开票前先创建以下项目，其余价格行均已对应到现有收费代码。", "m.allMapped": "所有价格行均已对应到现有收费代码，无需额外设置。",
+  "m.code": "收费代码", "m.sysItem": "系统收费项", "m.uom": "单位", "m.conds": "系统条件", "m.status": "状态", "m.rate": "费率",
+  "m.line": "价格行", "m.suggested": "新建收费项：{name}", "m.addCond": "在 {code} 上新增条件「{key}」", "m.values": "取值：{v}",
+  "m.initial": "初始仓储：{code}", "m.check": "收费代码检查", "m.filterAll": "全部", "m.filterSetup": "需设置", "m.savedMapped": "已对应 {mapped}/{total}",
   "f.supported": "技术支持", "f.itemAlt": "ITEM", "h.dayView": "日间模式", "h.nightView": "夜间模式", "a.skip": "跳到正文",
   "e.template": "默认模板", "e.applyTemplate": "载入默认模板", "e.templateHint": "最常用的收费项，已按基准价预先配置。",
   "e.templateConfirm": "用默认模板替换当前的选择？", "e.templateDone": "已载入默认模板。", "e.blank": "全部清空",
@@ -115,6 +127,12 @@ const zh: Dict = {
 
 const ja: Dict = {
   "app.brand": "UNIS Fulfillment", "app.title": "見積書",
+  "m.title": "料金コードの対応", "m.button": "料金コード", "m.summary": "{total} 件の単価行のうち {mapped} 件が既存の料金コードに対応しています。",
+  "m.mapped": "対応済み", "m.new-condition": "条件の追加が必要", "m.new-item": "料金項目の新規作成が必要", "m.setupTitle": "先に請求システムで設定が必要",
+  "m.setupHint": "請求前に以下を作成してください。その他の単価行は既存の料金コードに対応しています。", "m.allMapped": "すべての単価行が既存の料金コードに対応しています。追加設定は不要です。",
+  "m.code": "料金コード", "m.sysItem": "システム項目", "m.uom": "単位", "m.conds": "システム条件", "m.status": "状態", "m.rate": "単価",
+  "m.line": "単価行", "m.suggested": "項目を作成：{name}", "m.addCond": "{code} に条件「{key}」を追加", "m.values": "値：{v}",
+  "m.initial": "初期保管：{code}", "m.check": "料金コードチェック", "m.filterAll": "すべて", "m.filterSetup": "要設定", "m.savedMapped": "{mapped}/{total} 対応済み",
   "f.supported": "Supported by", "f.itemAlt": "ITEM", "h.dayView": "デイビュー", "h.nightView": "ナイトビュー", "a.skip": "本文へスキップ",
   "e.template": "デフォルトテンプレート", "e.applyTemplate": "デフォルトテンプレートを読み込む", "e.templateHint": "最もよく使われる料金項目を基準単価で設定済みです。",
   "e.templateConfirm": "現在の選択をデフォルトテンプレートに置き換えますか？", "e.templateDone": "デフォルトテンプレートを読み込みました。", "e.blank": "すべてクリア",
@@ -171,6 +189,12 @@ const ja: Dict = {
 
 const es: Dict = {
   "app.brand": "UNIS Fulfillment", "app.title": "Cotización",
+  "m.title": "Mapeo de códigos de cargo", "m.button": "Códigos de cargo", "m.summary": "{mapped} de {total} líneas de tarifa corresponden a códigos existentes.",
+  "m.mapped": "Mapeado", "m.new-condition": "Nueva condición", "m.new-item": "Nuevo cargo", "m.setupTitle": "Configurar primero en el sistema de facturación",
+  "m.setupHint": "Créelos antes de facturar esta cotización. El resto corresponde a códigos existentes.", "m.allMapped": "Todas las líneas corresponden a códigos existentes. No hay nada que configurar.",
+  "m.code": "Código", "m.sysItem": "Cargo del sistema", "m.uom": "Unidad", "m.conds": "Condiciones del sistema", "m.status": "Estado", "m.rate": "Tarifa",
+  "m.line": "Línea de tarifa", "m.suggested": "Crear cargo: {name}", "m.addCond": "Agregar la condición \"{key}\" a {code}", "m.values": "valores: {v}",
+  "m.initial": "inicial: {code}", "m.check": "Revisión de códigos de cargo", "m.filterAll": "Todo", "m.filterSetup": "Requiere configuración", "m.savedMapped": "{mapped}/{total} mapeados",
   "f.supported": "Con el apoyo de", "f.itemAlt": "ITEM", "h.dayView": "Vista de día", "h.nightView": "Vista de noche", "a.skip": "Ir al contenido",
   "e.template": "Plantilla predeterminada", "e.applyTemplate": "Cargar plantilla predeterminada", "e.templateHint": "Los cargos más habituales, configurados con tarifas de referencia.",
   "e.templateConfirm": "¿Reemplazar la selección actual con la plantilla predeterminada?", "e.templateDone": "Plantilla predeterminada cargada.", "e.blank": "Borrar todo",

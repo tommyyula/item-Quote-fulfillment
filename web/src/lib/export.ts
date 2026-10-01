@@ -1,5 +1,6 @@
 // Excel / JSON export of the proposal. ExcelJS is loaded on demand to keep the initial bundle small.
 import type { Translator } from "../i18n";
+import { mapQuote, setupList } from "./codemap";
 import { chargeIndex, quoteLines } from "./engine";
 import { addDays, dateText, money, pct, rateText, softLower, unitText } from "./format";
 import type { PRow, PSection } from "./proposal";
@@ -102,17 +103,32 @@ export async function buildExcel(cat: Catalog, sections: PSection[], m: Proposal
   ws.addRow([T.t("p.signUnis"), "", c?.company || T.t("p.signCustomer")]).font = { bold: true };
   for (const k of ["p.signature", "p.printed", "p.titleLbl", "p.date"]) ws.addRow([`${T.t(k)}: ____________________`, "", `${T.t(k)}: ____________________`]);
 
-  // raw rate lines for billing setup
+  // charge-code mapback: every rate line -> existing system code, plus what must be set up first
   const idx = chargeIndex(cat);
-  const raw = wb.addWorksheet("Rate lines");
-  raw.columns = [{ header: "Charge ID", width: 16 }, { header: "Charge", width: 30 }, { header: "Unit", width: 18 }, { header: "Conditions", width: 60 },
-    { header: "Column", width: 12 }, { header: "Rate", width: 12 }, { header: "Benchmark", width: 12 }, { header: "System codes", width: 50 }];
-  raw.getRow(1).font = { bold: true };
-  for (const l of quoteLines(cat, m.data)) {
-    raw.addRow([l.chargeId, idx[l.chargeId].charge.name, l.col === "min" ? `min per ${l.minBasis}` : l.unitLabel,
-      l.dims.map(d => `${d.label}: ${d.value}`).join(" · "), l.col, l.pct ? pct(l.price) : money(l.price), l.pct ? pct(l.benchmark) : money(l.benchmark),
-      idx[l.chargeId].charge.codes.join(", ")]);
-  }
+  const ms = mapQuote(cat, m.data);
+  const map = wb.addWorksheet("Charge code mapping");
+  map.columns = [{ header: "Charge ID", width: 15 }, { header: "Charge", width: 30 }, { header: "Unit", width: 18 }, { header: "Quote conditions", width: 46 },
+    { header: "Column", width: 9 }, { header: "Rate", width: 11 }, { header: "Charge code", width: 26 }, { header: "System item", width: 34 },
+    { header: "System UOM", width: 12 }, { header: "Initial storage code", width: 22 }, { header: "System conditions", width: 52 }, { header: "Status", width: 14 },
+    { header: "Notes", width: 50 }];
+  map.getRow(1).font = { bold: true };
+  const ql = quoteLines(cat, m.data);
+  ms.forEach((x, i) => {
+    const l = ql[i];
+    const r = map.addRow([l.chargeId, idx[l.chargeId].charge.name, l.col === "min" ? `min per ${l.minBasis}` : l.unitLabel,
+      l.dims.map(d => `${d.label}: ${d.value}`).join(" · "), l.col, l.pct ? pct(l.price) : money(l.price), x.code ?? "", x.code ? x.systemName : x.suggestedName ?? "",
+      x.systemUom, x.initialCode ?? "", x.conditions.map(c => `${c.key}: ${c.value}${c.supported ? "" : " (new)"}`).join("; "), x.status, x.notes.join(" ")]);
+    if (x.status !== "mapped") r.getCell(12).font = { bold: true, color: { argb: x.status === "new-item" ? "FFE01529" : "FFC2410C" } };
+  });
+  const setup = wb.addWorksheet("Setup needed");
+  setup.columns = [{ header: "Type", width: 16 }, { header: "Charge", width: 30 }, { header: "Charge code", width: 24 }, { header: "System item", width: 32 },
+    { header: "Action", width: 60 }, { header: "Values", width: 50 }, { header: "Rate lines", width: 10 }];
+  setup.getRow(1).font = { bold: true };
+  const list = setupList(cat, ms);
+  if (!list.length) setup.addRow(["", "All rate lines map to existing charge codes."]);
+  for (const it of list)
+    setup.addRow([it.kind, idx[it.chargeId].charge.name, it.code ?? "", it.systemName,
+      it.kind === "new-item" ? `Create item "${it.suggestedName}"` : `Add condition "${it.conditionKey}" to ${it.code}`, it.values.join(", "), it.lineCount]);
   return (await wb.xlsx.writeBuffer()) as ArrayBuffer;
 }
 

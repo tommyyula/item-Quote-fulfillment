@@ -3,6 +3,8 @@ import { computed, nextTick, onMounted, ref, watchEffect } from "vue";
 import itemLogoDark from "./assets/brand/item-white-logo.svg";
 import itemLogoLight from "./assets/brand/item-logo-fullcolor-blacktxt.svg";
 import ChargeCard from "./components/ChargeCard.vue";
+import ChargeCodeMapping from "./components/ChargeCodeMapping.vue";
+import Drawer from "./components/Drawer.vue";
 import CustomersDrawer from "./components/CustomersDrawer.vue";
 import HistoryDrawer from "./components/HistoryDrawer.vue";
 import ProposalView from "./components/ProposalView.vue";
@@ -15,7 +17,7 @@ import type { Charge, QuoteStatus } from "./lib/types";
 const store = createStore();
 const { T } = provideApp(store);
 const st = store.state;
-const drawer = ref<"" | "customers" | "versions" | "history">("");
+const drawer = ref<"" | "customers" | "versions" | "history" | "mapping">("");
 const saving = ref(false);
 const note = ref("");
 const search = ref("");
@@ -108,6 +110,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
       </span>
       <button class="btn primary sm" :disabled="!store.dirty.value || store.readOnly.value" @click="saving = true">{{ T.t("h.saveVersion") }}</button>
       <button class="btn sm" @click="drawer = 'versions'">{{ T.t("h.versions") }} ({{ store.quote.value.versions.length }})</button>
+      <button class="btn sm" @click="drawer = 'mapping'">{{ T.t("m.button") }}</button>
     </template>
     <button class="btn sm" @click="drawer = 'history'">{{ T.t("h.history") }}</button>
     <div class="seg" role="group" aria-label="Language">
@@ -221,11 +224,16 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
   <CustomersDrawer v-if="drawer === 'customers'" @close="drawer = ''" />
   <VersionsDrawer v-if="drawer === 'versions' && store.quote.value" @close="drawer = ''" />
   <HistoryDrawer v-if="drawer === 'history'" @close="drawer = ''" />
+  <Drawer v-if="drawer === 'mapping' && store.data.value" :title="`${T.t('m.title')} · ${store.quote.value?.number}`" wide @close="drawer = ''">
+    <ChargeCodeMapping :data="store.data.value" />
+  </Drawer>
 
   <div v-if="saving" class="modal no-print" @click.self="saving = false">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sv">
       <h3 id="sv">{{ T.t("v.saveTitle", { n: (store.latestVersion.value?.v ?? 0) + 1 }) }}</h3>
       <textarea class="input" rows="3" v-model="note" :placeholder="T.t('v.notePh')" autofocus></textarea>
+      <h4 class="chk">{{ T.t("m.check") }}</h4>
+      <ChargeCodeMapping :data="store.quote.value!.draft" compact />
       <div class="acts"><button class="btn" @click="saving = false">{{ T.t("c.cancel") }}</button><button class="btn primary" @click="saveVersion">{{ T.t("c.save") }}</button></div>
     </div>
   </div>
@@ -289,7 +297,8 @@ main { min-width: 0; }
 .foot .item { display: inline-flex; align-items: center; gap: 12px; color: var(--muted-fg); text-decoration: none; font-size: 13px; padding: 6px 0; }
 .foot .item img { width: 120px; height: auto; display: block; }
 .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, .55); z-index: 60; display: grid; place-items: center; }
-.dialog { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; width: min(440px, 92vw); }
+.dialog { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; width: min(620px, 94vw); max-height: 90vh; overflow: auto; }
+.dialog .chk { margin: 16px 0 8px; }
 .dialog h3 { margin: 0 0 10px; }
 .dialog textarea { width: 100%; }
 .dialog .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }

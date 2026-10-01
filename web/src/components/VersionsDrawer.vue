@@ -61,7 +61,7 @@ function restore(v: number) {
         <td><b>v{{ v.v }}</b></td>
         <td>{{ dateTimeText(v.savedAt, T) }}</td>
         <td class="note-cell">{{ v.note }}</td>
-        <td class="hint">{{ T.t("v.lines", { n: v.lineCount }) }}</td>
+        <td class="hint">{{ T.t("v.lines", { n: v.lineCount }) }}<div v-if="v.mapping">{{ T.t("m.savedMapped", { mapped: v.mapping.summary.mapped, total: v.mapping.summary.total }) }}</div></td>
         <td class="acts">
           <button class="btn sm" @click="view(v.v)">{{ T.t("c.view") }}</button>
           <button class="btn sm" @click="restore(v.v)">{{ T.t("e.restoreDraft") }}</button>

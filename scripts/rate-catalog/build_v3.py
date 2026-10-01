@@ -44,6 +44,53 @@ model = {"version": "v3", "categories": [], "proposal": {"sections": M.PROPOSAL_
          "materials": M.MATERIALS, "mergeGroups": M.MERGE_GROUPS},
          "defaultPreset": M.DEFAULT_PRESET}
 assert all(k in charges for k in M.DEFAULT_PRESET), [k for k in M.DEFAULT_PRESET if k not in charges]
+
+# ---- mapback tables + system code metadata (names / UOM / condition keys only - no customer data)
+import re as _re
+def _cond_keys(cond):
+    if not cond:
+        return []
+    found = [m.group(1).strip() for m in _re.finditer(r"([A-Za-z][A-Za-z ]+?):\s*(.*?)(?=,\s*\n?[A-Z][A-Za-z ]+?:|$)", str(cond).replace("\n", " "))]
+    return sorted(set(found))
+system_codes = {}
+for code, m in master.items():
+    u = usage.get(code)
+    # no description field: billing-system descriptions embed customer names ("Special Customer (...)")
+    system_codes[code] = {"name": (u[3] if u else m[2]) or "", "uom": (u[5] if u else m[3]) or "",
+                          "category": (u[2] if u else m[6]) or "", "keys": _cond_keys(u[10]) if u else [], "invoiceLines": (u[13] or 0) if u else 0}
+def _codes_in(x):
+    if isinstance(x, str): return [x]
+    if isinstance(x, list): return x
+    if isinstance(x, dict): return [c for v in x.values() for c in _codes_in(v)]
+    return []
+for cid, units in M.BUILDER_CODES.items():
+    c = charges[cid][1]
+    for u in c["units"]:
+        assert u["id"] in units, f"{cid}.{u['id']} has no code entry"
+        for d in u["drivers"]:
+            assert d["id"] in units[u["id"]].get("drivers", {}), f"{cid}.{u['id']}.{d['id']} has no code entry"
+    for code in _codes_in(units):
+        assert code in master, f"unknown code {code}"
+for cid, (_, c) in charges.items():
+    if c["kind"] == "simple":
+        assert (cid in M.SIMPLE_CODES) != (cid in M.NEW_ITEM_NAMES), f"{cid} must be in exactly one of SIMPLE_CODES / NEW_ITEM_NAMES"
+    for cd in c.get("conds", []):
+        assert cd["id"] in M.COND_SYSTEM, f"factor {cd['id']} has no system condition"
+    for u in c.get("units", []):
+        for d in u["drivers"]:
+            assert d["id"] in M.DRIVER_SYSTEM, f"driver {d['id']} has no system condition"
+for code in M.SIMPLE_CODES.values():
+    assert code in master, code
+model["mapback"] = {"builder": M.BUILDER_CODES, "simple": M.SIMPLE_CODES, "newItems": M.NEW_ITEM_NAMES, "notes": M.NOTES,
+                    "conds": M.COND_SYSTEM, "drivers": M.DRIVER_SYSTEM, "chargeCondOverride": M.CHARGE_COND_OVERRIDE}
+model["systemCodes"] = system_codes
+
+# privacy guard: the catalog is published publicly - fail the build if any price-list customer name / code leaks in
+_customers = {x.strip() for r in src["All the customers price list"].iter_rows(min_row=2, values_only=True)
+              for x in (r[0], r[1]) if isinstance(x, str) and len(x.strip()) >= 6}
+_blob = json.dumps(model, ensure_ascii=False)
+_leaks = sorted(n for n in _customers if n in _blob) + _re.findall(r"Special\s+Customer[^\"]{0,40}", _blob)
+assert not _leaks, f"customer names would be published: {_leaks[:10]}"
 for cat in M.CATEGORIES:
     out = {"id": cat["id"], "name": cat["name"], "desc": cat["desc"], "charges": []}
     for c in cat["charges"]:
@@ -52,10 +99,12 @@ for cat in M.CATEGORIES:
         cc["invoiceLines"] = inv_lines(c["id"])
         out["charges"].append(cc)
     model["categories"].append(out)
+
 json.dump(model, open(f"{OUTDIR}/rate-card-model-v3.json", "w"), indent=1)
 WEB_DATA = f"{ROOT}/web/src/data"
 if os.path.isdir(WEB_DATA):
     json.dump(model, open(f"{WEB_DATA}/catalog.json", "w"), indent=1)
+
 
 # ------------------------------------------------------------------ HTML mockup
 tpl = open(f"{HERE}/mockup_template.html").read()

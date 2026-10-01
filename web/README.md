@@ -21,3 +21,17 @@ Regenerate the catalog after editing `model_v3.py`: `python3 scripts/rate-catalo
 
 ## URL options
 `?lang=zh|ja|es|en` · `?theme=dark|light` · `?plang=<lang>` (proposal language) · `?view=proposal` (rate sheet only) · `#proposal`
+
+## Charge-code mapback
+`src/lib/codemap.ts` resolves every rate line to an existing billing-system charge code plus the system conditions to configure
+(status `mapped` / `new-condition` / `new-item`). The save-version dialog runs the check and each version stores the mapback.
+Mapping tables live in `scripts/rate-catalog/model_v3.py` (`BUILDER_CODES`, `SIMPLE_CODES`, `NEW_ITEM_NAMES`, `COND_SYSTEM`, `DRIVER_SYSTEM`).
+`npx vite-node scripts/export-mapback.ts <outDir>` writes the setup list (new items, new conditions, full code map) to Excel.
+
+## API
+OpenAPI 3.1 contract: `public/api/openapi.yaml` (bundled to `openapi.json`, rendered at `api/index.html` with Redoc).
+Lint: `npx @redocly/cli lint public/api/openapi.yaml`. `src/lib/openapi.test.ts` keeps the schemas in step with the app's objects.
+
+## Privacy
+The catalog is published with the site. `build_v3.py` fails if any customer name from the price list would end up in it;
+the business data folders (`workingfolder-input/`, `workingfolder-output/`) are git-ignored.

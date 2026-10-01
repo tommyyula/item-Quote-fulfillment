@@ -26,6 +26,22 @@ export interface Catalog {
   proposal: { sections: ProposalSection[]; categoryToSection: Record<string, string>; materials: string[];
               mergeGroups: { id: string; label: string; members: string[] }[] };
   defaultPreset: Record<string, ChargeSel>;   // "default template": the most common charges, pre-configured
+  mapback: Mapback;                            // quote line -> existing system charge code
+  systemCodes: Record<string, SystemCode>;     // billing-system item metadata (name, UOM, condition keys in use)
+}
+export interface SystemCode { name: string; uom: string; category: string; keys: string[]; invoiceLines: number }
+export interface UnitCodes {
+  flat: string; initial?: string; second?: string;
+  drivers?: Record<string, string | string[] | { range: string; incremental: string }>;
+}
+export interface Mapback {
+  builder: Record<string, Record<string, UnitCodes>>;
+  simple: Record<string, string>;
+  newItems: Record<string, string>;
+  notes: Record<string, string>;
+  conds: Record<string, { key: string; values: Record<string, string>; note?: string }>;
+  drivers: Record<string, { key: string; values?: Record<string, string>; byCharge?: Record<string, string> }>;
+  chargeCondOverride: Record<string, Record<string, string>>;
 }
 
 // ---------------------------------------------------------------- quote selections (serializable, versioned)
@@ -52,7 +68,8 @@ export interface QuoteHeader {
 }
 export interface QuoteData { header: QuoteHeader; selections: Record<string, ChargeSel> }
 
-export interface Version { v: number; savedAt: string; note: string; data: QuoteData; lineCount: number }
+export interface VersionMapping { summary: { total: number; mapped: number; newCondition: number; newItem: number }; lines: unknown[] }
+export interface Version { v: number; savedAt: string; note: string; data: QuoteData; lineCount: number; mapping?: VersionMapping }
 export type QuoteStatus = "draft" | "sent" | "accepted" | "archived";
 export interface Quote {
   id: string; number: string; customerId: string; createdAt: string; updatedAt: string; status: QuoteStatus;
