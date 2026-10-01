@@ -78,6 +78,7 @@ function loadTemplate() {
 const setLang = (l: Lang) => (st.prefs.lang = l);
 const h = computed(() => store.quote.value!.draft.header);
 const touch = () => store.touch();
+const toggleTheme = () => (st.prefs.theme = st.prefs.theme === "light" ? "dark" : "light");
 const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : itemLogoDark));
 </script>
 
@@ -119,6 +120,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
     <div class="seg" role="group" aria-label="Language">
       <button v-for="l in LANGS" :key="l.id" :class="{ on: st.prefs.lang === l.id }" :aria-pressed="st.prefs.lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
     </div>
+    <button class="btn ghost sm" @click="toggleTheme">{{ st.prefs.theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}</button>
   </header>
 
   <div v-if="store.readOnly.value" class="banner no-print" role="status">
@@ -219,9 +221,6 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
     </a>
     <span class="sp"></span>
     <span v-if="st.lastSaved" class="hint">{{ T.t("v.autosaved") }}</span>
-    <button class="btn ghost sm" @click="st.prefs.theme = st.prefs.theme === 'light' ? 'dark' : 'light'">
-      {{ st.prefs.theme === "light" ? T.t("h.nightView") : T.t("h.dayView") }}
-    </button>
   </footer>
 
   <CustomersDrawer v-if="drawer === 'customers'" @close="drawer = ''" />
