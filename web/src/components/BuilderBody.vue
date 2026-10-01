@@ -56,13 +56,21 @@ function removeMethod(k: string) {
 const drivers = (u: Unit) => u.drivers.filter(d => passes(props.charge, props.s, d.when, showAll.value));
 const hiddenDrivers = (u: Unit) => u.drivers.filter(d => !passes(props.charge, props.s, d.when, showAll.value));
 const chosen = (k: string) => new Set(chosenDriverIds(props.s.units[k], showAll.value));
+/** Remove one pricing of a unit: the base unit is switched off (its prices are kept for re-selection), an extra method is deleted. */
+function removeUnit(k: string) {
+  if (k.includes("#")) return removeMethod(k);
+  edit().units[k].on = false;
+}
+// "Price varies by": clicking the selected (last) choice again removes this pricing
 function pickDriver(k: string, id: string | null) {
   const us = edit().units[k];
   if (showAll.value) {
     const set = new Set(chosenDriverIds(us, true));
+    if (id && set.has(id) && set.size === 1) return removeUnit(k);
     if (id) set.has(id) ? set.delete(id) : set.add(id);
     us.drivers = [...set];
-  } else us.driver = id;
+  } else if ((us.driver ?? null) === id) removeUnit(k);
+  else us.driver = id;
 }
 const setCalc = (k: string, d: string, v: string) => { const us = edit().units[k]; us.calc = { ...(us.calc ?? {}), [d]: v }; };
 const setMin = (k: string, m: string | null) => (edit().units[k].min = m);
@@ -136,15 +144,16 @@ const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
         <div class="uhead">
           <h4>{{ T.t("e.perUnit", { unit: softLower(T.tc(u.label)) }) }}<span v-if="methodsOf(u) > 1" class="muted"> · {{ T.t("e.method", { n }) }}</span></h4>
           <template v-if="!readOnly">
-            <button v-if="n > 1" class="btn ghost sm" @click="removeMethod(k)">{{ T.t("e.remove") }}</button>
-            <button v-else-if="u.drivers.length" class="btn ghost sm" @click="addMethod(u)">+ {{ T.t("e.addMethod") }}</button>
+            <button v-if="n === 1 && u.drivers.length" class="btn ghost sm" @click="addMethod(u)">+ {{ T.t("e.addMethod") }}</button>
+            <button class="btn ghost sm" @click="removeUnit(k)">{{ T.t("e.remove") }}</button>
           </template>
         </div>
         <div v-if="u.drivers.length" class="row">
           <span class="k">{{ T.t("e.varies") }}</span>
           <div class="chips">
-            <button v-if="!showAll" class="chip sm" :class="{ sel: !s.units[k].driver }" :disabled="readOnly" @click="pickDriver(k, null)">{{ T.t("e.flat") }}</button>
-            <button v-for="d in drivers(u)" :key="d.id" class="chip sm" :class="{ sel: chosen(k).has(d.id) }" :title="T.tc(d.help)" :disabled="readOnly"
+            <button v-if="!showAll" class="chip sm" :class="{ sel: !s.units[k].driver }" :disabled="readOnly"
+                    :title="!s.units[k].driver ? T.t('e.clickToRemove') : ''" @click="pickDriver(k, null)">{{ T.t("e.flat") }}</button>
+            <button v-for="d in drivers(u)" :key="d.id" class="chip sm" :class="{ sel: chosen(k).has(d.id) }" :title="chosen(k).has(d.id) ? T.t('e.clickToRemove') : T.tc(d.help)" :disabled="readOnly"
                     @click="pickDriver(k, d.id)">{{ T.tc(d.label) }}<span v-if="d.kind === 'volume'" class="muted"> · {{ T.t("e.volume") }}</span></button>
           </div>
         </div>
