@@ -113,7 +113,7 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
       // a dimension with the same values on every row does not split the price: lift it into the service heading
       const same = (x: string[], y: string[]) => x.length === y.length && x.every((v, i) => v === y[i]);
       const keep = dims.map((_, i) => !merged.every(r => same(r.sets[i], merged[0].sets[i])));
-      const lifted = dims.map((d, i) => ({ label: d.label, values: merged[0]?.sets[i] ?? [] })).filter((_, i) => !keep[i]);
+      const lifted = dims.map((d, i) => ({ label: d.label, values: merged[0]?.sets[i] ?? [] })).filter((q, i) => !keep[i] && q.values.some(Boolean));
       const suffix = unitIds.length > 1 ? u.label : undefined;
       if (merged.length === 1) {
         // one price: show it on the service line itself; a minimum follows as its own row
@@ -132,5 +132,6 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
 }
 
 function qual(dims: { id: string; label: string }[], sets: string[][], keep: boolean[]): Qualifier[] {
-  return dims.map((d, i) => ({ label: d.label, values: sets[i] })).filter((_, i) => keep[i]);
+  // an empty value = this row is priced flat for that driver (flatOtherwise): no qualifier to show
+  return dims.map((d, i) => ({ label: d.label, values: sets[i].filter(Boolean) })).filter((q, i) => keep[i] && q.values.length > 0);
 }

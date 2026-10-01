@@ -137,6 +137,8 @@ category("inbound", "Inbound", "Receiving freight into the warehouse.", [
              unit("weight", "Pound", 0.01, 0.005, 0.02, "Industry midpoint ($1.00 per 100 lb)",
                   [drv("weightVol", "Weight per receipt", "volume", [v("0 - 10,000 lb", 0.01), v("Over 10,000 lb", 0.008)], calc=True)], mins=MINS_RCV, common=False)],
             triggers=["Offload", "Billed Upon Receipt"], codes=["HANDLING-0252", "HANDLING-0188"]),
+    simple("IN-EXCESSCASE", "Each case over 2,500 (floor-loaded container)", "Added to the over-2,500-case container fee for every case beyond 2,500.", "Case",
+           0.26, 0.20, 0.45, "UNIS median (n=117); Northampton template", channel="B2B", tier="advanced"),
     builder("IN-PUTAWAY", "Put away",
             "Move received freight from the dock to its storage location and confirm in the WMS.",
             [C_OFFLOAD, C_FACILITY],
@@ -442,7 +444,7 @@ BUILDER_CODES = {
 SIMPLE_CODES = {
     "SU-ITEM": H(200), "SU-SKU": "ACCESSORIAL-0014", "SU-WMS": "SYSTEM & MANAGEMENT FEE-0005", "SU-EDI": H(194),
     "SU-EDITX": H(102), "SU-VAN": H(100), "SU-RETAILER": H(244), "SU-IT": H(217), "SU-ENT": "SYSTEM & MANAGEMENT FEE-0004",
-    "IN-XDOCK": H(157), "IN-SORT": H(29), "IN-SHOTGUN": H(34), "IN-PALLETIZE": H(81),
+    "IN-EXCESSCASE": H(127), "IN-XDOCK": H(157), "IN-SORT": H(29), "IN-SHOTGUN": H(34), "IN-PALLETIZE": H(81),
     "OB-LABEL": H(155), "OB-ROUTING": H(239),
     "RT-INSPECT": "RMS-002", "RT-RESTOCK": "RMS-006", "RT-DISPOSAL": "ACCESSORIAL-0011", "RT-RESHIP": H(192),
     "VA-KIT": H(208), "VA-RELABEL": "RELABELING", "VA-FNSKU": H(184), "VA-SERIAL": H(243), "VA-PACKSLIP": "ACCESSORIAL-0023",
@@ -465,6 +467,7 @@ NEW_ITEM_NAMES = {
     "OT-PEAK": "PEAK SEASON SURCHARGE", "OT-MINIMUM": "MONTHLY MINIMUM BILLING",
 }
 NOTES = {
+    "IN-EXCESSCASE": "Configure HANDLING-0127 with Case Qty: over 2500 and CalculationOption: Incremental.",
     "SU-EDITX": "EDI document type decides the code: 940 HANDLING-0102, 945 HANDLING-0099, 856 HANDLING-0048, 850 HANDLING-0049, FTP HANDLING-0001.",
     "OT-MISSEDAPPT": "Outbound HANDLING-0095; inbound receipt HANDLING-0044 / load HANDLING-0043.",
     "OT-PASSTHRU": "Pick per item: rental ACCESSORIAL-0028, waste ACCESSORIAL-0036, utility ACCESSORIAL-0034, security HANDLING-0241.",

@@ -57,6 +57,14 @@ function pickDriver(u: Unit, id: string | null) {
 const setCalc = (u: Unit, d: string, v: string) => { const us = edit().units[u.id]; us.calc = { ...(us.calc ?? {}), [d]: v }; };
 const setMin = (u: Unit, m: string | null) => (edit().units[u.id].min = m);
 const setSecond = (u: Unit, v: boolean) => (edit().units[u.id].second = v);
+// factor values the chosen driver does not apply to (e.g. Palletized when pricing by case count)
+const outside = (u: Unit) => {
+  if (showAll.value) return [];
+  const act = activeConds(props.charge, props.s);
+  return drivers(u).filter(d => chosen(u).has(d.id)).flatMap(d => Object.entries(d.when).flatMap(([k, allowed]) =>
+    (act.find(x => x.cond.id === k)?.values ?? []).filter(v => !allowed.includes(v))));
+};
+const setFlatOtherwise = (u: Unit, v: boolean) => (edit().units[u.id].flatOtherwise = v);
 const setSetting = (id: string, v: string) => (edit().settings[id] = v);
 const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
 </script>
@@ -125,6 +133,13 @@ const toggleLocalAll = () => { const s = edit(); s.showAll = !s.showAll; };
           </div>
         </div>
         <div v-if="hiddenDrivers(u).length" class="note info">{{ T.t("e.notApplicable", { list: hiddenDrivers(u).map(d => T.tc(d.label)).join(", ") }) }}</div>
+        <div v-if="outside(u).length" class="row">
+          <span class="k">{{ T.t("e.flatOtherwise", { values: [...new Set(outside(u))].map(v => T.tc(v)).join(", ") }) }}</span>
+          <div class="chips">
+            <button class="chip sm" :class="{ sel: !s.units[u.id].flatOtherwise }" :disabled="readOnly" @click="setFlatOtherwise(u, false)">{{ T.t("e.notPriced") }}</button>
+            <button class="chip sm" :class="{ sel: !!s.units[u.id].flatOtherwise }" :disabled="readOnly" @click="setFlatOtherwise(u, true)">{{ T.t("e.flat") }}</button>
+          </div>
+        </div>
         <div v-for="d in u.drivers.filter(x => x.calc && chosen(u).has(x.id))" :key="'c' + d.id" class="row">
           <span class="k">{{ T.t("e.tiers", { label: T.tc(d.label) }) }}</span>
           <div class="chips">

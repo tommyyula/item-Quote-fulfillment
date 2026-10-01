@@ -1022,6 +1022,23 @@
      "invoiceLines": 2474
     },
     {
+     "id": "IN-EXCESSCASE",
+     "kind": "simple",
+     "name": "Each case over 2,500 (floor-loaded container)",
+     "desc": "Added to the over-2,500-case container fee for every case beyond 2,500.",
+     "unit": "Case",
+     "default": 0.26,
+     "lo": 0.2,
+     "hi": 0.45,
+     "basis": "UNIS median (n=117); Northampton template",
+     "channel": "B2B",
+     "tier": "advanced",
+     "pct": false,
+     "new": false,
+     "codes": [],
+     "invoiceLines": 0
+    },
+    {
      "id": "IN-PUTAWAY",
      "kind": "builder",
      "name": "Put away",
@@ -4640,6 +4657,7 @@
    "SU-RETAILER": "HANDLING-0244",
    "SU-IT": "HANDLING-0217",
    "SU-ENT": "SYSTEM & MANAGEMENT FEE-0004",
+   "IN-EXCESSCASE": "HANDLING-0127",
    "IN-XDOCK": "HANDLING-0157",
    "IN-SORT": "HANDLING-0029",
    "IN-SHOTGUN": "HANDLING-0034",
@@ -4704,6 +4722,7 @@
    "OT-MINIMUM": "MONTHLY MINIMUM BILLING"
   },
   "notes": {
+   "IN-EXCESSCASE": "Configure HANDLING-0127 with Case Qty: over 2500 and CalculationOption: Incremental.",
    "SU-EDITX": "EDI document type decides the code: 940 HANDLING-0102, 945 HANDLING-0099, 856 HANDLING-0048, 850 HANDLING-0049, FTP HANDLING-0001.",
    "OT-MISSEDAPPT": "Outbound HANDLING-0095; inbound receipt HANDLING-0044 / load HANDLING-0043.",
    "OT-PASSTHRU": "Pick per item: rental ACCESSORIAL-0028, waste ACCESSORIAL-0036, utility ACCESSORIAL-0034, security HANDLING-0241.",
@@ -7707,6 +7726,345 @@
     "OFFLoad Type"
    ],
    "invoiceLines": 0
+  }
+ },
+ "standardTemplate": {
+  "customer": {
+   "company": "Standard Charge Template",
+   "code": "STANDARD",
+   "channel": "Both"
+  },
+  "title": "Standard warehouse services rates",
+  "note": "Standard rates from all customers' price lists (642 customers, median rate per line).",
+  "selections": {
+   "IN-OFFLOAD": {
+    "on": true,
+    "conds": {
+     "offloadType": {
+      "on": true,
+      "values": [
+       "Floor loaded",
+       "Palletized"
+      ]
+     }
+    },
+    "units": {
+     "container": {
+      "on": true,
+      "driver": "caseCount",
+      "flatOtherwise": true
+     },
+     "pallet": {
+      "on": true,
+      "min": "load"
+     },
+     "case": {
+      "on": true
+     },
+     "each": {
+      "on": true
+     }
+    },
+    "prices": {
+     "container|Floor loaded|0 - 500 cases|p": 540.0,
+     "container|Floor loaded|501 - 1,000 cases|p": 580.0,
+     "container|Floor loaded|1,001 - 1,500 cases|p": 610.0,
+     "container|Floor loaded|1,501 - 2,500 cases|p": 680.0,
+     "container|Floor loaded|Over 2,500 cases|p": 730.0,
+     "container|Palletized||p": 392.5,
+     "pallet|Palletized|p": 10.0,
+     "pallet|MIN|load": 325.0,
+     "case|Floor loaded|p": 0.35,
+     "each|Floor loaded|p": 0.88
+    },
+    "settings": {}
+   },
+   "IN-EXCESSCASE": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.26
+   },
+   "IN-PUTAWAY": {
+    "on": true,
+    "conds": {},
+    "units": {
+     "pallet": {
+      "on": true
+     }
+    },
+    "prices": {
+     "pallet||p": 4.5
+    },
+    "settings": {}
+   },
+   "IN-SHOTGUN": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.35
+   },
+   "IN-SORT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.25
+   },
+   "OB-ORDER": {
+    "on": true,
+    "conds": {
+     "businessType": {
+      "on": true,
+      "values": [
+       "B2B",
+       "D2C"
+      ]
+     },
+     "shipMethod": {
+      "on": true,
+      "values": [
+       "Truckload",
+       "LTL",
+       "Small parcel"
+      ]
+     }
+    },
+    "units": {
+     "order": {
+      "on": true
+     }
+    },
+    "prices": {
+     "order|B2B|Truckload|p": 20.0,
+     "order|B2B|LTL|p": 20.0,
+     "order|B2B|Small parcel|p": 3.0,
+     "order|D2C|Small parcel|p": 2.48
+    },
+    "settings": {}
+   },
+   "OB-PICK": {
+    "on": true,
+    "conds": {
+     "businessType": {
+      "on": true,
+      "values": [
+       "B2B",
+       "D2C"
+      ]
+     }
+    },
+    "units": {
+     "pallet": {
+      "on": true
+     },
+     "case": {
+      "on": true
+     },
+     "each": {
+      "on": true
+     }
+    },
+    "prices": {
+     "pallet|B2B|p": 9.0,
+     "case|B2B|p": 1.05,
+     "case|D2C|p": 1.05,
+     "each|B2B|p": 0.85,
+     "each|D2C|p": 0.5
+    },
+    "settings": {}
+   },
+   "OB-ROUTING": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 7.5
+   },
+   "ST-STORAGE": {
+    "on": true,
+    "conds": {},
+    "units": {
+     "pallet": {
+      "on": true
+     },
+     "sqft": {
+      "on": true
+     },
+     "cubic": {
+      "on": true
+     }
+    },
+    "prices": {
+     "pallet||p": 14.0,
+     "sqft||p": 1.33,
+     "cubic||p": 0.36
+    },
+    "settings": {}
+   },
+   "RT-RETURN": {
+    "on": true,
+    "conds": {},
+    "units": {
+     "each": {
+      "on": true
+     }
+    },
+    "prices": {
+     "each||p": 2.5
+    },
+    "settings": {}
+   },
+   "VA-SERIAL": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.75
+   },
+   "VA-PHOTO": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 1.0
+   },
+   "VA-PACKSLIP": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.35
+   },
+   "OT-MANUALORDER": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 15.0
+   },
+   "OT-MANUALRCPT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 15.0
+   },
+   "OT-RUSH": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "OT-CANCEL": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 10.0
+   },
+   "OT-MISSEDAPPT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "OT-NOASN": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "OT-OSD": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "OT-LABOR": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "OT-OT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 75.0
+   },
+   "OT-DOCS": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 10.0
+   },
+   "OT-COPIES": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.45
+   },
+   "OT-YARD": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 35.0
+   },
+   "SU-EDITX": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.5
+   },
+   "SU-WMS": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 175.0
+   },
+   "OT-SUPPLIES": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.2
+   }
   }
  }
 }

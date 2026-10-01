@@ -62,7 +62,7 @@ export function mapLine(cat: Catalog, data: QuoteData, l: QuoteLine): LineMappin
   const sel = data.selections[l.chargeId];
   const us = sel?.units[l.unitId];
   // the price driver decides the code (a minimum row has no dims: use the unit's chosen driver)
-  const dId = l.dims.find(d => d.kind === "driver")?.id ?? (l.col === "min" ? us?.driver ?? us?.drivers?.[0] : undefined);
+  const dId = l.dims.find(d => d.kind === "driver" && d.value !== "")?.id ?? (l.col === "min" ? us?.driver ?? us?.drivers?.[0] : undefined);
   let { code, initial } = dId
     ? pickDriverCode(entry.drivers?.[dId] as DriverCode, us?.calc?.[dId])
     : { code: entry.flat, initial: entry.initial ?? null };
@@ -81,6 +81,7 @@ export function mapLine(cat: Catalog, data: QuoteData, l: QuoteLine): LineMappin
   const supported = (k: string) => keys.has(k);
   for (const c of conditions) c.supported = supported(c.key);
   for (const d of l.dims) {
+    if (d.kind === "driver" && d.value === "") continue; // flat row for this driver
     if (d.kind === "cond") {
       const cs = mb.conds[d.id];
       if (!cs?.key) { if (cs?.note && !base.notes.includes(cs.note)) base.notes.push(cs.note); continue; }

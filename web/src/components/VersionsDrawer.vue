@@ -24,7 +24,7 @@ const label = (l: QuoteLine) => {
   if (l.col === "min") parts.push(t.t("e.minimumPer", { basis: t.t(`basis.${l.minBasis}`) }));
   else {
     if (l.unitId) parts.push(t.t("e.perUnit", { unit: softLower(t.tc(l.unitLabel)) }));
-    parts.push(...l.dims.map(d => t.tc(d.value)));
+    parts.push(...l.dims.filter(d => d.value).map(d => t.tc(d.value)));
     if (l.col === "first") parts.push(t.t("e.colFirst"));
     if (l.col === "add") parts.push(t.t("e.colAdd"));
   }

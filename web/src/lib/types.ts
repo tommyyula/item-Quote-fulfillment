@@ -28,6 +28,10 @@ export interface Catalog {
   defaultPreset: Record<string, ChargeSel>;   // "default template": the most common charges, pre-configured
   mapback: Mapback;                            // quote line -> existing system charge code
   systemCodes: Record<string, SystemCode>;     // billing-system item metadata (name, UOM, condition keys in use)
+  standardTemplate: {                          // standard rates from all customers' price lists, as a ready quote
+    customer: { company: string; code: string; channel: Channel }; title: string; note: string;
+    selections: Record<string, ChargeSel>;
+  };
 }
 export interface SystemCode { name: string; uom: string; category: string; keys: string[]; invoiceLines: number }
 export interface UnitCodes {
@@ -53,6 +57,7 @@ export interface UnitSel {
   calc?: Record<string, string>;   // driverId -> "range" | "incremental"
   min?: string | null;
   second?: boolean;
+  flatOtherwise?: boolean;        // rows a driver does not apply to keep a flat rate instead of being dropped
 }
 export interface ChargeSel {
   on: boolean;

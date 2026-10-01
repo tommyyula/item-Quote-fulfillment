@@ -116,7 +116,7 @@ export async function buildExcel(cat: Catalog, sections: PSection[], m: Proposal
   ms.forEach((x, i) => {
     const l = ql[i];
     const r = map.addRow([l.chargeId, idx[l.chargeId].charge.name, l.col === "min" ? `min per ${l.minBasis}` : l.unitLabel,
-      l.dims.map(d => `${d.label}: ${d.value}`).join(" · "), l.col, l.pct ? pct(l.price) : money(l.price), x.code ?? "", x.code ? x.systemName : x.suggestedName ?? "",
+      l.dims.filter(d => d.value).map(d => `${d.label}: ${d.value}`).join(" · "), l.col, l.pct ? pct(l.price) : money(l.price), x.code ?? "", x.code ? x.systemName : x.suggestedName ?? "",
       x.systemUom, x.initialCode ?? "", x.conditions.map(c => `${c.key}: ${c.value}${c.supported ? "" : " (new)"}`).join("; "), x.status, x.notes.join(" ")]);
     if (x.status !== "mapped") r.getCell(12).font = { bold: true, color: { argb: x.status === "new-item" ? "FFE01529" : "FFC2410C" } };
   });

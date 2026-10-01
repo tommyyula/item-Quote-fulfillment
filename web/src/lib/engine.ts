@@ -58,35 +58,40 @@ export interface Row { cells: string[]; cond: Record<string, string>; d: number 
 
 /** Cartesian product of factor values x driver values, minus impossible combinations. */
 export function unitRows(c: BuilderCharge, s: ChargeSel, u: Unit, showAll: boolean): { dims: Dim[]; rows: Row[]; truncated: boolean } {
+  const conds = activeConds(c, s);
+  const drivers = activeDrivers(c, s, u, showAll);
   const dims: Dim[] = [
-    ...activeConds(c, s).map(x => ({
-      id: x.cond.id, label: x.cond.label, kind: "cond" as const,
-      vals: x.values.map(v => ({ v, d: u.by?.[x.cond.id]?.[v] ?? null })),
-    })),
-    ...activeDrivers(c, s, u, showAll).map(d => ({ id: d.id, label: d.label, kind: "driver" as const, vals: d.values })),
+    ...conds.map(x => ({ id: x.cond.id, label: x.cond.label, kind: "cond" as const, vals: x.values.map(v => ({ v, d: u.by?.[x.cond.id]?.[v] ?? null })) })),
+    ...drivers.map(d => ({ id: d.id, label: d.label, kind: "driver" as const, vals: d.values })),
   ];
+  const applies = (w: When, cond: Record<string, string>) =>
+    showAll || Object.entries(w || {}).every(([k, allowed]) => cond[k] === undefined || allowed.includes(cond[k]));
+
+  // 1. factor combinations, minus impossible ones and rows the unit does not apply to (e.g. no D2C x full-pallet pick)
   let rows: Row[] = [{ cells: [], cond: {}, d: u.flat }];
-  for (const dim of dims) {
+  for (const dim of dims.filter(d => d.kind === "cond")) {
     const next: Row[] = [];
-    for (const r of rows)
-      for (const val of dim.vals)
-        next.push({
-          cells: [...r.cells, val.v],
-          cond: dim.kind === "cond" ? { ...r.cond, [dim.id]: val.v } : r.cond,
-          d: val.d != null ? val.d : r.d,
-        });
+    for (const r of rows) for (const val of dim.vals)
+      next.push({ cells: [...r.cells, val.v], cond: { ...r.cond, [dim.id]: val.v }, d: val.d != null ? val.d : r.d });
     rows = next;
   }
   rows = rows.filter(r => !(c.invalid || []).some(rule => Object.entries(rule).every(([k, vs]) => vs.includes(r.cond[k]))));
-  // row-level applicability: a unit / driver limited to some factor values only prices rows with those values
-  // (e.g. "Full pallet" pick is B2B-only, so no D2C x pallet row; case-count tiers only for floor-loaded rows)
-  if (!showAll) {
-    const whens = [u.when, ...activeDrivers(c, s, u, showAll).map(d => d.when)];
-    rows = rows.filter(r => whens.every(w => Object.entries(w || {}).every(([k, allowed]) => r.cond[k] === undefined || allowed.includes(r.cond[k]))));
-  }
+  rows = rows.filter(r => applies(u.when, r.cond));
+  // most specific default (combination of factor values) before driver tiers override it
   for (const r of rows) {
     const hit = (u.byCombo || []).find(x => Object.entries(x.when).every(([k, v]) => r.cond[k] === v));
     if (hit) r.d = hit.d;
+  }
+  // 2. driver values. Rows a driver does not apply to (case-count tiers on a palletized row) are dropped,
+  //    or kept at a flat rate with an empty driver cell when the unit asks for it (flatOtherwise)
+  const flatOtherwise = !!s.units[u.id]?.flatOtherwise;
+  for (const d of drivers) {
+    const next: Row[] = [];
+    for (const r of rows) {
+      if (applies(d.when, r.cond)) for (const val of d.values) next.push({ cells: [...r.cells, val.v], cond: r.cond, d: val.d != null ? val.d : r.d });
+      else if (flatOtherwise) next.push({ cells: [...r.cells, ""], cond: r.cond, d: r.d });
+    }
+    rows = next;
   }
   return { dims, rows: rows.slice(0, MAX_ROWS), truncated: rows.length > MAX_ROWS };
 }

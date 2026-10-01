@@ -76,7 +76,25 @@ export function createStore(repo: Repo = localRepo) {
     viewingVersion: null as number | null,
     lastSaved: "" as string,
   });
+  ensureStandardTemplate();
   if (!state.currentQuoteId && state.quotes[0]) state.currentQuoteId = state.quotes[0].id;
+
+  /** The "Standard Charge Template" customer + its quote (saved as v1) exist in every browser; never overwritten once present. */
+  function ensureStandardTemplate() {
+    const t = catalog.standardTemplate;
+    if (state.customers.some(c => c.code === t.customer.code)) return;
+    const cu: Customer = { id: uid(), code: t.customer.code, company: t.customer.company, contact: "", phone: "", email: "",
+      address: "", city: "", state: "", zip: "", channel: t.customer.channel, createdAt: now() };
+    const data = newQuoteData("", true);
+    data.header.title = t.title;
+    data.header.notes = t.note;
+    data.selections = clone(t.selections);
+    const lines = mapQuote(catalog, data);
+    const q: Quote = { id: uid(), number: "Q-STANDARD", customerId: cu.id, createdAt: now(), updatedAt: now(), status: "draft", draft: data,
+      versions: [{ v: 1, savedAt: now(), note: t.note, data: clone(data), lineCount: lines.length, mapping: { summary: summarize(lines), lines: clone(lines) } }] };
+    state.customers.unshift(cu);
+    state.quotes.push(q);
+  }
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   const persist = () => {

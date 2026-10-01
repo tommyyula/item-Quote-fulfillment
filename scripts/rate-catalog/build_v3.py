@@ -84,6 +84,9 @@ for code in M.SIMPLE_CODES.values():
 model["mapback"] = {"builder": M.BUILDER_CODES, "simple": M.SIMPLE_CODES, "newItems": M.NEW_ITEM_NAMES, "notes": M.NOTES,
                     "conds": M.COND_SYSTEM, "drivers": M.DRIVER_SYSTEM, "chargeCondOverride": M.CHARGE_COND_OVERRIDE}
 model["systemCodes"] = system_codes
+import standard_template
+model["standardTemplate"] = standard_template.build()
+assert all(k in charges for k in model["standardTemplate"]["selections"]), "standard template references unknown charges"
 
 # privacy guard: the catalog is published publicly - fail the build if any price-list customer name / code leaks in
 _customers = {x.strip() for r in src["All the customers price list"].iter_rows(min_row=2, values_only=True)

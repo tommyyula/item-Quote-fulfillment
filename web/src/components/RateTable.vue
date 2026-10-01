@@ -43,7 +43,7 @@ const minBench = computed(() => (us.value?.min ? props.unit.minDefault?.[us.valu
       </thead>
       <tbody>
         <tr v-for="r in table.rows" :key="r.cells.join('|')">
-          <td v-for="(cell, i) in r.cells" :key="i">{{ T.tc(cell) }}</td>
+          <td v-for="(cell, i) in r.cells" :key="i"><span v-if="cell">{{ T.tc(cell) }}</span><span v-else class="muted">{{ T.t("e.flat") }}</span></td>
           <td v-for="c in cols" :key="c" class="num">
             <PriceInput :model-value="value(cellKey(unit.id, r.cells, c), benchmarkFor(r.d, c))" :benchmark="benchmarkFor(r.d, c)"
                         :lo="c === 'add' ? undefined : unit.lo" :hi="c === 'add' ? undefined : unit.hi" :readonly="readOnly"

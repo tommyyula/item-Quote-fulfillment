@@ -75,3 +75,25 @@ describe("helpers", () => {
     expect(gaps.some(g => g.code === "HANDLING-0129" && g.detail === "Case Qty")).toBe(false);
   });
 });
+
+describe("standard charge template", async () => {
+  const { buildProposal } = await import("./proposal");
+  const data = (): QuoteData => ({ header, selections: JSON.parse(JSON.stringify(cat.standardTemplate.selections)) });
+  it("renders the standard rate sheet: 43 priced rows, all mapped to existing codes", () => {
+    const rows = buildProposal(cat, data()).flatMap(s => s.rows).filter(r => r.rate);
+    expect(rows).toHaveLength(43);
+    const sum = summarize(mapQuote(cat, data()));
+    expect(sum.mapped).toBe(sum.total);
+  });
+  it("prices palletized containers flat only when flatOtherwise is on", () => {
+    const d = data();
+    const pal = () => mapQuote(cat, d).filter(m => m.lineKey.includes("container|Palletized"));
+    expect(pal().map(m => [m.code, m.price])).toEqual([["HANDLING-0126", 392.5]]);
+    d.selections["IN-OFFLOAD"].units.container.flatOtherwise = false;
+    expect(pal()).toHaveLength(0);
+  });
+  it("keeps the excess-case line right under the container tiers", () => {
+    const inbound = buildProposal(cat, data())[0].rows.map(r => r.service).filter(Boolean);
+    expect(inbound.indexOf("Each case over 2,500 (floor-loaded container)")).toBe(inbound.lastIndexOf("Offload / Receiving") + 1);
+  });
+});
