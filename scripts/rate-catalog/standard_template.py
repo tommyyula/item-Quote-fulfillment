@@ -14,6 +14,13 @@ def pc(codes, inc=None, exc=_MIN, rate_type="Unit Price"):
     return round(st.median(vals), 2) if len(vals) >= MIN_CUSTOMERS else None
 
 
+def bench(cid, uid=None):
+    """Catalog benchmark default (simple charge, or a builder unit's flat rate): used when too few customers price the code."""
+    import model_v3 as M
+    c = next(x for cat in M.CATEGORIES for x in cat["charges"] if x["id"] == cid)
+    return c["default"] if uid is None else next(u["flat"] for u in c["units"] if u["id"] == uid)
+
+
 def priced(d):
     """Drop cells without enough data (they fall back to the benchmark default)."""
     return {k: v for k, v in d.items() if v is not None}
@@ -132,38 +139,38 @@ def build():
         "SU-VAN": _on(price=pc([H(100)])),
 
         # ---- 24 suggested additions (2026-10-01). Price = price-list median when >= 5 customers use the code, else the
-        # catalog benchmark (price omitted). HANDLING-0126 (palletized container offload) was already in IN-OFFLOAD above.
-        "SU-EDI": _on(price=pc([H(194)])),
-        "SU-SKU": _on(price=pc(["ACCESSORIAL-0014"])),
-        "OT-RUSHRCPT": _on(price=pc([H(40)])),
+        # catalog benchmark default, written in explicitly. HANDLING-0126 (palletized container offload) was already in IN-OFFLOAD above.
+        "SU-EDI": _on(price=pc([H(194)]) or bench("SU-EDI")),
+        "SU-SKU": _on(price=pc(["ACCESSORIAL-0014"]) or bench("SU-SKU")),
+        "OT-RUSHRCPT": _on(price=pc([H(40)]) or bench("OT-RUSHRCPT")),
         "IN-TRANSLOAD": _on(units={"pallet": {"on": True}, "container": {"on": True}},
-                            prices=priced({"pallet||p": pc([H(11)]), "container||p": pc([H(23)])})),
-        "IN-XDOCK": _on(price=pc([H(157)])),
-        "IN-PALLETIZE": _on(price=pc([H(81)])),
-        "OT-COUNT": _on(price=pc(["ACCESSORIAL-0010"])),
-        "OB-LABEL": _on(price=pc([H(155)])),
+                            prices={"pallet||p": pc([H(11)]) or bench("IN-TRANSLOAD", "pallet"), "container||p": pc([H(23)]) or bench("IN-TRANSLOAD", "container")}),
+        "IN-XDOCK": _on(price=pc([H(157)]) or bench("IN-XDOCK")),
+        "IN-PALLETIZE": _on(price=pc([H(81)]) or bench("IN-PALLETIZE")),
+        "OT-COUNT": _on(price=pc(["ACCESSORIAL-0010"]) or bench("OT-COUNT")),
+        "OB-LABEL": _on(price=pc([H(155)]) or bench("OB-LABEL")),
         "OB-LOAD": _on(units={"pallet": {"on": True}, "case": {"on": True}},
-                       prices=priced({"pallet||p": pc([H(142)]), "case||p": pc([H(138)])})),
-        "OT-CANCELPRE": _on(price=pc(["ACCESSORIAL-0001"])),
-        "OT-ADDRESS": _on(price=pc(["ACCESSORIAL-0037"], None, _MIN, "Flat Rate")),
-        "RT-INSPECT": _on(price=pc(["RMS-002"])),
-        "RT-RESTOCK": _on(price=pc(["RMS-006"])),
-        "RT-DISPOSAL": _on(price=pc(["ACCESSORIAL-0011"])),
-        "VA-KIT": _on(price=pc([H(208)])),
-        "VA-FNSKU": _on(price=pc([H(184)])),
-        "VA-RELABEL": _on(price=pc(["RELABELING"])),
-        "VA-OVERBOX": _on(price=pc(["ACC-0003"])),
-        "OT-HOSTLER": _on(price=pc([H(250)])),
+                       prices={"pallet||p": pc([H(142)]) or bench("OB-LOAD", "pallet"), "case||p": pc([H(138)]) or bench("OB-LOAD", "case")}),
+        "OT-CANCELPRE": _on(price=pc(["ACCESSORIAL-0001"]) or bench("OT-CANCELPRE")),
+        "OT-ADDRESS": _on(price=pc(["ACCESSORIAL-0037"], None, _MIN, "Flat Rate") or bench("OT-ADDRESS")),
+        "RT-INSPECT": _on(price=pc(["RMS-002"]) or bench("RT-INSPECT")),
+        "RT-RESTOCK": _on(price=pc(["RMS-006"]) or bench("RT-RESTOCK")),
+        "RT-DISPOSAL": _on(price=pc(["ACCESSORIAL-0011"]) or bench("RT-DISPOSAL")),
+        "VA-KIT": _on(price=pc([H(208)]) or bench("VA-KIT")),
+        "VA-FNSKU": _on(price=pc([H(184)]) or bench("VA-FNSKU")),
+        "VA-RELABEL": _on(price=pc(["RELABELING"]) or bench("VA-RELABEL")),
+        "VA-OVERBOX": _on(price=pc(["ACC-0003"]) or bench("VA-OVERBOX")),
+        "OT-HOSTLER": _on(price=pc([H(250)]) or bench("OT-HOSTLER")),
     }
     # storage per item by item type (STORAGE INCOME-0010), current-period rows only (aged "over N days" rows excluded)
     aged = r"over \d+ days|minimum|\bmin\b"
     sel["ST-STORAGE"]["units"]["each"] = {"on": True, "driver": "itemSize"}
     sel["ST-STORAGE"]["prices"].update(priced({f"each|{band}|p": pc(["STORAGE INCOME-0010"], rx, aged) for band, rx in ITEM_BANDS}))
     sel["OB-PACK"]["units"]["case"] = {"on": True}
-    sel["OB-PACK"]["prices"].update(priced({"case||p": pc([H(85)])}))
+    sel["OB-PACK"]["prices"]["case||p"] = pc([H(85)]) or bench("OB-PACK", "case")
     return {
         # bump when the template content changes: browsers holding an untouched older copy get it as a new version
-        "version": "2026-10-01b (44 common + 24 suggested billing items)",
+        "version": "2026-10-01c (44 common + 24 suggested billing items, all priced)",
         "customer": {"company": "Standard Charge Template", "code": "STANDARD", "channel": "Both"},
         "title": "Standard warehouse services rates",
         "note": f"Standard rates from all customers' price lists ({len(customers)} customers, median rate per line).",

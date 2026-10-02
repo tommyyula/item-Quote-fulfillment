@@ -8482,7 +8482,7 @@
   }
  },
  "standardTemplate": {
-  "version": "2026-10-01b (44 common + 24 suggested billing items)",
+  "version": "2026-10-01c (44 common + 24 suggested billing items, all priced)",
   "customer": {
    "company": "Standard Charge Template",
    "code": "STANDARD",
@@ -8969,7 +8969,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 2500
    },
    "SU-SKU": {
     "on": true,
@@ -8977,7 +8977,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 5.75
    },
    "OT-RUSHRCPT": {
     "on": true,
@@ -9010,7 +9010,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 8.5
    },
    "IN-PALLETIZE": {
     "on": true,
@@ -9047,7 +9047,10 @@
       "on": true
      }
     },
-    "prices": {},
+    "prices": {
+     "pallet||p": 5.6,
+     "case||p": 2.62
+    },
     "settings": {}
    },
    "OT-CANCELPRE": {
@@ -9072,7 +9075,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 2.0
    },
    "RT-RESTOCK": {
     "on": true,
@@ -9080,7 +9083,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 1.0
    },
    "RT-DISPOSAL": {
     "on": true,
@@ -9088,7 +9091,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 0.6
    },
    "VA-KIT": {
     "on": true,
@@ -9096,7 +9099,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 1.85
    },
    "VA-FNSKU": {
     "on": true,
@@ -9104,7 +9107,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 0.35
    },
    "VA-RELABEL": {
     "on": true,
@@ -9112,7 +9115,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 0.38
    },
    "VA-OVERBOX": {
     "on": true,
@@ -9120,7 +9123,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 0.5
    },
    "OT-HOSTLER": {
     "on": true,
@@ -9128,7 +9131,7 @@
     "units": {},
     "prices": {},
     "settings": {},
-    "price": null
+    "price": 91
    }
   }
  }
