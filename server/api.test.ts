@@ -216,3 +216,42 @@ describe("contract", () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe("public guided quote (no sign-in)", () => {
+  const answers = { company: "Kite Goods", contact: "Sam", email: "sam@kite.example", channel: "D2C", facility: "Dallas, TX",
+                    arrival: ["parcel"], storage: ["bin"], platforms: ["Shopify"], pick: ["each"], returns: true, extras: ["VA-PACKSLIP"] };
+  const send = (body: unknown, ip = "203.0.113.7") => call("POST", "/public/quote-requests", body, { "x-forwarded-for": ip }, "");
+
+  it("creates a customer and a draft quote built on the server from the answers", async () => {
+    const r = await send({ answers });
+    expect(r.status).toBe(201);
+    expect(r.body.number).toMatch(/^Q-\d{4}-\d{4}$/);
+    expect(r.body.customer).toMatchObject({ company: "Kite Goods", email: "sam@kite.example", channel: "D2C" });
+    expect(r.body.draft.header.facility).toBe("Dallas, TX");
+    expect(r.body.draft.header.notes).toContain("public guided quote");
+    expect(r.body.draft.selections["OB-PACK"].on).toBe(true);
+    expect(r.body.draft.selections["SU-ECOM"].on).toBe(true);
+    const q = (await call("GET", `/v1/quotes?q=${r.body.number}`)).body.items[0];
+    expect(q).toMatchObject({ number: r.body.number, status: "draft" });
+  });
+  it("ignores unknown values and selections sent by the client", async () => {
+    const r = await send({ answers: { ...answers, extras: ["VA-PACKSLIP", "OT-MINIMUM", "nope"], facility: "Mars", selections: { x: 1 } } }, "203.0.113.8");
+    expect(r.status).toBe(201);
+    expect(r.body.draft.selections["OT-MINIMUM"]).toBeUndefined();
+    expect(r.body.draft.header.facility).toBe("");
+  });
+  it("needs a company, an e-mail and who they sell to", async () => {
+    const r = await send({ answers: { company: "", email: "nope" } });
+    expect(r.status).toBe(422);
+    expect(r.body.errors.map((e: { path: string }) => e.path).sort()).toEqual(["channel", "company", "email"]);
+  });
+  it("limits requests per visitor", async () => {
+    const statuses = [];
+    for (let i = 0; i < 6; i++) statuses.push((await send({ answers }, "198.51.100.9")).status);
+    expect(statuses.slice(0, 5).every(s => s === 201)).toBe(true);
+    expect(statuses[5]).toBe(429);
+  });
+  it("does not open the signed-in API", async () => {
+    expect((await call("GET", "/v1/customers", undefined, {}, "")).status).toBe(401);
+  });
+});

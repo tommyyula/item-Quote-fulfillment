@@ -33,7 +33,7 @@ export const quoteJson = (q: QuoteRow, versions: VersionRow[]) =>
   ({ ...quoteSummary(q, versions.at(-1)), draft: q.draft, versions: versions.map(versionSummary) });
 
 /** Next number for the year: Q-2026-0001, Q-2026-0002, ... (the unique index settles races; callers retry). */
-async function nextNumber(db: Db) {
+export async function nextNumber(db: Db) {
   const y = new Date().getFullYear();
   const [{ n }] = await db.select({ n: sql<number>`coalesce(max(split_part(${quotes.number}, '-', 3)::int), 0)` })
     .from(quotes).where(sql`${quotes.number} ~ ${`^Q-${y}-[0-9]+$`}`);

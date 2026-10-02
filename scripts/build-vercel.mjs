@@ -28,7 +28,10 @@ writeFileSync(`${out}/config.json`, JSON.stringify({
     { src: "/docs", status: 307, headers: { Location: "/api/index.html" } },
     { handle: "filesystem" },
     // /api/ itself and /api/openapi.* are the static API docs; these prefixes are the live API
-    { src: "/api/(v1|auth|health)(.*)", dest: "/api" },
+    { src: "/api/(v1|auth|health|public)(.*)", dest: "/api" },
+    // the public guided quote (no sign-in) is the same single-page app
+    { src: "/start/", status: 308, headers: { Location: "/start" } },   // index.html loads ./assets relative to the path
+    { src: "/start", dest: "/index.html" },
   ],
 }, null, 2));
 console.log("Build output ready");

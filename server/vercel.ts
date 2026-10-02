@@ -1,4 +1,4 @@
-// Vercel Function entry (bundled by scripts/build-vercel.mjs): every /api/(v1|auth|health)* request is served by the Hono app.
+// Vercel Function entry (bundled by scripts/build-vercel.mjs): every /api/(v1|auth|health|public)* request is served by the Hono app.
 import { getRequestListener } from "@hono/node-server";
 import { createApp } from "./app";
 import { getDb } from "./db/client";

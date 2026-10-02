@@ -44,10 +44,10 @@ export function visibleSteps(a: WizardAnswers): StepId[] {
   return steps;
 }
 
-/** Whether Next is allowed on a step. */
-export function stepComplete(step: StepId, a: WizardAnswers): boolean {
+/** Whether Next is allowed on a step. The public page also needs an e-mail to send the quote to. */
+export function stepComplete(step: StepId, a: WizardAnswers, needEmail = false): boolean {
   switch (step) {
-    case "company": return a.company.trim() !== "";
+    case "company": return a.company.trim() !== "" && (!needEmail || EMAIL_RE.test(a.email.trim()));
     case "channel": return a.channel !== "";
     case "inbound": return a.arrival.length > 0;
     case "storage": return a.storage.length > 0;
@@ -189,4 +189,37 @@ export function wizardSelections(a: WizardAnswers): Record<string, ChargeSel> {
   for (const id of ["OT-LABOR", "OT-COUNT", "OT-RUSH", "OT-SUPPLIES"]) s[id] = on();
   if (shipsParcel(a)) s["OT-FREIGHT"] = on();
   return s;
+}
+
+// ---------------------------------------------------------------- public submissions (validated on the server)
+export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const CHANNELS = ["B2B", "D2C", "Both"];
+const ARRIVALS: Arrival[] = ["floor", "pallet", "parcel"];
+const STORAGE: StorageKind[] = ["pallet", "bin", "each", "sqft"];
+const PICKS: PickKind[] = ["pallet", "case", "each"];
+const TEMPS: Temperature[] = ["dry", "cooler", "both"];
+
+/** Answers from an untrusted client, reduced to known values; errors for what a quote cannot be built without. */
+export function cleanAnswers(cat: Catalog, raw: unknown): { answers: WizardAnswers; errors: { path: string; message: string }[] } {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const str = (k: string, max = 200) => (typeof r[k] === "string" ? (r[k] as string).trim().slice(0, max) : "");
+  const pick = <T extends string>(k: string, allowed: readonly T[]): T[] =>
+    Array.isArray(r[k]) ? [...new Set((r[k] as unknown[]).filter((x): x is T => allowed.includes(x as T)))] : [];
+  const facilities = (cat.categories[1].charges[0] as { conds: { id: string; values: string[] }[] }).conds.find(c => c.id === "facility")!.values;
+  const extras = extraOptions(cat, { ...emptyAnswers(), channel: CHANNELS.includes(str("channel")) ? (str("channel") as Channel) : "Both" })
+    .map(x => x.charge.id);
+  const answers: WizardAnswers = {
+    company: str("company"), contact: str("contact"), email: str("email"), phone: str("phone", 50),
+    channel: CHANNELS.includes(str("channel")) ? (str("channel") as Channel) : "",
+    facility: facilities.includes(str("facility")) ? str("facility") : "",
+    temperature: TEMPS.includes(str("temperature") as Temperature) ? (str("temperature") as Temperature) : "dry",
+    arrival: pick("arrival", ARRIVALS), storage: pick("storage", STORAGE), b2bShip: pick("b2bShip", B2B_SHIP),
+    retailers: pick("retailers", RETAILERS), platforms: pick("platforms", PLATFORMS), pick: pick("pick", PICKS),
+    returns: r.returns === true, extras: pick("extras", extras), touched: [],
+  };
+  const errors: { path: string; message: string }[] = [];
+  if (!answers.company) errors.push({ path: "company", message: "required" });
+  if (!EMAIL_RE.test(answers.email)) errors.push({ path: "email", message: "a valid e-mail address is required" });
+  if (!answers.channel) errors.push({ path: "channel", message: `one of ${CHANNELS.join(", ")}` });
+  return { answers, errors };
 }

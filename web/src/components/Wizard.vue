@@ -13,7 +13,9 @@ import {
 } from "../lib/wizard";
 import ThemeToggle from "./ThemeToggle.vue";
 
-const emit = defineEmits<{ exit: []; done: [number: string] }>();
+// the parent decides what finishing means: the signed-in app creates the quote, the public page sends a request
+const props = defineProps<{ isPublic?: boolean; busy?: boolean; error?: string }>();
+const emit = defineEmits<{ exit: []; submit: [answers: WizardAnswers] }>();
 const { store, T } = useApp();
 const st = store.state;
 
@@ -25,7 +27,7 @@ watch([a, step], () => localRepo.save("wizard", { a, step: step.value }), { deep
 
 const steps = computed(() => visibleSteps(a));
 const idx = computed(() => Math.max(0, steps.value.indexOf(step.value)));
-const canNext = computed(() => stepComplete(step.value, a));
+const canNext = computed(() => stepComplete(step.value, a, props.isPublic));
 const heading = ref<HTMLElement | null>(null);
 
 function go(to: StepId) {
@@ -95,20 +97,8 @@ const summary = computed((): { step: StepId; text: string }[] => {
   return rows;
 });
 
-function create() {
-  const customer = store.saveCustomer({ company: a.company.trim(), contact: a.contact.trim(), email: a.email.trim(), phone: a.phone.trim(),
-                                        channel: a.channel || "Both" });
-  const q = store.createQuote(customer.id);
-  q.draft.header.title = T.value.t("w.title", { company: customer.company });
-  q.draft.header.facility = a.facility;
-  q.draft.selections = wizardSelections(a);
-  store.touch();
-  localRepo.save("wizard", null);
-  emit("done", q.number);
-}
-function exit() {
-  emit("exit");
-}
+const create = () => emit("submit", JSON.parse(JSON.stringify(a)) as WizardAnswers);
+const exit = () => emit("exit");
 const setLang = (l: Lang) => (st.prefs.lang = l);
 const toggleTheme = () => (st.prefs.theme = st.prefs.theme === "light" ? "dark" : "light");
 </script>
@@ -125,7 +115,7 @@ const toggleTheme = () => (st.prefs.theme = st.prefs.theme === "light" ? "dark" 
         <button v-for="l in LANGS" :key="l.id" :class="{ on: st.prefs.lang === l.id }" :aria-pressed="st.prefs.lang === l.id" @click="setLang(l.id)">{{ l.label }}</button>
       </div>
       <ThemeToggle :theme="st.prefs.theme" :label="st.prefs.theme === 'light' ? T.t('h.nightView') : T.t('h.dayView')" @toggle="toggleTheme" />
-      <button class="btn ghost sm" @click="exit">{{ T.t("w.exit") }}</button>
+      <button v-if="!isPublic" class="btn ghost sm" @click="exit">{{ T.t("w.exit") }}</button>
     </header>
 
     <div class="progress" role="progressbar" :aria-valuenow="idx + 1" :aria-valuemin="1" :aria-valuemax="steps.length" :aria-label="T.t('w.step', { n: idx + 1, total: steps.length })">
@@ -145,11 +135,11 @@ const toggleTheme = () => (st.prefs.theme = st.prefs.theme === "light" ? "dark" 
         <!-- 1. who -->
         <template v-if="step === 'company'">
           <h2 ref="heading" tabindex="-1">{{ T.t("w.company.q") }}</h2>
-          <p class="sub">{{ T.t("w.company.hint") }}</p>
+          <p class="sub">{{ T.t(isPublic ? "w.company.hintPublic" : "w.company.hint") }}</p>
           <div class="form">
             <label class="wide"><span>{{ T.t("cu.company") }} *</span><input class="input" v-model="a.company" autocomplete="organization" autofocus /></label>
             <label><span>{{ T.t("cu.contact") }}</span><input class="input" v-model="a.contact" autocomplete="name" /></label>
-            <label><span>{{ T.t("cu.email") }}</span><input class="input" type="email" v-model="a.email" autocomplete="email" /></label>
+            <label><span>{{ T.t("cu.email") }}{{ isPublic ? " *" : "" }}</span><input class="input" type="email" v-model="a.email" autocomplete="email" /></label>
             <label><span>{{ T.t("cu.phone") }}</span><input class="input" type="tel" v-model="a.phone" autocomplete="tel" /></label>
           </div>
         </template>
@@ -297,7 +287,10 @@ const toggleTheme = () => (st.prefs.theme = st.prefs.theme === "light" ? "dark" 
         <span class="sp"></span>
         <span v-if="step !== 'review' && canNext" class="hint enter">{{ T.t("w.enterHint") }}</span>
         <button v-if="step !== 'review'" class="btn primary lg" :disabled="!canNext" @click="next">{{ T.t("w.next") }}</button>
-        <button v-else class="btn primary lg" @click="create">{{ T.t("w.create") }}</button>
+        <span v-if="step === 'review' && error" class="note warn" role="alert">{{ error }}</span>
+        <button v-if="step === 'review'" class="btn primary lg" :disabled="busy" @click="create">
+          {{ busy ? T.t("w.sending") : T.t(isPublic ? "w.submit" : "w.create") }}
+        </button>
       </nav>
     </main>
   </div>

@@ -8,6 +8,8 @@ import { addDays, dateText, rateText, unitText } from "../lib/format";
 import { buildProposal } from "../lib/proposal";
 import { catalog } from "../lib/store";
 
+// isPublic: the visitor-facing copy on /start (print only; the Excel export carries internal charge codes)
+defineProps<{ isPublic?: boolean }>();
 const { store, T, PT } = useApp();
 const sections = computed(() => (store.data.value ? buildProposal(catalog, store.data.value) : []));
 const q = store.quote, c = store.customer;
@@ -52,8 +54,10 @@ const setLang = (v: string) => (store.state.prefs.proposalLang = v as Lang | "")
         </select>
       </label>
       <button class="btn primary" @click="print">{{ T.t("p.print") }}</button>
-      <button class="btn" :disabled="busy" @click="xlsx">{{ T.t("p.xlsx") }}</button>
-      <button class="btn" @click="json">{{ T.t("p.json") }}</button>
+      <template v-if="!isPublic">
+        <button class="btn" :disabled="busy" @click="xlsx">{{ T.t("p.xlsx") }}</button>
+        <button class="btn" @click="json">{{ T.t("p.json") }}</button>
+      </template>
     </div>
 
     <article class="proposal-doc" :lang="PT.lang">

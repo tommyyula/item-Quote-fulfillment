@@ -14,8 +14,9 @@ import Wizard from "./components/Wizard.vue";
 import { LANGS, type Lang } from "./i18n";
 import { provideApp } from "./lib/context";
 import { signOut } from "./lib/remote";
-import { catalog, createStore, type Store } from "./lib/store";
+import { catalog, createStore, localRepo, type Store } from "./lib/store";
 import type { Charge, QuoteStatus } from "./lib/types";
+import { wizardSelections, type WizardAnswers } from "./lib/wizard";
 
 // server mode passes a store built from the API bootstrap (main.ts); otherwise the browser-only store
 const props = defineProps<{ store?: Store }>();
@@ -45,6 +46,18 @@ if (LANGS.some(l => l.id === qs.get("plang"))) st.prefs.proposalLang = qs.get("p
 const proposalOnly = ref(qs.get("view") === "proposal");
 // ?wizard opens the guided quote (one question per page, for someone quoting once)
 const wizard = ref(qs.has("wizard"));
+/** The wizard's answers become a customer + quote here (the public page sends them to the API instead). */
+function wizardCreate(a: WizardAnswers) {
+  const customer = store.saveCustomer({ company: a.company.trim(), contact: a.contact.trim(), email: a.email.trim(), phone: a.phone.trim(),
+                                        channel: a.channel || "Both" });
+  const q = store.createQuote(customer.id);
+  q.draft.header.title = T.value.t("w.title", { company: customer.company });
+  q.draft.header.facility = a.facility;
+  q.draft.selections = wizardSelections(a);
+  store.touch();
+  localRepo.save("wizard", null);
+  closeWizard(q.number);
+}
 function closeWizard(number?: string) {
   wizard.value = false;
   const u = new URL(location.href);
@@ -99,7 +112,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
 </script>
 
 <template>
-  <Wizard v-if="wizard" @exit="closeWizard()" @done="closeWizard" />
+  <Wizard v-if="wizard" @exit="closeWizard()" @submit="wizardCreate" />
   <template v-else>
   <a class="skip" href="#main">{{ T.t("a.skip") }}</a>
   <header class="top no-print">

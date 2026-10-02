@@ -9,6 +9,7 @@ import { Problem, type Env } from "./http";
 import { catalogRoutes } from "./routes/catalog";
 import { customerJson, customerRoutes } from "./routes/customers";
 import { adminRoutes, historyRoutes, webhookRoutes } from "./routes/misc";
+import { publicRoutes } from "./routes/public";
 import { quoteSummary } from "./routes/quotes";
 import { quoteRoutes } from "./routes/quotes";
 
@@ -30,6 +31,7 @@ export function createApp(db: Db) {
 
   app.get("/health", c => c.json({ ok: true, catalog: catalog.version }));
   app.route("/auth", authRoutes(db));
+  app.route("/public", publicRoutes(db));   // no sign-in: the guided quote on /start
 
   const v1 = new Hono<Env>();
   v1.use("*", requireAuth(db));
