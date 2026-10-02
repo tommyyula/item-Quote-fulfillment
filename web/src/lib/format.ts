@@ -6,17 +6,28 @@ const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD",
 export const money = (x: number | null | undefined) => (x == null || Number.isNaN(x) ? "" : usd.format(x));
 /** "Container" -> "container", but "SKU" / "EDI" stay; CJK untouched. */
 export const softLower = (s: string) => s.replace(/^(\p{Lu})(?=\p{Ll})/u, c => c.toLowerCase());
-export const pct = (x: number | null | undefined) => (x == null ? "" : `${Math.round(x * 1000) / 10}%`);
+export const pct = (x: number | null | undefined) => (x == null ? "" : `${+(x * 100).toFixed(2)}%`);
+export const num = (x: number | null | undefined) => (x == null ? "" : String(+x.toFixed(2)));
+/** A simple charge's value in its own format: USD, percent or plain number. */
+export const amount = (x: number | null | undefined, kind: { pct?: boolean; num?: boolean }) =>
+  kind.pct ? pct(x) : kind.num ? num(x) : money(x);
 
 export function rateText(r: Rate | undefined, T: Translator): string {
   if (!r) return "";
   if (r.kind === "pct") return r.p == null ? T.t("p.tbd") : pct(r.p);
+  if (r.kind === "num") return r.p == null ? T.t("p.tbd") : num(r.p);
   if (r.kind === "single") return r.p == null ? T.t("p.tbd") : money(r.p);
   return T.t("p.firstAdd", { first: r.first == null ? T.t("p.tbd") : money(r.first), add: r.add == null ? T.t("p.tbd") : money(r.add) });
 }
 
-export function unitText(unit: string | undefined, T: Translator, opts: { pct?: boolean; minBasis?: boolean } = {}): string {
-  if (opts.pct) return T.t("p.markup");
+/** Unit of a percent / plain-number charge, read after the value: "3% per year on all rates", "3 months of the monthly minimum".
+ *  The original "% on cost" units read as "markup on cost". */
+export function measureText(unit: string | undefined, T: Translator): string {
+  return !unit || unit.startsWith("%") ? T.t("p.markup") : T.tc(unit);
+}
+
+export function unitText(unit: string | undefined, T: Translator, opts: { pct?: boolean; num?: boolean; minBasis?: boolean } = {}): string {
+  if (opts.pct || opts.num) return measureText(unit, T);
   if (!unit) return "";
   if (opts.minBasis) return T.t("p.per", { unit: T.t(`basis.${unit}`) });
   if (/^one-time/i.test(unit)) return T.t("e.oneTime");

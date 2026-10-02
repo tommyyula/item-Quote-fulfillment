@@ -8,7 +8,8 @@ export interface Qualifier { label: string; values: string[] }
 export type Rate =
   | { kind: "single"; p: number | null }
   | { kind: "split"; first: number | null; add: number | null }
-  | { kind: "pct"; p: number | null };
+  | { kind: "pct"; p: number | null }
+  | { kind: "num"; p: number | null };
 export interface PRow {
   type: "item" | "group" | "sub" | "min";
   service: string;            // catalog string (charge name / merge-group label) - empty on sub rows
@@ -24,6 +25,7 @@ export interface PRow {
 export interface PSection { id: string; label: string; note: string; rows: PRow[]; settings: { label: string; value: string }[] }
 
 const sig = (r: Rate) => JSON.stringify(r);
+const simpleRate = (l: QuoteLine): Rate => ({ kind: l.pct ? "pct" : l.num ? "num" : "single", p: l.price });
 
 interface MRow { sets: string[][]; rate: Rate }
 
@@ -69,11 +71,11 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
     const present = g.members.filter(m => byCharge.has(m));
     if (present.length < 2) continue;
     const ls = present.map(m => byCharge.get(m)![0]);
-    if (ls.every(l => l.price === ls[0].price && l.pct === ls[0].pct)) {
+    if (ls.every(l => l.price === ls[0].price && l.pct === ls[0].pct && !!l.num === !!ls[0].num)) {
       const units = [...new Set(present.map(m => (idx[m].charge as { unit: string }).unit))];
       secById[sectionOf(present[0])].rows.push({
         type: "item", service: g.label, descs: present.map(m => idx[m].charge.desc),
-        rate: ls[0].pct ? { kind: "pct", p: ls[0].price } : { kind: "single", p: ls[0].price }, unit: units.join(" / "),
+        rate: simpleRate(ls[0]), unit: units.join(" / "),
       });
       present.forEach(m => (mergedInto[m] = g.id));
     }
@@ -85,7 +87,7 @@ export function buildProposal(cat: Catalog, data: QuoteData): PSection[] {
     const sec = secById[sectionOf(chargeId)];
     if (c.kind === "simple") {
       const l = ls[0];
-      sec.rows.push({ type: "item", service: c.name, desc: c.desc, rate: l.pct ? { kind: "pct", p: l.price } : { kind: "single", p: l.price }, unit: c.unit });
+      sec.rows.push({ type: "item", service: c.name, desc: c.desc, rate: simpleRate(l), unit: c.unit });
       continue;
     }
     const b = c as BuilderCharge;

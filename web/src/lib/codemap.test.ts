@@ -97,11 +97,24 @@ describe("standard charge template", async () => {
     const mapped = new Set(ms.filter(m => m.status === "mapped").flatMap(m => [m.code, m.initialCode, ...m.altCodes]).filter(Boolean));
     expect(suggested.filter(c => !mapped.has(c))).toEqual([]);
   });
-  it("renders the standard rate sheet with every line mapped to existing codes", () => {
+  it("renders the standard rate sheet: existing items mapped, new items listed for billing setup", () => {
     const rows = buildProposal(cat, data()).flatMap(s => s.rows).filter(r => r.rate);
     expect(rows.length).toBeGreaterThan(43);
-    const sum = summarize(mapQuote(cat, data()));
-    expect(sum.mapped).toBe(sum.total);
+    const ms = mapQuote(cat, data());
+    const newIds = new Set(Object.keys(cat.mapback.newItems));
+    // every line of a charge that has a system code maps cleanly; the rest are the new items to create first
+    expect(ms.filter(m => !newIds.has(m.chargeId) && m.status !== "mapped").map(m => m.lineKey)).toEqual([]);
+    const setup = setupList(cat, ms);
+    expect(setup.every(x => x.kind === "new-item" && newIds.has(x.chargeId))).toBe(true);
+    expect(setup.map(x => x.chargeId).sort()).toEqual(
+      ["CT-CARDFEE", "CT-EARLYTERM", "CT-ESCALATOR", "CT-OFFBOARD", "OB-ORDERMOD", "OT-CARRIERSUR", "ST-AGED", "ST-HAZMAT", "SU-DIMS", "TC-ORDERFEE", "TC-REPORT"]);
+  });
+  it("shows percent and plain-number charges in their own format", () => {
+    const sec = (id: string) => buildProposal(cat, data()).find(s => s.id === id)!.rows;
+    const row = (id: string, name: string) => sec(id).find(r => r.service === name)!;
+    expect(row("terms", "Annual rate escalator").rate).toEqual({ kind: "pct", p: 0.03 });
+    expect(row("terms", "Early termination fee").rate).toEqual({ kind: "num", p: 3 });
+    expect(row("terms", "Early termination fee").unit).toBe("months of the monthly minimum");
   });
   it("prices palletized containers flat only when flatOtherwise is on", () => {
     const d = data();
@@ -113,5 +126,21 @@ describe("standard charge template", async () => {
   it("keeps the excess-case line right under the container tiers", () => {
     const inbound = buildProposal(cat, data())[0].rows.map(r => r.service).filter(Boolean);
     expect(inbound.indexOf("Each case over 2,500 (floor-loaded container)")).toBe(inbound.lastIndexOf("Offload / Receiving") + 1);
+  });
+});
+
+describe("catalog translations", () => {
+  it("translates every new charge, category and rate-sheet section into zh / ja / es", async () => {
+    const dicts = await Promise.all(["zh", "ja", "es"].map(l => import(`../i18n/catalog.${l}.json`).then(m => m.default as Record<string, string>)));
+    const all = cat.categories.flatMap(c => c.charges.map(ch => ({ ch, c })));
+    const fresh = all.filter(({ ch }) => cat.mapback.newItems[ch.id]);
+    const strings = new Set<string>();
+    for (const { ch, c } of fresh) {
+      strings.add(ch.name); strings.add(ch.desc); strings.add(c.name);
+      if (ch.kind === "simple") strings.add(ch.unit);
+    }
+    for (const s of cat.proposal.sections) strings.add(s.label);
+    const missing = dicts.flatMap((d, i) => [...strings].filter(s => !d[s]).map(s => `${["zh", "ja", "es"][i]}: ${s}`));
+    expect(missing).toEqual([]);
   });
 });

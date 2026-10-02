@@ -128,6 +128,7 @@ export function quoteLines(cat: Catalog, data: QuoteData, globalShowAll = false)
         out.push({
           key: `${c.id}||p`, chargeId: c.id, categoryId: category.id, unitId: null, unitLabel: c.unit, dims: [], col: "p",
           price: s.price === undefined ? c.default : s.price, benchmark: c.default, pct: c.pct, lo: c.lo, hi: c.hi,
+          ...(c.num ? { num: true } : {}),
         });
         continue;
       }

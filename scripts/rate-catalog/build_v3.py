@@ -97,11 +97,6 @@ import standard_template
 model["standardTemplate"] = standard_template.build()
 assert all(k in charges for k in model["standardTemplate"]["selections"]), "standard template references unknown charges"
 
-# privacy guard: the catalog is published publicly - fail the build if any price-list customer name / code leaks in
-_customers = {x.strip() for r in SRC.price_rows for x in (r["customer"], r["customer_name"]) if isinstance(x, str) and len(x.strip()) >= 6}
-_blob = json.dumps(model, ensure_ascii=False)
-_leaks = sorted(n for n in _customers if n in _blob) + _re.findall(r"Special\s+Customer[^\"]{0,40}", _blob)
-assert not _leaks, f"customer names would be published: {_leaks[:10]}"
 for cat in M.CATEGORIES:
     out = {"id": cat["id"], "name": cat["name"], "desc": cat["desc"], "charges": []}
     for c in cat["charges"]:
@@ -111,10 +106,28 @@ for cat in M.CATEGORIES:
         out["charges"].append(cc)
     model["categories"].append(out)
 
+# privacy guard (after the charges are in, so names / descriptions are checked too): the catalog is published publicly -
+# fail the build if any price-list customer name / code leaks in. Short client codes are listed explicitly.
+_customers = {x.strip() for r in SRC.price_rows for x in (r["customer"], r["customer_name"]) if isinstance(x, str) and len(x.strip()) >= 6}
+_blob = json.dumps(model, ensure_ascii=False)
+_leaks = sorted(n for n in _customers if n in _blob) + _re.findall(r"Special\s+Customer[^\"]{0,40}", _blob)
+_leaks += _re.findall(r"\bTCL\b", _blob)
+assert not _leaks, f"customer names would be published: {_leaks[:10]}"
+
 json.dump(model, open(f"{OUTDIR}/rate-card-model-v3.json", "w"), indent=1)
 WEB_DATA = f"{ROOT}/web/src/data"
 if os.path.isdir(WEB_DATA):
     json.dump(model, open(f"{WEB_DATA}/catalog.json", "w"), indent=1)
+    # catalog translations (hand-maintained JSON keyed by English text): add the new charges' strings; existing entries win
+    import new_charges as _N
+    for _lang, _add in _N.translations().items():
+        _path = f"{ROOT}/web/src/i18n/catalog.{_lang}.json"
+        _cur = json.load(open(_path))
+        _diff = {k: (v, _cur[k]) for k, v in _add.items() if k in _cur and _cur[k] != v}
+        if _diff:
+            print(f"{_lang}: kept existing translation for {len(_diff)} strings: {list(_diff)[:6]}")
+        _cur.update({k: v for k, v in _add.items() if k not in _cur})
+        json.dump(_cur, open(_path, "w"), ensure_ascii=False, indent=1)   # existing order kept, new strings appended
 
 
 # ------------------------------------------------------------------ HTML mockup

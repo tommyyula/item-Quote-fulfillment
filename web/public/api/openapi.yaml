@@ -580,7 +580,7 @@ paths:
       operationId: listCharges
       summary: List charges
       parameters:
-        - { name: categoryId, in: query, schema: { type: string, enum: [setup, inbound, outbound, storage, returns, vas, other] } }
+        - { name: categoryId, in: query, schema: { type: string, enum: [setup, inbound, outbound, storage, returns, vas, other, tech, security, terms] } }
         - { name: tier, in: query, schema: { type: string, enum: [main, advanced] } }
         - { name: channel, in: query, schema: { $ref: "#/components/schemas/Channel" } }
         - $ref: "#/components/parameters/lang"
@@ -1084,7 +1084,8 @@ components:
         minBasis: { type: string }
         price: { $ref: "#/components/schemas/Money" }
         benchmark: { type: [number, "null"] }
-        pct: { type: boolean, description: Price is a markup fraction. }
+        pct: { type: boolean, description: "Price is a fraction shown as a percent (markup, surcharge, escalator ...)." }
+        num: { type: boolean, description: "Price is a plain number in the charge unit (e.g. 3 = three months of the monthly minimum), not USD." }
         lo: { type: number }
         hi: { type: number }
         mapping: { $ref: "#/components/schemas/LineMapping" }
@@ -1202,7 +1203,7 @@ components:
       type: object
       required: [id, label, rows]
       properties:
-        id: { type: string, enum: [inbound, outbound, storage, returns, vas, accessorial, it, materials] }
+        id: { type: string, enum: [inbound, outbound, storage, returns, vas, accessorial, it, technology, security, materials, terms] }
         label: { type: string, examples: [Inbound Handling] }
         note: { type: string }
         settings: { type: array, items: { type: object, properties: { label: { type: string }, value: { type: string } } } }
@@ -1218,7 +1219,7 @@ components:
         rate:
           type: object
           properties:
-            kind: { type: string, enum: [single, split, pct] }
+            kind: { type: string, enum: [single, split, pct, num], description: "single = USD, split = first / additional unit, pct = percent, num = plain number." }
             p: { type: [number, "null"] }
             first: { type: [number, "null"] }
             add: { type: [number, "null"] }
@@ -1272,7 +1273,8 @@ components:
             lo: { type: number, description: Typical range low. }
             hi: { type: number, description: Typical range high. }
             basis: { type: string, description: Source of the benchmark. }
-            pct: { type: boolean }
+            pct: { type: boolean, description: Value is a fraction shown as a percent. }
+            num: { type: boolean, description: "Value is a plain number in `unit` (not USD)." }
             new: { type: boolean, description: No billing-system code yet. }
     BuilderCharge:
       allOf:

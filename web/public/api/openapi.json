@@ -1486,7 +1486,10 @@
                 "storage",
                 "returns",
                 "vas",
-                "other"
+                "other",
+                "tech",
+                "security",
+                "terms"
               ]
             }
           },
@@ -3110,7 +3113,11 @@
           },
           "pct": {
             "type": "boolean",
-            "description": "Price is a markup fraction."
+            "description": "Price is a fraction shown as a percent (markup, surcharge, escalator ...)."
+          },
+          "num": {
+            "type": "boolean",
+            "description": "Price is a plain number in the charge unit (e.g. 3 = three months of the monthly minimum), not USD."
           },
           "lo": {
             "type": "number"
@@ -3571,7 +3578,10 @@
               "vas",
               "accessorial",
               "it",
-              "materials"
+              "technology",
+              "security",
+              "materials",
+              "terms"
             ]
           },
           "label": {
@@ -3652,8 +3662,10 @@
                 "enum": [
                   "single",
                   "split",
-                  "pct"
-                ]
+                  "pct",
+                  "num"
+                ],
+                "description": "single = USD, split = first / additional unit, pct = percent, num = plain number."
               },
               "p": {
                 "type": [
@@ -3838,7 +3850,12 @@
                 "description": "Source of the benchmark."
               },
               "pct": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Value is a fraction shown as a percent."
+              },
+              "num": {
+                "type": "boolean",
+                "description": "Value is a plain number in `unit` (not USD)."
               },
               "new": {
                 "type": "boolean",
