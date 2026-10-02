@@ -2,6 +2,7 @@
 expressed as quote selections, so it opens in the quote app as an editable, charge-code-mapped quote."""
 import statistics as st
 from standard_proposal_data import LINES, customers, per_customer
+import new_charges as NC
 
 _med = {(l["sid"], l["opt"]): l["median"] for l in LINES}
 _MIN = r"minimum|mini ?monthly|\bmin\b"
@@ -127,9 +128,12 @@ def build():
         "OT-FREIGHT": _on(price=pc(["Small Parcel-0005"], None, _MIN, "Mark Up")),
         "SU-VAN": _on(price=pc([H(100)])),
     }
+    # the most commonly used new charge ideas: no system code / price-list data yet -> benchmark price (new billing items)
+    bench = {c[1]: c[7] for c in NC.CHARGES}
+    sel.update({cid: _on(price=bench[cid]) for cid in NC.STANDARD})
     return {
         # bump when the template content changes: browsers holding an untouched older copy get it as a new version
-        "version": "2026-10-01 (44 common billing items)",
+        "version": "2026-10-01 (44 common billing items + 8 new charge ideas)",
         "customer": {"company": "Standard Charge Template", "code": "STANDARD", "channel": "Both"},
         "title": "Standard warehouse services rates",
         "note": f"Standard rates from all customers' price lists ({len(customers)} customers, median rate per line).",

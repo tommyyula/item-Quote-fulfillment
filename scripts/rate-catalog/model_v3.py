@@ -517,3 +517,17 @@ DRIVER_SYSTEM = {
     "unitWeight": {"key": "Weight Range"}, "stack": {"key": "Stack High"}, "aging": {"key": "Days Range"}, "binSize": {"key": "Capacity Type", "values": {"Shelf / rack": "Rack"}},
 }
 CHARGE_COND_OVERRIDE = {"OB-PICK": {"offloadType": "OffloadType"}}
+
+# ------------------------------------------------------------------ new charge ideas (71, no system code yet)
+import new_charges as _NC
+_new = _NC.charges(simple)
+for _cid, _name, _desc in _NC.NEW_CATEGORIES:
+    category(_cid, _name, _desc, [])
+for _cat in CATEGORIES:
+    _cat["charges"] += _new.get(_cat["id"], [])
+CATEGORIES.sort(key=lambda c: _NC.CATEGORY_ORDER.index(c["id"]))
+_it = next(i for i, s in enumerate(PROPOSAL_SECTIONS) if s["id"] == "it")
+PROPOSAL_SECTIONS[_it + 1:_it + 1] = _NC.NEW_SECTIONS
+CATEGORY_TO_SECTION.update(_NC.NEW_CATEGORY_TO_SECTION)
+NEW_ITEM_NAMES.update(_NC.NEW_ITEM_NAMES)
+DEFAULT_PRESET.update({cid: _on() for cid in _NC.STANDARD})

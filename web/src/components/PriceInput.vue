@@ -8,7 +8,7 @@ const props = defineProps<{ modelValue: number | null; benchmark: number | null;
 const emit = defineEmits<{ "update:modelValue": [number | null] }>();
 const { T } = useApp();
 
-const show = (v: number | null) => (v == null ? "" : props.pct ? String(Math.round(v * 1000) / 10) : v.toFixed(2));
+const show = (v: number | null) => (v == null ? "" : props.pct ? String(Math.round(v * 10000) / 100) : v.toFixed(2));
 const text = ref(show(props.modelValue));
 watch(() => props.modelValue, v => { if (document.activeElement !== el.value) text.value = show(v); });
 const el = ref<HTMLInputElement>();

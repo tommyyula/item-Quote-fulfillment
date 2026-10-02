@@ -6,7 +6,9 @@ const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD",
 export const money = (x: number | null | undefined) => (x == null || Number.isNaN(x) ? "" : usd.format(x));
 /** "Container" -> "container", but "SKU" / "EDI" stay; CJK untouched. */
 export const softLower = (s: string) => s.replace(/^(\p{Lu})(?=\p{Ll})/u, c => c.toLowerCase());
-export const pct = (x: number | null | undefined) => (x == null ? "" : `${Math.round(x * 1000) / 10}%`);
+export const pct = (x: number | null | undefined) => (x == null ? "" : `${Math.round(x * 10000) / 100}%`);
+// percent charges re-billed on cost read as "markup on cost"; other percent bases ("% of card payment") keep their own unit
+export const isMarkup = (unit: string | undefined) => !unit || unit === "% on cost";
 
 export function rateText(r: Rate | undefined, T: Translator): string {
   if (!r) return "";
@@ -16,7 +18,7 @@ export function rateText(r: Rate | undefined, T: Translator): string {
 }
 
 export function unitText(unit: string | undefined, T: Translator, opts: { pct?: boolean; minBasis?: boolean } = {}): string {
-  if (opts.pct) return T.t("p.markup");
+  if (opts.pct) return isMarkup(unit) ? T.t("p.markup") : T.tc(unit);
   if (!unit) return "";
   if (opts.minBasis) return T.t("p.per", { unit: T.t(`basis.${unit}`) });
   if (/^one-time/i.test(unit)) return T.t("e.oneTime");

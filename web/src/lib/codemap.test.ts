@@ -88,11 +88,14 @@ describe("standard charge template", async () => {
     const used = new Set(ms.flatMap(m => [m.code, m.initialCode, ...m.altCodes]).filter(Boolean));
     expect(cat.commonItems.filter(c => !used.has(c.code)).map(c => c.code)).toEqual([]);
   });
-  it("renders the standard rate sheet with every line mapped to existing codes", () => {
+  it("renders the standard rate sheet with every line mapped to existing codes, except the new charge ideas", () => {
     const rows = buildProposal(cat, data()).flatMap(s => s.rows).filter(r => r.rate);
     expect(rows.length).toBeGreaterThan(43);
-    const sum = summarize(mapQuote(cat, data()));
-    expect(sum.mapped).toBe(sum.total);
+    const ms = mapQuote(cat, data());
+    const sum = summarize(ms);
+    const newIds = ms.filter(m => m.status === "new-item").map(m => m.chargeId).sort();
+    expect(newIds).toEqual(["OB-ORDERMOD", "ST-AGED", "TE-DATA", "TE-TECHFEE", "TM-CARD", "TM-ESCALATOR", "TM-LATE", "TM-OFFBOARD"]);
+    expect(sum.mapped + sum.newItem).toBe(sum.total);
   });
   it("prices palletized containers flat only when flatOtherwise is on", () => {
     const d = data();
@@ -104,5 +107,32 @@ describe("standard charge template", async () => {
   it("keeps the excess-case line right under the container tiers", () => {
     const inbound = buildProposal(cat, data())[0].rows.map(r => r.service).filter(Boolean);
     expect(inbound.indexOf("Each case over 2,500 (floor-loaded container)")).toBe(inbound.lastIndexOf("Offload / Receiving") + 1);
+  });
+});
+
+describe("new charge ideas", async () => {
+  const { translator } = await import("../i18n");
+  const { unitText } = await import("./format");
+  const ideas = cat.categories.flatMap(c => c.charges.map(ch => ({ cat: c.id, ch })))
+    .filter(x => /^(TE|SM|TM)-/.test(x.ch.id) || ["ST-ASRS", "ST-AGED", "ST-PEAK", "ST-OVERSTOCK", "ST-SKUFEE", "ST-HAZMAT", "ST-SECURE", "ST-BONDED",
+      "ST-INSURE", "OT-WALL", "OT-RECALL", "OB-ORDERMOD", "OB-DIMAUDIT", "OT-SURCHARGE", "RT-RTS", "IN-UNSCHED"].includes(x.ch.id));
+  it("adds all 71, each to be created in the billing system under a suggested item name", () => {
+    expect(ideas).toHaveLength(71);
+    const sel = Object.fromEntries(ideas.map(x => [x.ch.id, { ...emptySel(), on: true }]));
+    const ms = mapQuote(cat, { header, selections: sel });
+    expect(ms).toHaveLength(71);
+    expect(ms.every(m => m.status === "new-item" && m.suggestedName)).toBe(true);
+  });
+  it("has every name, description and unit translated", () => {
+    for (const lang of ["zh", "ja", "es"] as const) {
+      const T = translator(lang);
+      const missing = ideas.flatMap(({ ch }) => [ch.name, ch.desc, (ch as { unit: string }).unit]).filter(s => T.tc(s) === s && !["SKU", "kWh"].includes(s));
+      expect(missing, lang).toEqual([]);
+    }
+  });
+  it("labels percent charges by their own base unless re-billed on cost", () => {
+    const en = translator("en");
+    expect(unitText("% of card payment", en, { pct: true })).toBe("% of card payment");
+    expect(unitText("% on cost", en, { pct: true })).toBe("markup on cost");
   });
 });

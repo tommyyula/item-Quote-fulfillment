@@ -132,7 +132,7 @@ describe("default template", () => {
   const lines = quoteLines(cat, data);
   it("covers every proposal section except IT-only extras", () => {
     const ids = buildProposal(cat, data).map(s => s.id);
-    expect(ids).toEqual(["inbound", "outbound", "storage", "returns", "vas", "accessorial", "it", "materials"]);
+    expect(ids).toEqual(["inbound", "outbound", "storage", "returns", "vas", "accessorial", "it", "tech", "terms", "materials"]);
   });
   it("never prices impossible combinations", () => {
     const bad = lines.filter(l =>
