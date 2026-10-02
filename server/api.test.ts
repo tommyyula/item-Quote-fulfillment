@@ -163,13 +163,14 @@ describe("quotes", () => {
 });
 
 describe("standard template and catalog", () => {
-  it("Q-STANDARD is seeded with every rate line mapped", async () => {
+  it("Q-STANDARD is seeded: existing charges mapped, new charges listed for billing setup", async () => {
     const list = (await call("GET", "/v1/quotes?q=Q-STANDARD")).body.items;
     expect(list).toHaveLength(1);
     const m = (await call("GET", `/v1/quotes/${list[0].id}/charge-code-mapping`)).body;
     expect(m.summary.total).toBeGreaterThan(80);
-    expect(m.summary.mapped).toBe(m.summary.total);
-    expect(m.setup).toEqual([]);
+    expect(m.summary.newCondition).toBe(0);
+    expect(m.summary.mapped + m.summary.newItem).toBe(m.summary.total);
+    expect(m.setup.every((x: { kind: string; chargeId: string }) => x.kind === "new-item" && catalog.mapback.newItems[x.chargeId])).toBe(true);
   });
   it("catalog, charges, system codes, mapback rules and gaps", async () => {
     expect((await call("GET", "/v1/catalog")).body.version).toBe(catalog.version);

@@ -2,7 +2,7 @@
 import type { Translator } from "../i18n";
 import { mapQuote, setupList } from "./codemap";
 import { chargeIndex, quoteLines } from "./engine";
-import { addDays, dateText, money, pct, rateText, softLower, unitText } from "./format";
+import { addDays, amount, dateText, rateText, softLower, unitText } from "./format";
 import type { PRow, PSection } from "./proposal";
 import type { Catalog, Customer, Quote, QuoteData } from "./types";
 
@@ -79,10 +79,10 @@ export async function buildExcel(cat: Catalog, sections: PSection[], m: Proposal
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: band } };
     });
     for (const r of s.rows) {
-      const isPct = r.rate?.kind === "pct";
+      const isPct = r.rate?.kind === "pct", isNum = r.rate?.kind === "num";
       const service = r.type === "sub" ? `    ${qualifierText(r, T)}` : r.type === "min" ? `    ${T.t("p.minimum")}` : serviceLabel(r, T);
       const desc = r.type === "item" || r.type === "group" ? [qualifierText(r, T), descText(r, T)].filter(Boolean).join(". ") : "";
-      const row = ws.addRow([service, desc, rateText(r.rate, T), r.rate ? unitText(r.unit, T, { pct: isPct, minBasis: r.isMinBasis }) : ""]);
+      const row = ws.addRow([service, desc, rateText(r.rate, T), r.rate ? unitText(r.unit, T, { pct: isPct, num: isNum, minBasis: r.isMinBasis }) : ""]);
       row.alignment = { wrapText: true, vertical: "top" };
       if (r.type !== "sub" && r.type !== "min") row.getCell(1).font = { bold: true };
       row.getCell(3).alignment = { horizontal: "right", vertical: "top" };
@@ -117,7 +117,7 @@ export async function buildExcel(cat: Catalog, sections: PSection[], m: Proposal
   ms.forEach((x, i) => {
     const l = ql[i];
     const r = map.addRow([l.chargeId, idx[l.chargeId].charge.name, l.col === "min" ? `min per ${l.minBasis}` : l.unitLabel,
-      l.dims.filter(d => d.value).map(d => `${d.label}: ${d.value}`).join(" · "), l.col, l.pct ? pct(l.price) : money(l.price), x.code ?? "", x.code ? x.systemName : x.suggestedName ?? "",
+      l.dims.filter(d => d.value).map(d => `${d.label}: ${d.value}`).join(" · "), l.col, amount(l.price, l), x.code ?? "", x.code ? x.systemName : x.suggestedName ?? "",
       x.systemUom, x.initialCode ?? "", x.conditions.map(c => `${c.key}: ${c.value}${c.supported ? "" : " (new)"}`).join("; "), x.status, x.notes.join(" ")]);
     if (x.status !== "mapped") r.getCell(12).font = { bold: true, color: { argb: x.status === "new-item" ? "FFE01529" : "FFC2410C" } };
   });

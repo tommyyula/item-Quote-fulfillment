@@ -14,6 +14,7 @@ export interface Setting { id: string; label: string; options: string[] }
 interface ChargeBase { id: string; name: string; desc: string; tier: "main" | "advanced"; channel: Channel; codes: string[]; invoiceLines: number }
 export interface SimpleCharge extends ChargeBase {
   kind: "simple"; unit: string; default: number | null; lo: number; hi: number; basis: string; pct: boolean; new: boolean;
+  num?: boolean;   // plain number, e.g. "3 months of the monthly minimum" (not USD, not %)
 }
 export interface BuilderCharge extends ChargeBase {
   kind: "builder"; conds: Cond[]; units: Unit[]; settings: Setting[]; invalid: When[];
@@ -101,4 +102,5 @@ export interface QuoteLine {
   unitKey?: string;           // instance key when a unit is priced more than one way ("case#2"); equals unitId otherwise
   dims: DimCell[]; col: LineCol; minBasis?: string;
   price: number | null; benchmark: number | null; pct: boolean; lo?: number; hi?: number;
+  num?: boolean;              // plain number (see SimpleCharge.num)
 }

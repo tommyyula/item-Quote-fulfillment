@@ -4,11 +4,11 @@ import { computed, ref, watch } from "vue";
 import { useApp } from "../lib/context";
 import { outOfRange } from "../lib/engine";
 
-const props = defineProps<{ modelValue: number | null; benchmark: number | null; lo?: number; hi?: number; pct?: boolean; readonly?: boolean }>();
+const props = defineProps<{ modelValue: number | null; benchmark: number | null; lo?: number; hi?: number; pct?: boolean; num?: boolean; readonly?: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [number | null] }>();
 const { T } = useApp();
 
-const show = (v: number | null) => (v == null ? "" : props.pct ? String(Math.round(v * 1000) / 10) : v.toFixed(2));
+const show = (v: number | null) => (v == null ? "" : props.pct ? String(+(v * 100).toFixed(2)) : props.num ? String(+v.toFixed(2)) : v.toFixed(2));
 const text = ref(show(props.modelValue));
 watch(() => props.modelValue, v => { if (document.activeElement !== el.value) text.value = show(v); });
 const el = ref<HTMLInputElement>();
@@ -18,7 +18,7 @@ function commit() {
   if (raw === "") { emit("update:modelValue", null); return; }
   const n = Number(raw);
   if (Number.isNaN(n) || n < 0) { text.value = show(props.modelValue); return; }
-  const v = props.pct ? n / 100 : Math.round(n * 100) / 100;
+  const v = props.pct ? +(n / 100).toFixed(6) : Math.round(n * 100) / 100;
   emit("update:modelValue", v);
   text.value = show(v);
 }
@@ -32,7 +32,7 @@ const title = computed(() => [
 
 <template>
   <span class="pi" :class="{ edited, [range || '']: !!range }" :title="title">
-    <span class="pre" v-if="!pct">$</span>
+    <span class="pre" v-if="!pct && !num">$</span>
     <input ref="el" v-model="text" inputmode="decimal" :readonly="readonly" :placeholder="T.t('e.enter')"
            @blur="commit" @keydown.enter="($event.target as HTMLInputElement).blur()" />
     <span class="post" v-if="pct">%</span>

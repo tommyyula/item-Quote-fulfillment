@@ -3,7 +3,7 @@
 import { computed, ref } from "vue";
 import { useApp } from "../lib/context";
 import { chargeIndex, quoteLines } from "../lib/engine";
-import { dateTimeText, money, pct, softLower } from "../lib/format";
+import { amount, dateTimeText, softLower } from "../lib/format";
 import { catalog } from "../lib/store";
 import type { QuoteData, QuoteLine } from "../lib/types";
 import Drawer from "./Drawer.vue";
@@ -30,7 +30,7 @@ const label = (l: QuoteLine) => {
   }
   return parts.join(" · ");
 };
-const fmt = (l: QuoteLine) => (l.price == null ? "" : l.pct ? pct(l.price) : money(l.price));
+const fmt = (l: QuoteLine) => amount(l.price, l);
 const diff = computed(() => {
   const A = new Map(quoteLines(catalog, dataOf(a.value)).map(l => [l.key, l]));
   const B = new Map(quoteLines(catalog, dataOf(b.value)).map(l => [l.key, l]));

@@ -166,11 +166,15 @@ def build():
     aged = r"over \d+ days|minimum|\bmin\b"
     sel["ST-STORAGE"]["units"]["each"] = {"on": True, "driver": "itemSize"}
     sel["ST-STORAGE"]["prices"].update(priced({f"each|{band}|p": pc(["STORAGE INCOME-0010"], rx, aged) for band, rx in ITEM_BANDS}))
+    # new charge ideas used by most warehouse clients (new_charges.STANDARD): no system code yet -> listed for billing setup
+    import new_charges
+    for cid, price in new_charges.STANDARD.items():
+        sel[cid] = _on(price=price)
     sel["OB-PACK"]["units"]["case"] = {"on": True}
     sel["OB-PACK"]["prices"]["case||p"] = pc([H(85)]) or bench("OB-PACK", "case")
     return {
         # bump when the template content changes: browsers holding an untouched older copy get it as a new version
-        "version": "2026-10-01c (44 common + 24 suggested billing items, all priced)",
+        "version": "2026-10-01d (44 common + 24 suggested + 11 new billing items)",
         "customer": {"company": "Standard Charge Template", "code": "STANDARD", "channel": "Both"},
         "title": "Standard warehouse services rates",
         "note": f"Standard rates from all customers' price lists ({len(customers)} customers, median rate per line).",

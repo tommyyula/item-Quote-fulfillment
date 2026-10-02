@@ -518,3 +518,21 @@ DRIVER_SYSTEM = {
     "unitWeight": {"key": "Weight Range"}, "stack": {"key": "Stack High"}, "aging": {"key": "Days Range"}, "binSize": {"key": "Capacity Type", "values": {"Shelf / rack": "Rack"}},
 }
 CHARGE_COND_OVERRIDE = {"OB-PICK": {"offloadType": "OffloadType"}}
+
+
+# ================================================================== 71 new charge ideas (new_charges.py, 2026-10-01)
+# Existing categories get their new items appended; three new categories follow "other". No item has a system code yet.
+import new_charges as _N
+
+for _cat in CATEGORIES:
+    _cat["charges"].extend(_N.charges_for(_cat["id"]))
+for _c in _N.NEW_CATEGORIES:
+    category(_c["id"], _c["name"], _c["desc"], _N.charges_for(_c["id"]))
+_it = next(i for i, s in enumerate(PROPOSAL_SECTIONS) if s["id"] == "it")
+_secs = {s["id"]: {k: s[k] for k in ("id", "label", "note")} for s in _N.NEW_SECTIONS}
+PROPOSAL_SECTIONS[_it + 1:_it + 1] = [_secs["technology"], _secs["security"]]
+PROPOSAL_SECTIONS.append(_secs["terms"])
+CATEGORY_TO_SECTION.update(_N.CATEGORY_TO_SECTION)
+MATERIALS.extend(_N.MATERIALS)
+NEW_ITEM_NAMES.update(_N.NEW_ITEM_NAMES)
+NOTES.update(_N.NOTES)

@@ -95,7 +95,7 @@ const setLang = (v: string) => (store.state.prefs.proposalLang = v as Lang | "")
               <td v-else class="svc">{{ serviceLabel(r, PT) }}<div v-if="r.qualifiers?.length" class="q">{{ qualifierText(r, PT) }}</div></td>
               <td class="desc">{{ r.type === "item" || r.type === "group" ? descText(r, PT) : "" }}</td>
               <td class="r rate">{{ rateText(r.rate, PT) }}</td>
-              <td class="unit">{{ r.rate ? unitText(r.unit, PT, { pct: r.rate.kind === "pct", minBasis: r.isMinBasis }) : "" }}</td>
+              <td class="unit">{{ r.rate ? unitText(r.unit, PT, { pct: r.rate.kind === "pct", num: r.rate.kind === "num", minBasis: r.isMinBasis }) : "" }}</td>
             </tr>
           </tbody>
         </table>

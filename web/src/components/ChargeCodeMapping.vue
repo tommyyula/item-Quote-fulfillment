@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import { useApp } from "../lib/context";
 import { mapQuote, setupList, summarize, type LineMapping } from "../lib/codemap";
 import { chargeIndex } from "../lib/engine";
-import { money, pct, softLower } from "../lib/format";
+import { amount, softLower } from "../lib/format";
 import { catalog } from "../lib/store";
 import type { QuoteData } from "../lib/types";
 
@@ -22,8 +22,8 @@ const lineLabel = (m: LineMapping) => {
   const unit = c.kind === "builder" && m.unitId ? c.units.find(u => u.id === m.unitId)?.label : undefined;
   return [t.tc(c.name), unit ? t.t("e.perUnit", { unit: softLower(t.tc(unit)) }) : ""].filter(Boolean).join(", ");
 };
-const isPct = (m: LineMapping) => idx[m.chargeId].charge.kind === "simple" && (idx[m.chargeId].charge as { pct: boolean }).pct;
-const rate = (m: LineMapping) => (m.price == null ? T.value.t("p.tbd") : isPct(m) ? pct(m.price) : money(m.price));
+const fmtOf = (m: LineMapping) => { const c = idx[m.chargeId].charge; return c.kind === "simple" ? { pct: c.pct, num: c.num } : {}; };
+const rate = (m: LineMapping) => (m.price == null ? T.value.t("p.tbd") : amount(m.price, fmtOf(m)));
 </script>
 
 <template>

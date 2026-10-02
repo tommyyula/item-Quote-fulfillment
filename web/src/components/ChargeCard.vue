@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { useApp } from "../lib/context";
 import { activeUnits, emptySel, unitRows } from "../lib/engine";
-import { money, softLower } from "../lib/format";
+import { amount, measureText, softLower } from "../lib/format";
 import type { Charge } from "../lib/types";
 import BuilderBody from "./BuilderBody.vue";
 import PriceInput from "./PriceInput.vue";
@@ -38,7 +38,7 @@ const rateCount = computed(() => {
 const unitLabel = computed(() => {
   const c = props.charge;
   if (c.kind !== "simple") return "";
-  if (c.pct) return T.value.t("e.markup");
+  if (c.pct || c.num) return measureText(c.unit, T.value);
   if (/^one-time/i.test(c.unit)) return T.value.t("e.oneTime");
   return T.value.t("e.per", { unit: softLower(T.value.tc(c.unit)) });
 });
@@ -56,9 +56,9 @@ const unitLabel = computed(() => {
         <div class="desc">{{ T.tc(charge.desc) }}</div>
       </div>
       <div v-if="charge.kind === 'simple'" class="price">
-        <PriceInput :model-value="price" :benchmark="charge.default" :lo="charge.lo" :hi="charge.hi" :pct="charge.pct" :readonly="ro || !s.on"
+        <PriceInput :model-value="price" :benchmark="charge.default" :lo="charge.lo" :hi="charge.hi" :pct="charge.pct" :num="charge.num" :readonly="ro || !s.on"
                     @update:model-value="setPrice" />
-        <div class="unit">{{ unitLabel }}<div class="hint">{{ charge.pct ? `${Math.round(charge.lo * 100)}% – ${Math.round(charge.hi * 100)}%` : `${money(charge.lo)} – ${money(charge.hi)}` }}</div></div>
+        <div class="unit">{{ unitLabel }}<div class="hint">{{ `${amount(charge.lo, charge)} – ${amount(charge.hi, charge)}` }}</div></div>
       </div>
       <div v-else class="sum">
         <span v-if="s.on" class="tag">{{ T.t(rateCount === 1 ? "e.rate1" : "e.rates", { n: rateCount }) }}</span>
