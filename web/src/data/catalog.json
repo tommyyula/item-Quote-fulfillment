@@ -5067,7 +5067,7 @@
    "OT-PALLET-B": "ACCESSORIAL-0038",
    "OT-CORNER": "ACCESSORIAL-0038",
    "OT-SLIP": "SLIPSHEET",
-   "OT-YARD": "YARD-0001",
+   "OT-YARD": "STORAGE INCOME-0027",
    "OT-HOSTLER": "HANDLING-0250",
    "OT-OUTSIDECARRIER": "OTHERS-0003",
    "OT-ACCOUNT": "ACCESSORIAL-0005",
@@ -5132,6 +5132,11 @@
    "OT-FREIGHT": {
     "alt": [
      "TRANSPORTATION-0002"
+    ]
+   },
+   "OT-YARD": {
+    "alt": [
+     "YARD-0001"
     ]
    }
   },
@@ -8477,7 +8482,7 @@
   }
  },
  "standardTemplate": {
-  "version": "2026-10-01 (44 common billing items)",
+  "version": "2026-10-01b (44 common + 24 suggested billing items)",
   "customer": {
    "company": "Standard Charge Template",
    "code": "STANDARD",
@@ -8680,10 +8685,14 @@
     "units": {
      "order": {
       "on": true
+     },
+     "case": {
+      "on": true
      }
     },
     "prices": {
-     "order||p": 0.5
+     "order||p": 0.5,
+     "case||p": 0.5
     },
     "settings": {}
    },
@@ -8707,6 +8716,10 @@
      },
      "cubic": {
       "on": true
+     },
+     "each": {
+      "on": true,
+      "driver": "itemSize"
      }
     },
     "prices": {
@@ -8717,7 +8730,15 @@
      "pallet#2|Floor, 1-high (tall / oversize)|p": 28.0,
      "pallet#2|Floor, 2-high|p": 15.95,
      "pallet#2|Floor, 3-high|p": 12.3,
-     "pallet#2|Floor, 4-high +|p": 8.25
+     "pallet#2|Floor, 4-high +|p": 8.25,
+     "each|Up to 32\"|p": 0.35,
+     "each|37\" - 43\"|p": 0.65,
+     "each|46\" - 50\"|p": 1.18,
+     "each|55\" - 60\"|p": 1.5,
+     "each|65\"|p": 1.64,
+     "each|70\" - 75\"|p": 3.3,
+     "each|80\" - 86\"|p": 4.58,
+     "each|98\" and larger|p": 108.0
     },
     "settings": {}
    },
@@ -8941,6 +8962,173 @@
     "prices": {},
     "settings": {},
     "price": 0.5
+   },
+   "SU-EDI": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "SU-SKU": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "OT-RUSHRCPT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "IN-TRANSLOAD": {
+    "on": true,
+    "conds": {},
+    "units": {
+     "pallet": {
+      "on": true
+     },
+     "container": {
+      "on": true
+     }
+    },
+    "prices": {
+     "pallet||p": 10.5,
+     "container||p": 525.0
+    },
+    "settings": {}
+   },
+   "IN-XDOCK": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "IN-PALLETIZE": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 15.0
+   },
+   "OT-COUNT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 50.0
+   },
+   "OB-LABEL": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 0.3
+   },
+   "OB-LOAD": {
+    "on": true,
+    "conds": {},
+    "units": {
+     "pallet": {
+      "on": true
+     },
+     "case": {
+      "on": true
+     }
+    },
+    "prices": {},
+    "settings": {}
+   },
+   "OT-CANCELPRE": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 10.0
+   },
+   "OT-ADDRESS": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": 2.5
+   },
+   "RT-INSPECT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "RT-RESTOCK": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "RT-DISPOSAL": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "VA-KIT": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "VA-FNSKU": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "VA-RELABEL": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "VA-OVERBOX": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
+   },
+   "OT-HOSTLER": {
+    "on": true,
+    "conds": {},
+    "units": {},
+    "prices": {},
+    "settings": {},
+    "price": null
    }
   }
  }

@@ -88,6 +88,15 @@ describe("standard charge template", async () => {
     const used = new Set(ms.flatMap(m => [m.code, m.initialCode, ...m.altCodes]).filter(Boolean));
     expect(cat.commonItems.filter(c => !used.has(c.code)).map(c => c.code)).toEqual([]);
   });
+  it("covers the 24 suggested additions (2026-10-01) with mapped lines", () => {
+    const suggested = ["HANDLING-0194", "ACCESSORIAL-0014", "HANDLING-0126", "HANDLING-0040", "HANDLING-0011", "HANDLING-0023",
+      "HANDLING-0157", "HANDLING-0081", "STORAGE INCOME-0010", "ACCESSORIAL-0010", "HANDLING-0085", "HANDLING-0155",
+      "HANDLING-0142", "HANDLING-0138", "ACCESSORIAL-0001", "ACCESSORIAL-0037", "RMS-002", "RMS-006", "ACCESSORIAL-0011",
+      "HANDLING-0208", "HANDLING-0184", "RELABELING", "ACC-0003", "HANDLING-0250", "STORAGE INCOME-0027"];
+    const ms = mapQuote(cat, data());
+    const mapped = new Set(ms.filter(m => m.status === "mapped").flatMap(m => [m.code, m.initialCode, ...m.altCodes]).filter(Boolean));
+    expect(suggested.filter(c => !mapped.has(c))).toEqual([]);
+  });
   it("renders the standard rate sheet with every line mapped to existing codes", () => {
     const rows = buildProposal(cat, data()).flatMap(s => s.rows).filter(r => r.rate);
     expect(rows.length).toBeGreaterThan(43);

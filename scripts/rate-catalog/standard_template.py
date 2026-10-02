@@ -37,6 +37,10 @@ def _c(*values):
 
 H = lambda n: f"HANDLING-{n:04d}"
 STACK = ["STORAGE INCOME-0011", "STORAGE INCOME-0024"]
+# item-type (TV size) bands of the ST-STORAGE "each" driver -> sizes as written in the price-list descriptions
+ITEM_BANDS = [('Up to 32"', r'\b(2\d|3[0-2])"'), ('37" - 43"', r'\b(3[7-9]|4[0-3])"'), ('46" - 50"', r'\b(4[6-9]|50)"'),
+              ('55" - 60"', r'\b(5[5-9]|60)"'), ('65"', r'\b65"'), ('70" - 75"', r'\b(7[0-5])"'), ('80" - 86"', r'\b(8[0-6])"'),
+              ('98" and larger', r'\b(9[8-9]|1\d\d)"')]
 
 
 def build():
@@ -126,10 +130,40 @@ def build():
         "OT-CORNER": _on(price=pc(["ACCESSORIAL-0038"], r"Corner Board")),
         "OT-FREIGHT": _on(price=pc(["Small Parcel-0005"], None, _MIN, "Mark Up")),
         "SU-VAN": _on(price=pc([H(100)])),
+
+        # ---- 24 suggested additions (2026-10-01). Price = price-list median when >= 5 customers use the code, else the
+        # catalog benchmark (price omitted). HANDLING-0126 (palletized container offload) was already in IN-OFFLOAD above.
+        "SU-EDI": _on(price=pc([H(194)])),
+        "SU-SKU": _on(price=pc(["ACCESSORIAL-0014"])),
+        "OT-RUSHRCPT": _on(price=pc([H(40)])),
+        "IN-TRANSLOAD": _on(units={"pallet": {"on": True}, "container": {"on": True}},
+                            prices=priced({"pallet||p": pc([H(11)]), "container||p": pc([H(23)])})),
+        "IN-XDOCK": _on(price=pc([H(157)])),
+        "IN-PALLETIZE": _on(price=pc([H(81)])),
+        "OT-COUNT": _on(price=pc(["ACCESSORIAL-0010"])),
+        "OB-LABEL": _on(price=pc([H(155)])),
+        "OB-LOAD": _on(units={"pallet": {"on": True}, "case": {"on": True}},
+                       prices=priced({"pallet||p": pc([H(142)]), "case||p": pc([H(138)])})),
+        "OT-CANCELPRE": _on(price=pc(["ACCESSORIAL-0001"])),
+        "OT-ADDRESS": _on(price=pc(["ACCESSORIAL-0037"], None, _MIN, "Flat Rate")),
+        "RT-INSPECT": _on(price=pc(["RMS-002"])),
+        "RT-RESTOCK": _on(price=pc(["RMS-006"])),
+        "RT-DISPOSAL": _on(price=pc(["ACCESSORIAL-0011"])),
+        "VA-KIT": _on(price=pc([H(208)])),
+        "VA-FNSKU": _on(price=pc([H(184)])),
+        "VA-RELABEL": _on(price=pc(["RELABELING"])),
+        "VA-OVERBOX": _on(price=pc(["ACC-0003"])),
+        "OT-HOSTLER": _on(price=pc([H(250)])),
     }
+    # storage per item by item type (STORAGE INCOME-0010), current-period rows only (aged "over N days" rows excluded)
+    aged = r"over \d+ days|minimum|\bmin\b"
+    sel["ST-STORAGE"]["units"]["each"] = {"on": True, "driver": "itemSize"}
+    sel["ST-STORAGE"]["prices"].update(priced({f"each|{band}|p": pc(["STORAGE INCOME-0010"], rx, aged) for band, rx in ITEM_BANDS}))
+    sel["OB-PACK"]["units"]["case"] = {"on": True}
+    sel["OB-PACK"]["prices"].update(priced({"case||p": pc([H(85)])}))
     return {
         # bump when the template content changes: browsers holding an untouched older copy get it as a new version
-        "version": "2026-10-01 (44 common billing items)",
+        "version": "2026-10-01b (44 common + 24 suggested billing items)",
         "customer": {"company": "Standard Charge Template", "code": "STANDARD", "channel": "Both"},
         "title": "Standard warehouse services rates",
         "note": f"Standard rates from all customers' price lists ({len(customers)} customers, median rate per line).",
