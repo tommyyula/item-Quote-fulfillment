@@ -10,6 +10,7 @@ import HistoryDrawer from "./components/HistoryDrawer.vue";
 import ProposalView from "./components/ProposalView.vue";
 import ThemeToggle from "./components/ThemeToggle.vue";
 import VersionsDrawer from "./components/VersionsDrawer.vue";
+import Wizard from "./components/Wizard.vue";
 import { LANGS, type Lang } from "./i18n";
 import { provideApp } from "./lib/context";
 import { signOut } from "./lib/remote";
@@ -42,6 +43,17 @@ if (LANGS.some(l => l.id === qs.get("lang"))) st.prefs.lang = qs.get("lang") as 
 if (qs.get("theme") === "dark" || qs.get("theme") === "light") st.prefs.theme = qs.get("theme") as "dark" | "light";
 if (LANGS.some(l => l.id === qs.get("plang"))) st.prefs.proposalLang = qs.get("plang") as Lang;
 const proposalOnly = ref(qs.get("view") === "proposal");
+// ?wizard opens the guided quote (one question per page, for someone quoting once)
+const wizard = ref(qs.has("wizard"));
+function closeWizard(number?: string) {
+  wizard.value = false;
+  const u = new URL(location.href);
+  u.searchParams.delete("wizard");
+  history.replaceState(null, "", u);
+  if (!number) return;
+  flash.value = T.value.t("w.done", { q: number });
+  setTimeout(() => (flash.value = ""), 4000);
+}
 // ?quote=Q-STANDARD opens a quote by number (e.g. a link straight to the standard rate sheet)
 const byNumber = qs.get("quote") && store.state.quotes.find(q => q.number === qs.get("quote"));
 if (byNumber) store.openQuote(byNumber.id);
@@ -87,6 +99,8 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
 </script>
 
 <template>
+  <Wizard v-if="wizard" @exit="closeWizard()" @done="closeWizard" />
+  <template v-else>
   <a class="skip" href="#main">{{ T.t("a.skip") }}</a>
   <header class="top no-print">
     <div class="brand">
@@ -121,6 +135,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
       <button class="btn sm" @click="drawer = 'mapping'">{{ T.t("m.button") }}</button>
     </template>
     <button class="btn sm" @click="drawer = 'history'">{{ T.t("h.history") }}</button>
+    <button class="btn sm" @click="wizard = true">{{ T.t("w.start") }}</button>
     <span v-if="st.user" class="user">
       <span class="sync" :class="st.sync" role="status">{{ T.t(`s.${st.sync}`) }}</span>
       <span class="who" :title="st.user.email">{{ st.user.name || st.user.email }}</span>
@@ -141,6 +156,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
   <main v-if="!store.quote.value" id="main" class="empty no-print">
     <p>{{ T.t("h.noQuote") }}</p>
     <button class="btn primary" @click="drawer = 'customers'">{{ T.t("h.selectCustomer") }}</button>
+    <button class="btn" @click="wizard = true">{{ T.t("w.start") }}</button>
   </main>
 
   <div v-else class="layout" :class="{ solo: proposalOnly }">
@@ -248,6 +264,7 @@ const itemLogo = computed(() => (st.prefs.theme === "light" ? itemLogoLight : it
       <div class="acts"><button class="btn" @click="saving = false">{{ T.t("c.cancel") }}</button><button class="btn primary" @click="saveVersion">{{ T.t("c.save") }}</button></div>
     </div>
   </div>
+  </template>
 </template>
 
 <style scoped>
